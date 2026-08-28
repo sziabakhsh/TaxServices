@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Clients;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Services;
+using TaxServices.Infrastructure.Identity;
 
 namespace TaxServices.Infrastructure;
 
-public class TaxServicesDbContext : DbContext
+public class TaxServicesDbContext : IdentityDbContext<AppUser>
 {
 
     public TaxServicesDbContext(
