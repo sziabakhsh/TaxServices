@@ -1,0 +1,6 @@
+@TaxServices.Api_HostAddress = http://localhost:5260
+
+GET {{TaxServices.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

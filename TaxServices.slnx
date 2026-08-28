@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TaxServices.Api/TaxServices.Api.csproj" />
+    <Project Path="src/TaxServices.Application/TaxServices.Application.csproj" />
+    <Project Path="src/TaxServices.Domain/TaxServices.Domain.csproj" />
+    <Project Path="src/TaxServices.Infrastructure/TaxServices.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TaxServices.Api.Tests/TaxServices.Api.Tests.csproj" />
+    <Project Path="tests/TaxServices.Application.Tests/TaxServices.Application.Tests.csproj" />
+    <Project Path="tests/TaxServices.Domain.Tests/TaxServices.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
