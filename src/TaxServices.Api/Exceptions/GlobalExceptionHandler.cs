@@ -2,56 +2,63 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TaxServices.Application.Exceptions;
 
-namespace TaxServices.Api.Exceptions
+namespace TaxServices.Api.Exceptions;
+
+public class GlobalExceptionHandler : IExceptionHandler
 {
-   public class GlobalExceptionHandler : IExceptionHandler
+    private readonly ILogger<GlobalExceptionHandler> _logger;
+
+    public GlobalExceptionHandler(
+        ILogger<GlobalExceptionHandler> logger)
     {
-        private readonly ILogger<GlobalExceptionHandler> _logger;
+        _logger = logger;
+    }
 
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogError(
+            exception,
+            "Unhandled exception occurred. TraceId: {TraceId}",
+            httpContext.TraceIdentifier);
+
+        var statusCode = StatusCodes.Status500InternalServerError;
+        var title = "An unexpected error occurred.";
+        var detail =
+            "An internal server error occurred. Please try again later.";
+
+        if (exception is ArgumentException)
         {
-            _logger = logger;
+            statusCode = StatusCodes.Status400BadRequest;
+            title = "Validation error.";
+            detail = exception.Message;
+        }
+        else if (exception is DuplicateUserException)
+        {
+            statusCode = StatusCodes.Status409Conflict;
+            title = "User already exists.";
+            detail = exception.Message;
         }
 
-        public async ValueTask<bool> TryHandleAsync(
-    HttpContext httpContext,
-    Exception exception,
-    CancellationToken cancellationToken)
+        var problemDetails = new ProblemDetails
         {
-            _logger.LogError(
-                exception,
-                "Unhandled exception occurred. TraceId: {TraceId}",
-                httpContext.TraceIdentifier);
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Instance = httpContext.Request.Path
+        };
 
-            var statusCode = StatusCodes.Status500InternalServerError;
-            var title = "An unexpected error occurred.";
-            var detail = "An internal server error occurred. Please try again later.";
+        problemDetails.Extensions["traceId"] =
+            httpContext.TraceIdentifier;
 
-            if (exception is DuplicateUserException)
-            {
-                statusCode = StatusCodes.Status409Conflict;
-                title = "User already exists.";
-                detail = exception.Message;
-            }
+        httpContext.Response.StatusCode = statusCode;
 
-            var problemDetails = new ProblemDetails
-            {
-                Status = statusCode,
-                Title = title,
-                Detail = detail,
-                Instance = httpContext.Request.Path
-            };
+        await httpContext.Response.WriteAsJsonAsync(
+            problemDetails,
+            cancellationToken);
 
-            problemDetails.Extensions["traceId"] =
-                httpContext.TraceIdentifier;
-
-            httpContext.Response.StatusCode = statusCode;
-
-            await httpContext.Response.WriteAsJsonAsync(
-                problemDetails,
-                cancellationToken);
-
-            return true;
-        }
+        return true;
     }
 }

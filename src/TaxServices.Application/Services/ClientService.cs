@@ -1,5 +1,6 @@
 ﻿using TaxServices.Application.DTOs.Clients;
 using TaxServices.Application.Interfaces;
+using TaxServices.Application.Validation;
 using TaxServices.Domain.Clients;
 
 namespace TaxServices.Application.Services
@@ -51,6 +52,8 @@ namespace TaxServices.Application.Services
             CreateClientRequest request,
             CancellationToken cancellationToken = default)
         {
+            ClientValidator.Validate(request);
+
             var emailExists = await _clientRepository.ExistsByEmailAsync(
                 request.Email,
                 _tenantContext.TenantId,
@@ -100,6 +103,8 @@ namespace TaxServices.Application.Services
             UpdateClientRequest request,
             CancellationToken cancellationToken = default)
         {
+            ClientValidator.Validate(request);
+
             var client = await _clientRepository.GetByIdAsync(
                 id,
                 _tenantContext.TenantId,
@@ -211,11 +216,11 @@ namespace TaxServices.Application.Services
 
             client.IsActive = true;
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _clientRepository.UpdateAsync(
                 client,
                 cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return true;
         }
