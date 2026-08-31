@@ -1,4 +1,3 @@
-
 using TaxServices.Domain.Common;
 
 namespace TaxServices.Domain.Clients

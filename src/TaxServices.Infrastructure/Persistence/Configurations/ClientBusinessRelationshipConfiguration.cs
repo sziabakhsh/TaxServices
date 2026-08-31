@@ -1,15 +1,13 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TaxServices.Domain.Clients;
 
 namespace TaxServices.Infrastructure.Persistence.Configurations
 {
     public class ClientBusinessRelationshipConfiguration
-    : IEntityTypeConfiguration<ClientBusinessRelationship>
+        : IEntityTypeConfiguration<ClientBusinessRelationship>
     {
-        public void Configure(
-            EntityTypeBuilder<ClientBusinessRelationship> builder)
+        public void Configure(EntityTypeBuilder<ClientBusinessRelationship> builder)
         {
             builder.ToTable("ClientBusinessRelationships");
 
@@ -18,23 +16,8 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Id)
                 .ValueGeneratedNever();
 
-            builder.Property(x => x.TenantId)
-                .IsRequired();
-
-            builder.Property(x => x.ClientId)
-                .IsRequired();
-
-            builder.Property(x => x.BusinessId)
-                .IsRequired();
-
             builder.Property(x => x.RelationshipType)
-                .IsRequired()
                 .HasConversion<int>();
-
-            builder.Property(x => x.StartDate)
-                .IsRequired();
-
-            builder.Property(x => x.EndDate);
 
             builder.HasIndex(x => new
             {

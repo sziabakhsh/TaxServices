@@ -4,7 +4,6 @@ using TaxServices.Domain.Clients;
 
 namespace TaxServices.Infrastructure.Persistence.Configurations
 {
-
     public class IndividualProfileConfiguration
         : IEntityTypeConfiguration<IndividualProfile>
     {
@@ -17,26 +16,19 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Id)
                 .ValueGeneratedNever();
 
-            builder.Property(x => x.TenantId)
-                .IsRequired();
+            builder.HasIndex(x => new
+            {
+                x.TenantId,
+                x.ClientId
+            })
+            .IsUnique();
 
-            builder.Property(x => x.ClientId)
-                .IsRequired();
-
-            builder.Property(x => x.SIN)
-                .IsRequired()
-                .HasMaxLength(9);
-
-            builder.Property(x => x.DateOfBirth);
-
-            builder.Property(x => x.Address)
-                .HasMaxLength(500);
-
-            builder.HasIndex(x => new { x.TenantId, x.ClientId })
-                .IsUnique();
-
-            builder.HasIndex(x => new { x.TenantId, x.SIN })
-                .IsUnique();
+            builder.HasIndex(x => new
+            {
+                x.TenantId,
+                x.SIN
+            })
+            .IsUnique();
 
             builder.HasOne(x => x.Client)
                 .WithOne(x => x.IndividualProfile)
