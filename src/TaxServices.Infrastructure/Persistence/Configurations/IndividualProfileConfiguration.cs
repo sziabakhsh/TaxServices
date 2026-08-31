@@ -29,9 +29,6 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.DateOfBirth);
 
-            builder.Property(x => x.PhoneNumber)
-                .HasMaxLength(30);
-
             builder.Property(x => x.Address)
                 .HasMaxLength(500);
 

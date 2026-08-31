@@ -17,7 +17,6 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>
     {
     }
 
-
     public DbSet<Client> Clients => Set<Client>();
 
     public DbSet<IndividualProfile> IndividualProfiles => Set<IndividualProfile>();
