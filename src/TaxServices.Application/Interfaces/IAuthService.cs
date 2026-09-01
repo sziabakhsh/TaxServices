@@ -7,5 +7,7 @@ namespace TaxServices.Application.Interfaces
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
+        Task<CurrentUserResponse> GetCurrentUserAsync(string userId);
+        Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
     }
 }

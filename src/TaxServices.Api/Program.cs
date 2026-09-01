@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using TaxServices.Api.Exceptions;
 using TaxServices.Application;
-using TaxServices.Domain.Services;
 using TaxServices.Infrastructure;
+using TaxServices.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,14 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<IdentityRole>>();
+
+    await IdentitySeeder.SeedRolesAsync(roleManager);
+}
 
 app.UseExceptionHandler();
 

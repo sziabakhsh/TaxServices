@@ -24,16 +24,16 @@ namespace TaxServices.Infrastructure.Identity
 
         public async Task<string> GenerateTokenAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user is null)
                 throw new InvalidOperationException("User not found.");
 
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Sub, user.Id),
                 new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Name, user.UserName ?? string.Empty),
                 new("tenant_id", user.TenantId.ToString())
             };
