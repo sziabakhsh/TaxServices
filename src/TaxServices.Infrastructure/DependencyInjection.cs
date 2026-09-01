@@ -8,7 +8,6 @@ using System.Text;
 using TaxServices.Application.Interfaces;
 using TaxServices.Infrastructure.Identity;
 using TaxServices.Infrastructure.Identity.Services;
-using TaxServices.Infrastructure.Persistence.Repositories;
 using TaxServices.Infrastructure.Persistence;
 
 namespace TaxServices.Infrastructure
@@ -80,10 +79,9 @@ namespace TaxServices.Infrastructure
                 });
 
             // Application Services
+            services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

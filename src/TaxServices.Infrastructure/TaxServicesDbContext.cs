@@ -5,10 +5,11 @@ using TaxServices.Domain.Clients;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Services;
 using TaxServices.Infrastructure.Identity;
+using TaxServices.Application.Interfaces;
 
 namespace TaxServices.Infrastructure;
 
-public class TaxServicesDbContext : IdentityDbContext<AppUser>
+public class TaxServicesDbContext :  IdentityDbContext<AppUser>, ITaxServicesDbContext
 {
 
     public TaxServicesDbContext(

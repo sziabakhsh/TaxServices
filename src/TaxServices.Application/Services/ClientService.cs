@@ -1,4 +1,5 @@
-﻿using TaxServices.Application.DTOs.Clients;
+﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.DTOs.Clients;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Validation;
 using TaxServices.Domain.Clients;
@@ -7,28 +8,24 @@ namespace TaxServices.Application.Services
 {
     public class ClientService : IClientService
     {
-        private readonly IClientRepository _clientRepository;
+        private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
-        private readonly IUnitOfWork _unitOfWork;
 
         public ClientService(
-            IClientRepository clientRepository,
-            ITenantContext tenantContext,
-            IUnitOfWork unitOfWork)
+            ITaxServicesDbContext context,
+            ITenantContext tenantContext)
         {
-            _clientRepository = clientRepository;
+            _context = context;
             _tenantContext = tenantContext;
-            _unitOfWork = unitOfWork;
         }
-
 
         public async Task<ClientDto?> GetByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default)
         {
-            var client = await _clientRepository.GetByIdAsync(
-                id,
-                _tenantContext.TenantId,
+            var client = await _context.Clients.FirstOrDefaultAsync(
+                c => c.Id == id &&
+                c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
 
             return client == null
@@ -39,9 +36,9 @@ namespace TaxServices.Application.Services
         public async Task<IReadOnlyList<ClientDto>> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
-            var clients = await _clientRepository.GetAllAsync(
-                _tenantContext.TenantId,
-                cancellationToken);
+            var clients = await _context.Clients.Where(
+                c => c.TenantId == _tenantContext.TenantId).ToListAsync(
+                    cancellationToken);
 
             return clients
                 .Select(MapToDto)
@@ -54,9 +51,9 @@ namespace TaxServices.Application.Services
         {
             ClientValidator.Validate(request);
 
-            var emailExists = await _clientRepository.ExistsByEmailAsync(
-                request.Email,
-                _tenantContext.TenantId,
+            var emailExists = await _context.Clients.AnyAsync(
+                c => c.Email == request.Email
+                && c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
 
             if (emailExists)
@@ -89,11 +86,11 @@ namespace TaxServices.Application.Services
                 };
             }
 
-            await _clientRepository.AddAsync(
+            await _context.Clients.AddAsync(
                 client,
                 cancellationToken);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return MapToDto(client);
         }
@@ -105,9 +102,9 @@ namespace TaxServices.Application.Services
         {
             ClientValidator.Validate(request);
 
-            var client = await _clientRepository.GetByIdAsync(
-                id,
-                _tenantContext.TenantId,
+            var client = await _context.Clients.FirstOrDefaultAsync(
+                c => c.Id == id
+                && c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
 
             if (client == null)
@@ -121,9 +118,9 @@ namespace TaxServices.Application.Services
                     StringComparison.OrdinalIgnoreCase))
             {
                 var emailExists =
-                    await _clientRepository.ExistsByEmailAsync(
-                        request.Email,
-                        _tenantContext.TenantId,
+                    await _context.Clients.AnyAsync(
+                        c => c.Email == request.Email
+                        && c.TenantId == _tenantContext.TenantId,
                         cancellationToken);
 
                 if (emailExists)
@@ -166,11 +163,7 @@ namespace TaxServices.Application.Services
                     request.IndividualProfile.Address.Trim();
             }
 
-            await _clientRepository.UpdateAsync(
-                client,
-                cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return MapToDto(client);
         }
@@ -179,9 +172,8 @@ namespace TaxServices.Application.Services
             Guid id,
             CancellationToken cancellationToken = default)
         {
-            var client = await _clientRepository.GetByIdAsync(
-                id,
-                _tenantContext.TenantId,
+            var client = await _context.Clients.FirstOrDefaultAsync(
+                c => c.Id == id && c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
 
             if (client == null)
@@ -191,11 +183,7 @@ namespace TaxServices.Application.Services
 
             client.IsActive = false;
 
-            await _clientRepository.UpdateAsync(
-                client,
-                cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return true;
         }
@@ -204,9 +192,8 @@ namespace TaxServices.Application.Services
             Guid id,
             CancellationToken cancellationToken = default)
         {
-            var client = await _clientRepository.GetByIdAsync(
-                id,
-                _tenantContext.TenantId,
+            var client = await _context.Clients.FirstOrDefaultAsync(
+                c => c.Id == id && c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
 
             if (client == null)
@@ -216,11 +203,7 @@ namespace TaxServices.Application.Services
 
             client.IsActive = true;
 
-            await _clientRepository.UpdateAsync(
-                client,
-                cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return true;
         }
