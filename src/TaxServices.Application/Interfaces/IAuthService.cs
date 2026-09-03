@@ -1,5 +1,6 @@
 ﻿
 using TaxServices.Application.DTOs.Authentication;
+using TaxServices.Application.DTOs.Employees;
 
 namespace TaxServices.Application.Interfaces
 {
@@ -9,5 +10,6 @@ namespace TaxServices.Application.Interfaces
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<CurrentUserResponse> GetCurrentUserAsync(string userId);
         Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
+        Task<UserCreatedResponse> CreateUserAsync(NewUserRequestInApp request, CancellationToken cancellationToken = default);
     }
 }

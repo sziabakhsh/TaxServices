@@ -1,10 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-using TaxServices.Domain.Cases;
-using TaxServices.Domain.Common;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaxServices.Domain.Employees
+namespace TaxServices.Application.DTOs.Employees
 {
-    public class Employee : Entity
+    public class CreateEmployeeRequest
     {
         [Required]
         [MaxLength(100)]
@@ -24,11 +22,5 @@ namespace TaxServices.Domain.Employees
 
         [MaxLength(100)]
         public string JobTitle { get; set; } = string.Empty;
-
-        public bool IsActive { get; set; }
-
-        public string? UserId { get; set; }
-        public ICollection<TaxCase> TaxCases { get; set; }
-            = new List<TaxCase>();
     }
 }

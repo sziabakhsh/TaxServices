@@ -3,6 +3,7 @@ using TaxServices.Application.DTOs.Clients;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Validation;
 using TaxServices.Domain.Clients;
+using TaxServices.Application.DTOs.Authentication;
 
 namespace TaxServices.Application.Services
 {
@@ -10,20 +11,25 @@ namespace TaxServices.Application.Services
     {
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
+        private readonly IAuthService _authService;
 
         public ClientService(
             ITaxServicesDbContext context,
-            ITenantContext tenantContext)
+            ITenantContext tenantContext,
+            IAuthService authService)
         {
             _context = context;
             _tenantContext = tenantContext;
+            _authService = authService;
         }
 
         public async Task<ClientDto?> GetByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default)
         {
-            var client = await _context.Clients.FirstOrDefaultAsync(
+            var client = await _context.Clients
+                .Include(c => c.IndividualProfile)
+                .FirstOrDefaultAsync(
                 c => c.Id == id &&
                 c.TenantId == _tenantContext.TenantId,
                 cancellationToken);
@@ -36,9 +42,9 @@ namespace TaxServices.Application.Services
         public async Task<IReadOnlyList<ClientDto>> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
-            var clients = await _context.Clients.Where(
-                c => c.TenantId == _tenantContext.TenantId).ToListAsync(
-                    cancellationToken);
+            var clients = await _context.Clients
+                .Include(c => c.IndividualProfile)
+                .Where(c => c.TenantId == _tenantContext.TenantId).ToListAsync(cancellationToken);
 
             return clients
                 .Select(MapToDto)
@@ -62,6 +68,16 @@ namespace TaxServices.Application.Services
                     "A client with this email already exists.");
             }
 
+            NewUserRequestInApp newUser = new NewUserRequestInApp
+            {
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Role = "Client"
+            };
+            var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
+
+
             var client = new Client
             {
                 Id = Guid.NewGuid(),
@@ -70,7 +86,8 @@ namespace TaxServices.Application.Services
                 LastName = request.LastName.Trim(),
                 Email = request.Email.Trim(),
                 PhoneNumber = request.PhoneNumber.Trim(),
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                UserId = userCreatedResponse.UserId
             };
 
             if (request.IndividualProfile != null)
@@ -91,7 +108,7 @@ namespace TaxServices.Application.Services
                 cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
-
+                        
             return MapToDto(client);
         }
 
@@ -168,9 +185,7 @@ namespace TaxServices.Application.Services
             return MapToDto(client);
         }
 
-        public async Task<bool> DeactivateAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients.FirstOrDefaultAsync(
                 c => c.Id == id && c.TenantId == _tenantContext.TenantId,
@@ -188,9 +203,7 @@ namespace TaxServices.Application.Services
             return true;
         }
 
-        public async Task<bool> ActivateAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> ActivateAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients.FirstOrDefaultAsync(
                 c => c.Id == id && c.TenantId == _tenantContext.TenantId,
@@ -231,6 +244,20 @@ namespace TaxServices.Application.Services
                                 client.IndividualProfile.Address
                         }
             };
+        }
+
+        public async Task<ClientDto?> GetCurrentAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var client = await _context.Clients
+                .Include(c => c.IndividualProfile)
+                .FirstOrDefaultAsync(
+                    c => c.UserId == userId &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
+
+            return client == null
+                ? null
+                : MapToDto(client);
         }
     }
 }

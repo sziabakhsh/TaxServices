@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
+using TaxServices.Domain.Clients;
 
 namespace TaxServices.Infrastructure.Identity.Services
 {
@@ -11,30 +13,44 @@ namespace TaxServices.Infrastructure.Identity.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IOptions<JwtOptions> _jwtOptions;
+        private readonly ITaxServicesDbContext _context;
+        private readonly ITenantContext _tenantContext;
+
+        // فعلاً Tenant واقعی نداریم.
+        // Guid.Empty به عنوان Default Tenant استفاده می‌شود.
+       // private static readonly Guid DefaultTenantId = Guid.Empty;
 
         public AuthService(
             UserManager<AppUser> userManager,
             IJwtTokenService jwtTokenService,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            ITaxServicesDbContext context,
+            ITenantContext tenantContext)
         {
             _userManager = userManager;
             _jwtTokenService = jwtTokenService;
             _jwtOptions = jwtOptions;
+            _context = context;
+            _tenantContext = tenantContext;
         }
 
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
+        public async Task<AuthResponse> RegisterAsync(
+            RegisterRequest request)
         {
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            var existingUser =
+                await _userManager.FindByEmailAsync(request.Email);
 
             if (existingUser is not null)
-                throw new DuplicateUserException("User already exists.");
+                throw new DuplicateUserException(
+                    "User already exists.");
 
             var user = new AppUser
             {
-                UserName = request.Email,
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName
+                UserName = request.Email.Trim(),
+                Email = request.Email.Trim(),
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
+                TenantId = _tenantContext.TenantId  
             };
 
             var result = await _userManager.CreateAsync(
@@ -47,10 +63,12 @@ namespace TaxServices.Infrastructure.Identity.Services
                     ", ",
                     result.Errors.Select(e => e.Description));
 
-                throw new InvalidOperationException(errors);
+                throw new ValidationException(errors);
             }
 
-            var roleResult = await _userManager.AddToRoleAsync(user, "Client");
+            var roleResult = await _userManager.AddToRoleAsync(
+                user,
+                "Client");
 
             if (!roleResult.Succeeded)
             {
@@ -61,35 +79,60 @@ namespace TaxServices.Infrastructure.Identity.Services
                 throw new InvalidOperationException(errors);
             }
 
-            var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                TenantId = _tenantContext.TenantId,
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = string.Empty,
+                IsActive = true
+            };
+
+            await _context.Clients.AddAsync(client);
+
+            await _context.SaveChangesAsync();
+
+            var token = await _jwtTokenService.GenerateTokenAsync(
+                user.Id);
 
             return new AuthResponse
             {
                 AccessToken = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.Value.ExpirationInMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(
+                    _jwtOptions.Value.ExpirationInMinutes)
             };
         }
 
-        public async Task<AuthResponse> LoginAsync(LoginRequest request)
+        public async Task<AuthResponse> LoginAsync(
+            LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user =
+                await _userManager.FindByEmailAsync(request.Email);
 
             if (user is null)
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidOperationException(
+                    "Invalid email or password.");
 
-            var passwordValid = await _userManager.CheckPasswordAsync(
-                user,
-                request.Password);
+            var passwordValid =
+                await _userManager.CheckPasswordAsync(
+                    user,
+                    request.Password);
 
             if (!passwordValid)
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidOperationException(
+                    "Invalid email or password.");
 
-            var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
+            var token =
+                await _jwtTokenService.GenerateTokenAsync(user.Id);
 
             return new AuthResponse
             {
                 AccessToken = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.Value.ExpirationInMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(
+                    _jwtOptions.Value.ExpirationInMinutes)
             };
         }
 
@@ -98,7 +141,8 @@ namespace TaxServices.Infrastructure.Identity.Services
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user is null)
-                throw new InvalidOperationException("User not found.");
+                throw new InvalidOperationException(
+                    "User not found.");
 
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -112,14 +156,13 @@ namespace TaxServices.Infrastructure.Identity.Services
             };
         }
 
-        public async Task ChangePasswordAsync(
-    string userId,
-    ChangePasswordRequest request)
+        public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user is null)
-                throw new InvalidOperationException("User not found.");
+                throw new InvalidOperationException(
+                    "User not found.");
 
             var result = await _userManager.ChangePasswordAsync(
                 user,
@@ -132,8 +175,69 @@ namespace TaxServices.Infrastructure.Identity.Services
                     ", ",
                     result.Errors.Select(e => e.Description));
 
+                throw new ValidationException(errors);
+            }
+        }
+
+        public async Task<UserCreatedResponse> CreateUserAsync(NewUserRequestInApp request, CancellationToken cancellationToken = default)
+        {
+            var existingUser =
+                await _userManager.FindByEmailAsync(request.Email);
+
+            if (existingUser is not null)
+                throw new DuplicateUserException(
+                    "User already exists.");
+
+            var user = new AppUser
+            {
+                UserName = request.Email.Trim(),
+                Email = request.Email.Trim(),
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
+                TenantId = _tenantContext.TenantId
+            };
+
+            var temporaryPassword = GenerateTemporaryPassword();
+
+            var result = await _userManager.CreateAsync(
+                user,
+                temporaryPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    result.Errors.Select(e => e.Description));
+
+                throw new ValidationException(errors);
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(
+                user,
+                request.Role);
+
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    roleResult.Errors.Select(e => e.Description));
+
                 throw new InvalidOperationException(errors);
             }
+
+            var token = await _jwtTokenService.GenerateTokenAsync(
+                user.Id);
+
+            return new UserCreatedResponse
+            {
+                UserId = user.Id,
+                TemporaryPassword = temporaryPassword
+            };
+        }
+
+        private static string GenerateTemporaryPassword()
+        {
+            return $"Ts!{Guid.NewGuid():N}aA1";
         }
     }
 }

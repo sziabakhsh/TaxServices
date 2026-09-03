@@ -1,24 +1,23 @@
-﻿
-using TaxServices.Application.DTOs.Clients;
+﻿using TaxServices.Application.DTOs.Employees;
 
 namespace TaxServices.Application.Interfaces
 {
-    public interface IClientService
+    public interface IEmployeeService
     {
-        Task<ClientDto?> GetByIdAsync(
+        Task<EmployeeDto?> GetByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default);
 
-        Task<IReadOnlyList<ClientDto>> GetAllAsync(
+        Task<IReadOnlyList<EmployeeDto>> GetAllAsync(
             CancellationToken cancellationToken = default);
 
-        Task<ClientDto> CreateAsync(
-            CreateClientRequest request,
+        Task<EmployeeDto> CreateAsync(
+            CreateEmployeeRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ClientDto?> UpdateAsync(
+        Task<EmployeeDto?> UpdateAsync(
             Guid id,
-            UpdateClientRequest request,
+            UpdateEmployeeRequest request,
             CancellationToken cancellationToken = default);
 
         Task<bool> DeactivateAsync(
@@ -28,7 +27,5 @@ namespace TaxServices.Application.Interfaces
         Task<bool> ActivateAsync(
             Guid id,
             CancellationToken cancellationToken = default);
-
-        Task<ClientDto?> GetCurrentAsync(string userId, CancellationToken cancellationToken = default);
     }
 }

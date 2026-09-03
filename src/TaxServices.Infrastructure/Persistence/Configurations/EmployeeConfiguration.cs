@@ -22,6 +22,12 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
             })
             .IsUnique();
 
+            builder.HasIndex(x => new
+            {
+                x.TenantId,
+                x.UserId
+            });
+
             builder.HasMany(x => x.TaxCases)
                 .WithOne(x => x.Employee)
                 .HasForeignKey(x => x.EmployeeId)

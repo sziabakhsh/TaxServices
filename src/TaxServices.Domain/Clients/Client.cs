@@ -23,8 +23,8 @@ namespace TaxServices.Domain.Clients
         public string PhoneNumber { get; set; } = string.Empty;
 
         public bool IsActive { get; set; }
-
-        public IndividualProfile IndividualProfile { get; set; } = null!;
+        public string? UserId { get; set; }
+        public IndividualProfile? IndividualProfile { get; set; } 
 
         public ICollection<ClientBusinessRelationship> BusinessRelationships { get; set; }
             = new List<ClientBusinessRelationship>();

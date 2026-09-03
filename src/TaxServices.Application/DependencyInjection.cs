@@ -2,6 +2,7 @@
 using TaxServices.Api.Services;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Services;
+using TaxServices.Infrastructure.Services;
 namespace TaxServices.Application;
 
 public static class DependencyInjection
@@ -12,6 +13,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
 
         return services;
     }

@@ -36,6 +36,13 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
                 .WithOne(x => x.Client)
                 .HasForeignKey(x => x.ClientId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(x => new
+            {
+                x.TenantId,
+                x.UserId
+            });
+
         }
     }
 }
