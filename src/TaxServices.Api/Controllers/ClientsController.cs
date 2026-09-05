@@ -8,7 +8,6 @@ namespace TaxServices.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class ClientsController : ControllerBase
     {
         private readonly IClientService _clientService;
@@ -42,7 +41,6 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Employee")]
         public async Task<ActionResult<ClientDto>> Create(
             [FromBody] CreateClientRequest request,
             CancellationToken cancellationToken)

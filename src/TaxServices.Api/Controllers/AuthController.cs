@@ -19,14 +19,13 @@ namespace TaxServices.Api.Controllers
             _authService = authService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(
-            RegisterRequest request)
-        {
-            var result = await _authService.RegisterAsync(request);
+        //[HttpPost("register")]
+        //public async Task<IActionResult> Register(RegisterRequest request)
+        //{
+        //    var result = await _authService.RegisterAsync(request);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)

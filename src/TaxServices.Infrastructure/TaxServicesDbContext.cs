@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Clients;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Services;
 using TaxServices.Infrastructure.Identity;
-using TaxServices.Application.Interfaces;
 
 namespace TaxServices.Infrastructure;
 
-public class TaxServicesDbContext :  IdentityDbContext<AppUser>, ITaxServicesDbContext
+public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbContext
 {
 
     public TaxServicesDbContext(
@@ -19,18 +20,11 @@ public class TaxServicesDbContext :  IdentityDbContext<AppUser>, ITaxServicesDbC
     }
 
     public DbSet<Client> Clients => Set<Client>();
-
     public DbSet<IndividualProfile> IndividualProfiles => Set<IndividualProfile>();
-
     public DbSet<Business> Businesses => Set<Business>();
-
-    public DbSet<ClientBusinessRelationship> ClientBusinessRelationships
-        => Set<ClientBusinessRelationship>();
-
+    public DbSet<ClientBusinessRelationship> ClientBusinessRelationships => Set<ClientBusinessRelationship>();
     public DbSet<Employee> Employees => Set<Employee>();
-
     public DbSet<Service> Services => Set<Service>();
-
     public DbSet<TaxCase> TaxCases => Set<TaxCase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,4 +35,8 @@ public class TaxServicesDbContext :  IdentityDbContext<AppUser>, ITaxServicesDbC
             typeof(TaxServicesDbContext).Assembly);
     }
 
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return await Database.BeginTransactionAsync(cancellationToken);
+    }
 }

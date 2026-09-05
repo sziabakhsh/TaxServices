@@ -21,13 +21,10 @@ public class TenantContext : ITenantContext
                 .FindFirst("tenant_id")?
                 .Value;
 
-            if (!Guid.TryParse(tenantId, out var result))
-            {
-                throw new UnauthorizedAccessException(
-                    "Tenant information is missing.");
-            }
+            if (Guid.TryParse(tenantId, out var result))
+                return result;
 
-            return result;
+            return Guid.Empty;
         }
     }
 }

@@ -74,29 +74,43 @@ namespace TaxServices.Infrastructure.Services
                 LastName = request.LastName,
                 Role = "Employee"
             };
-            var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
 
 
-            var employee = new Employee
+            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                Id = Guid.NewGuid(),
-                TenantId = _tenantContext.TenantId,
-                FirstName = request.FirstName.Trim(),
-                LastName = request.LastName.Trim(),
-                Email = email,
-                PhoneNumber = request.PhoneNumber.Trim(),
-                JobTitle = request.JobTitle.Trim(),
-                IsActive = true,
-                UserId = userCreatedResponse.UserId
-            };
+                var userCreatedResponse =
+                    await _authService.CreateUserAsync(
+                        newUser,
+                        cancellationToken);
 
-            await _context.Employees.AddAsync(
-                employee,
-                cancellationToken);
+                var employee = new Employee
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = _tenantContext.TenantId,
+                    FirstName = request.FirstName.Trim(),
+                    LastName = request.LastName.Trim(),
+                    Email = email,
+                    PhoneNumber = request.PhoneNumber.Trim(),
+                    JobTitle = request.JobTitle.Trim(),
+                    IsActive = true,
+                    UserId = userCreatedResponse.UserId
+                };
 
-            await _context.SaveChangesAsync(cancellationToken);
-                    
-            return MapToDto(employee);
+                await _context.Employees.AddAsync(employee, cancellationToken);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return MapToDto(employee);
+            }
+            catch(Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public async Task<EmployeeDto?> UpdateAsync(

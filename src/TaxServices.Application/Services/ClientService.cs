@@ -75,41 +75,57 @@ namespace TaxServices.Application.Services
                 LastName = request.LastName,
                 Role = "Client"
             };
-            var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
 
 
-            var client = new Client
+            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                Id = Guid.NewGuid(),
-                TenantId = _tenantContext.TenantId,
-                FirstName = request.FirstName.Trim(),
-                LastName = request.LastName.Trim(),
-                Email = request.Email.Trim(),
-                PhoneNumber = request.PhoneNumber.Trim(),
-                IsActive = request.IsActive,
-                UserId = userCreatedResponse.UserId
-            };
 
-            if (request.IndividualProfile != null)
-            {
-                client.IndividualProfile = new IndividualProfile
+                var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
+
+
+                var client = new Client
                 {
                     Id = Guid.NewGuid(),
                     TenantId = _tenantContext.TenantId,
-                    ClientId = client.Id,
-                    SIN = request.IndividualProfile.SIN.Trim(),
-                    DateOfBirth = request.IndividualProfile.DateOfBirth,
-                    Address = request.IndividualProfile.Address.Trim()
+                    FirstName = request.FirstName.Trim(),
+                    LastName = request.LastName.Trim(),
+                    Email = request.Email.Trim(),
+                    PhoneNumber = request.PhoneNumber.Trim(),
+                    IsActive = request.IsActive,
+                    UserId = userCreatedResponse.UserId
                 };
+
+                if (request.IndividualProfile != null)
+                {
+                    client.IndividualProfile = new IndividualProfile
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = _tenantContext.TenantId,
+                        ClientId = client.Id,
+                        SIN = request.IndividualProfile.SIN.Trim(),
+                        DateOfBirth = request.IndividualProfile.DateOfBirth,
+                        Address = request.IndividualProfile.Address.Trim()
+                    };
+                }
+
+                await _context.Clients.AddAsync(
+                    client,
+                    cancellationToken);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return MapToDto(client);
             }
+            catch
+            {
 
-            await _context.Clients.AddAsync(
-                client,
-                cancellationToken);
-
-            await _context.SaveChangesAsync(cancellationToken);
-                        
-            return MapToDto(client);
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public async Task<ClientDto?> UpdateAsync(

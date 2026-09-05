@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using TaxServices.Application.Interfaces;
 
-namespace TaxServices.Infrastructure.Identity
+namespace TaxServices.Infrastructure.Identity.Services
 {
     public class JwtTokenService : IJwtTokenService
     {
