@@ -1,10 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TaxServices.Domain.Common;
 
-namespace TaxServices.Domain.Services
+namespace TaxServices.Application.DTOs.Services
 {
-    public class Service : Entity
+    public class CreateServiceRequest
     {
         [Required]
         [MaxLength(150)]
@@ -15,7 +14,5 @@ namespace TaxServices.Domain.Services
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? BasePrice { get; set; }
-
-        public bool IsActive { get; set; } = true;
     }
 }
