@@ -41,38 +41,32 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ClientDto>> Create(
-            [FromBody] CreateClientRequest request,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<ClientCreatedResponse>> Create([FromBody] CreateClientRequest request, CancellationToken cancellationToken)
         {
-            var client = await _clientService.CreateAsync(
-                request,
-                cancellationToken);
+            var response = await _clientService.CreateAsync(request, cancellationToken);
 
-            return CreatedAtAction(nameof(GetById), new { id = client.Id }, client);
+            return CreatedAtAction(nameof(GetById), new { id = response.Client.Id }, response);
         }
 
 
-        [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<ClientDto>> Update(Guid id, UpdateClientRequest request, CancellationToken cancellationToken)
-        {
-            var client = await _clientService.UpdateAsync(
-                id,
-                request,
-                cancellationToken);
+        //[HttpPut("{id:guid}")]
+        //[Authorize(Roles = "Admin,Employee")]
+        //public async Task<ActionResult<ClientDto>> Update(Guid id, UpdateClientRequest request, CancellationToken cancellationToken)
+        //{
+        //    var client = await _clientService.UpdateAsync(
+        //        id,
+        //        request,
+        //        cancellationToken);
 
-            if (client is null)
-                return NotFound();
+        //    if (client is null)
+        //        return NotFound();
 
-            return Ok(client);
-        }
+        //    return Ok(client);
+        //}
 
         [HttpPatch("{id:guid}/activate")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> Activate(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
         {
             var result = await _clientService.ActivateAsync(
                 id,
@@ -100,14 +94,33 @@ namespace TaxServices.Api.Controllers
         [Authorize(Roles = "Client")]
         public async Task<ActionResult<ClientDto>> GetCurrent(CancellationToken cancellationToken)
         {
-            var userId = User.FindFirstValue(
-                ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var client = await _clientService.GetCurrentAsync(
                 userId,
+                cancellationToken);
+
+            if (client is null)
+                return NotFound();
+
+            return Ok(client);
+        }
+
+        [Authorize(Roles = "Client")]
+        [HttpPut("me")]
+        public async Task<ActionResult<ClientDto>> UpdateCurrent([FromBody] UpdateClientRequest request, CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            var client = await _clientService.UpdateAsync(
+                Guid.Parse(userId),
+                request,
                 cancellationToken);
 
             if (client is null)

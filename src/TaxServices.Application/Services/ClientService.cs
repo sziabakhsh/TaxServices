@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Clients;
+using TaxServices.Application.DTOs.Employees;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Validation;
 using TaxServices.Domain.Clients;
-using TaxServices.Application.DTOs.Authentication;
 
 namespace TaxServices.Application.Services
 {
@@ -23,8 +24,7 @@ namespace TaxServices.Application.Services
             _authService = authService;
         }
 
-        public async Task<ClientDto?> GetByIdAsync(
-            Guid id,
+        public async Task<ClientDto?> GetByIdAsync(Guid id,
             CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients
@@ -39,8 +39,7 @@ namespace TaxServices.Application.Services
                 : MapToDto(client);
         }
 
-        public async Task<IReadOnlyList<ClientDto>> GetAllAsync(
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ClientDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var clients = await _context.Clients
                 .Include(c => c.IndividualProfile)
@@ -51,16 +50,11 @@ namespace TaxServices.Application.Services
                 .ToList();
         }
 
-        public async Task<ClientDto> CreateAsync(
-            CreateClientRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<ClientCreatedResponse> CreateAsync(CreateClientRequest request, CancellationToken cancellationToken = default)
         {
             ClientValidator.Validate(request);
 
-            var emailExists = await _context.Clients.AnyAsync(
-                c => c.Email == request.Email
-                && c.TenantId == _tenantContext.TenantId,
-                cancellationToken);
+            var emailExists = await _context.Clients.AnyAsync(c => c.Email == request.Email && c.TenantId == _tenantContext.TenantId, cancellationToken);
 
             if (emailExists)
             {
@@ -81,9 +75,7 @@ namespace TaxServices.Application.Services
 
             try
             {
-
                 var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
-
 
                 var client = new Client
                 {
@@ -110,15 +102,19 @@ namespace TaxServices.Application.Services
                     };
                 }
 
-                await _context.Clients.AddAsync(
-                    client,
-                    cancellationToken);
+                await _context.Clients.AddAsync(client, cancellationToken);
 
                 await _context.SaveChangesAsync(cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
 
-                return MapToDto(client);
+                return new ClientCreatedResponse
+                {
+                    Client = MapToDto(client),
+                    TemporaryPassword = userCreatedResponse.TemporaryPassword
+                };
+
+                //return MapToDto(client);
             }
             catch
             {
@@ -128,77 +124,74 @@ namespace TaxServices.Application.Services
             }
         }
 
-        public async Task<ClientDto?> UpdateAsync(
-            Guid id,
-            UpdateClientRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<ClientDto?> UpdateAsync(Guid id, UpdateClientRequest request, CancellationToken cancellationToken = default)
         {
-            ClientValidator.Validate(request);
+            var client = await _context.Clients
+        .Include(c => c.IndividualProfile)
+        .FirstOrDefaultAsync(
+            c => c.UserId == request.UserId &&
+                 c.TenantId == _tenantContext.TenantId,
+            cancellationToken);
 
-            var client = await _context.Clients.FirstOrDefaultAsync(
-                c => c.Id == id
-                && c.TenantId == _tenantContext.TenantId,
-                cancellationToken);
-
-            if (client == null)
-            {
+            if (client is null)
                 return null;
-            }
 
-            if (!string.Equals(
-                    client.Email,
-                    request.Email.Trim(),
-                    StringComparison.OrdinalIgnoreCase))
+            await using var transaction =
+                await _context.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                var emailExists =
-                    await _context.Clients.AnyAsync(
-                        c => c.Email == request.Email
-                        && c.TenantId == _tenantContext.TenantId,
-                        cancellationToken);
+                // Update Client
+                client.FirstName = request.FirstName.Trim();
+                client.LastName = request.LastName.Trim();
+                client.PhoneNumber = request.PhoneNumber.Trim();
 
-                if (emailExists)
+                // Update IndividualProfile
+                if (client.IndividualProfile is null)
                 {
-                    throw new InvalidOperationException(
-                        "A client with this email already exists.");
+                    client.IndividualProfile = new IndividualProfile
+                    {
+                        Id = Guid.NewGuid(),
+                        ClientId = client.Id,
+                        SIN = request.IndividualProfile.SIN.Trim(),
+                        DateOfBirth = request.IndividualProfile.DateOfBirth,
+                        Address = request.IndividualProfile.Address.Trim()
+                    };
                 }
-            }
-
-            client.FirstName = request.FirstName.Trim();
-            client.LastName = request.LastName.Trim();
-            client.Email = request.Email.Trim();
-            client.PhoneNumber = request.PhoneNumber.Trim();
-
-            if (request.IndividualProfile == null)
-            {
-                client.IndividualProfile = null;
-            }
-            else if (client.IndividualProfile == null)
-            {
-                client.IndividualProfile = new IndividualProfile
+                else
                 {
-                    Id = Guid.NewGuid(),
-                    TenantId = _tenantContext.TenantId,
-                    ClientId = client.Id,
-                    SIN = request.IndividualProfile.SIN.Trim(),
-                    DateOfBirth = request.IndividualProfile.DateOfBirth,
-                    Address = request.IndividualProfile.Address.Trim()
-                };
+                    client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
+                    client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
+                    client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+                }
+
+                // Sync FirstName / LastName with Identity user
+                if (!string.IsNullOrWhiteSpace(client.UserId))
+                {
+                    var updatedUser = new UpdatedUserRequestInApp
+                    {
+                        UserId = client.UserId,
+                        Email = client.Email,
+                        FirstName = client.FirstName,
+                        LastName = client.LastName
+                    };
+
+                    await _authService.UpdateUserAsync(
+                        updatedUser,
+                        cancellationToken);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return MapToDto(client);
             }
-            else
+            catch
             {
-                client.IndividualProfile.SIN =
-                    request.IndividualProfile.SIN.Trim();
-
-                client.IndividualProfile.DateOfBirth =
-                    request.IndividualProfile.DateOfBirth;
-
-                client.IndividualProfile.Address =
-                    request.IndividualProfile.Address.Trim();
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
             }
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return MapToDto(client);
         }
 
         public async Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default)

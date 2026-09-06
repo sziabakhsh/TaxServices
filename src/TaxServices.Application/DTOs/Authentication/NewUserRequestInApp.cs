@@ -4,7 +4,6 @@ namespace TaxServices.Application.DTOs.Authentication
 {
     public class NewUserRequestInApp
     {
-
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
@@ -19,6 +18,5 @@ namespace TaxServices.Application.DTOs.Authentication
         [Required]
         [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
-
     }
 }

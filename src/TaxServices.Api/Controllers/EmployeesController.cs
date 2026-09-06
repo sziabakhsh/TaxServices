@@ -19,24 +19,18 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<IReadOnlyList<EmployeeDto>>> GetAll(
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<IReadOnlyList<EmployeeDto>>> GetAll(CancellationToken cancellationToken)
         {
-            var employees = await _employeeService.GetAllAsync(
-                cancellationToken);
+            var employees = await _employeeService.GetAllAsync(cancellationToken);
 
             return Ok(employees);
         }
 
         [HttpGet("{id:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<EmployeeDto>> GetById(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeDto>> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.GetByIdAsync(
-                id,
-                cancellationToken);
+            var employee = await _employeeService.GetByIdAsync(id, cancellationToken);
 
             if (employee is null)
                 return NotFound();
@@ -46,31 +40,18 @@ namespace TaxServices.Api.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<EmployeeDto>> Create(
-            [FromBody] CreateEmployeeRequest request,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeCreatedResponse>> Create([FromBody] CreateEmployeeRequest request, CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.CreateAsync(
-                request,
-                cancellationToken);
+            var response = await _employeeService.CreateAsync(request, cancellationToken);
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = employee.Id },
-                employee);
+            return CreatedAtAction(nameof(GetById), new { id = response.Employee.Id }, response);
         }
 
         [HttpPut("{id:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<EmployeeDto>> Update(
-            Guid id,
-            [FromBody] UpdateEmployeeRequest request,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<EmployeeDto>> Update(Guid id, [FromBody] UpdateEmployeeRequest request, CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.UpdateAsync(
-                id,
-                request,
-                cancellationToken);
+            var employee = await _employeeService.UpdateAsync(id, request, cancellationToken);
 
             if (employee is null)
                 return NotFound();

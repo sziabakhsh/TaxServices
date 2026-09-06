@@ -22,8 +22,7 @@ namespace TaxServices.Infrastructure.Services
             _authService = authService;
         }
 
-        public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var employees = await _context.Employees
                 .AsNoTracking()
@@ -51,21 +50,15 @@ namespace TaxServices.Infrastructure.Services
                 : MapToDto(employee);
         }
 
-        public async Task<EmployeeDto> CreateAsync(
-            CreateEmployeeRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<EmployeeCreatedResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancellationToken = default)
         {
             var email = request.Email.Trim();
 
             var emailExists = await _context.Employees
-                .AnyAsync(
-                    e => e.TenantId == _tenantContext.TenantId &&
-                         e.Email == email,
-                    cancellationToken);
+                .AnyAsync(e => e.TenantId == _tenantContext.TenantId && e.Email == email, cancellationToken);
 
             if (emailExists)
-                throw new InvalidOperationException(
-                    "An employee with this email already exists.");
+                throw new InvalidOperationException("An employee with this email already exists.");
 
             NewUserRequestInApp newUser = new NewUserRequestInApp
             {
@@ -75,15 +68,11 @@ namespace TaxServices.Infrastructure.Services
                 Role = "Employee"
             };
 
-
             await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                var userCreatedResponse =
-                    await _authService.CreateUserAsync(
-                        newUser,
-                        cancellationToken);
+                var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
 
                 var employee = new Employee
                 {
@@ -104,25 +93,24 @@ namespace TaxServices.Infrastructure.Services
 
                 await transaction.CommitAsync(cancellationToken);
 
-                return MapToDto(employee);
+                //return MapToDto(employee);
+                return new EmployeeCreatedResponse
+                {
+                    Employee = MapToDto(employee),
+                    TemporaryPassword = userCreatedResponse.TemporaryPassword
+                };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
         }
 
-        public async Task<EmployeeDto?> UpdateAsync(
-            Guid id,
-            UpdateEmployeeRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<EmployeeDto?> UpdateAsync(Guid id, UpdateEmployeeRequest request, CancellationToken cancellationToken = default)
         {
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(
-                    e => e.Id == id &&
-                         e.TenantId == _tenantContext.TenantId,
-                    cancellationToken);
+                .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == _tenantContext.TenantId, cancellationToken);
 
             if (employee is null)
                 return null;
@@ -130,25 +118,48 @@ namespace TaxServices.Infrastructure.Services
             var email = request.Email.Trim();
 
             var emailExists = await _context.Employees
-                .AnyAsync(
-                    e => e.TenantId == _tenantContext.TenantId &&
-                         e.Email == email &&
-                         e.Id != id,
+                .AnyAsync(e => e.TenantId == _tenantContext.TenantId && e.Email == email && e.Id != id,
                     cancellationToken);
 
             if (emailExists)
                 throw new InvalidOperationException(
                     "An employee with this email already exists.");
 
-            employee.FirstName = request.FirstName.Trim();
-            employee.LastName = request.LastName.Trim();
-            employee.Email = email;
-            employee.PhoneNumber = request.PhoneNumber.Trim();
-            employee.JobTitle = request.JobTitle.Trim();
+            await using var transaction =
+                await _context.BeginTransactionAsync(cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(employee.UserId))
+                {
+                    var updatedUser = new UpdatedUserRequestInApp
+                    {
+                        UserId = employee.UserId,
+                        Email = email,
+                        FirstName = request.FirstName,
+                        LastName = request.LastName
+                    };
 
-            return MapToDto(employee);
+                    await _authService.UpdateUserAsync(updatedUser, cancellationToken);
+                }
+
+                employee.FirstName = request.FirstName.Trim();
+                employee.LastName = request.LastName.Trim();
+                employee.Email = email;
+                employee.PhoneNumber = request.PhoneNumber.Trim();
+                employee.JobTitle = request.JobTitle.Trim();
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return MapToDto(employee);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public async Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default)
