@@ -4,7 +4,6 @@ namespace TaxServices.Application.DTOs.Cases
 {
     public class CreateTaxCaseRequest
     {
-        [Required]
         public Guid ClientId { get; set; }
 
         public Guid? EmployeeId { get; set; }

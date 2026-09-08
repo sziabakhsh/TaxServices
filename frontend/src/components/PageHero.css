@@ -1,0 +1,12 @@
+.page-hero { position:relative; overflow:hidden; padding:4rem 0; background:#edf8fe; }
+.page-hero__inner { position:relative; }
+.page-hero__content { max-width:48rem; }
+.page-hero__shape { position:absolute; border-radius:999px; }
+.page-hero__shape--top { right:-5rem; top:-6rem; width:18rem; height:18rem; background:rgba(8,127,201,.1); }
+.page-hero__shape--bottom { left:2.5rem; bottom:-7rem; width:14rem; height:14rem; background:rgba(18,61,105,.05); }
+.page-hero__eyebrow { display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem; color:var(--color-brand); font-size:.75rem; font-weight:800; letter-spacing:.16em; }
+.page-hero__eyebrow span { width:2.25rem; height:1px; background:var(--color-brand); }
+.page-hero__title { margin:0; color:var(--color-navy); font-size:clamp(2.3rem,5vw,3rem); font-weight:800; line-height:1.08; letter-spacing:-.03em; }
+.page-hero__text { max-width:42rem; margin:1.25rem 0 0; color:#47719a; font-size:1rem; line-height:1.75; }
+.page-hero__action { margin-top:1.75rem; }
+@media(min-width:1024px){.page-hero{padding:5rem 0}}

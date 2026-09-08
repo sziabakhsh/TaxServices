@@ -1,122 +1,108 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { Route, Routes, useParams } from 'react-router-dom'
+
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import HomePage from './pages/HomePage'
+import AboutPage from './pages/public/AboutPage'
+import ServicesPage from './pages/public/ServicesPage'
+import ServiceDetailPage from './pages/public/ServiceDetailPage'
+import ContactPage from './pages/public/ContactPage'
+import FaqPage from './pages/public/FaqPage'
 
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
+
+import PortalPage from './pages/portal/PortalPage'
+
+import ProtectedRoute from './components/ProtectedRoute'
+import ClientPortalLayout from './layouts/ClientPortalLayout/ClientPortalLayout'
+import ProfilePage from './pages/portal/ProfilePage'
+import CasesPage from './pages/portal/CasesPage'
+
+
+function SimplePage({ title }: { title: string }) {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="simple-page">
+      <h1 className="simple-page__title">{title}</h1>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <p className="simple-page__text">
+        This public page is reserved for the next content pass.
+      </p>
+    </div>
   )
 }
 
-export default App
+function ServiceDetailRoute() {
+  const { slug = 'individual-tax' } = useParams()
+
+  return <ServiceDetailPage slug={slug} />
+}
+
+function RolePlaceholder({ title }: { title: string }) {
+  return (
+    <main className="role-placeholder">
+      <div className="role-placeholder__content">
+        <p className="section-eyebrow role-placeholder__eyebrow">
+          AUTHENTICATED AREA
+        </p>
+
+        <h1 className="section-title">
+          {title}
+        </h1>
+
+        <p className="section-copy role-placeholder__copy">
+          The authenticated foundation is ready. This area will be
+          implemented in the next dashboard phase.
+        </p>
+      </div>
+    </main>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/services" element={<ServicesPage />} />
+      <Route path="/services/:slug" element={<ServiceDetailRoute />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/faq" element={<FaqPage />} />
+      <Route path="/privacy" element={<SimplePage title="Privacy Policy" />} />
+      <Route path="/terms" element={<SimplePage title="Terms of Service" />} />
+
+      {/* Authentication */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+
+      {/* Protected routes */}
+      <Route element={<ProtectedRoute />}>
+        {/* Client portal */}
+        {/* <Route path="/portal" element={<ClientPortalLayout />}>
+          <Route index element={<PortalPage />} />
+        </Route> */}
+        <Route path="/portal" element={<ClientPortalLayout />}>
+          <Route index element={<PortalPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="cases" element={<CasesPage />} />
+        </Route>
+
+        {/* Staff portal */}
+        <Route
+          path="/staff"
+          element={<RolePlaceholder title="Staff Portal" />}
+        />
+
+        {/* Admin portal */}
+        <Route
+          path="/admin"
+          element={<RolePlaceholder title="Admin Portal" />}
+        />
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<HomePage />} />
+    </Routes>
+  )
+}

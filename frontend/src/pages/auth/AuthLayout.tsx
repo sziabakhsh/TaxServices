@@ -1,0 +1,5 @@
+import { Link } from 'react-router-dom'
+import './AuthLayout.css'
+export default function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  return <main className="auth-layout"><div className="auth-layout__panel"><section className="auth-layout__intro"><div><img src="/amazing-logo.png" alt="Amazing Accountant and Tax Services" className="auth-layout__logo"/><p className="auth-layout__kicker">Client Portal</p><h2 className="auth-layout__intro-title">Your tax information, organized and secure.</h2><p className="auth-layout__intro-text">Access your tax services, documents, cases and account information from one place.</p></div><p className="auth-layout__company">Amazing Accountant and Tax Services</p></section><section className="auth-layout__form-section"><Link to="/" className="auth-layout__back">← Back to website</Link><div className="auth-layout__form-content"><p className="section-eyebrow">SECURE ACCESS</p><h1 className="auth-layout__title">{title}</h1><p className="auth-layout__subtitle">{subtitle}</p>{children}</div></section></div></main>
+}

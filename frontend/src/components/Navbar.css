@@ -1,0 +1,23 @@
+.navbar { position:sticky; top:0; z-index:50; border-bottom:1px solid #eef2f5; background:rgba(255,255,255,.95); backdrop-filter:blur(10px); }
+.navbar__inner { height:82px; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; }
+.navbar__brand { display:flex; flex-shrink:0; align-items:center; }
+.navbar__logo { height:64px; width:auto; object-fit:contain; }
+.navbar__nav, .navbar__actions { display:flex; align-items:center; }
+.navbar__nav { gap:2rem; }
+.navbar__actions { gap:1rem; }
+.navbar__link { display:flex; align-items:center; color:#173c61; font-size:.875rem; font-weight:500; transition:color .15s; }
+.navbar__link:hover, .navbar__link--active { color:var(--color-brand); }
+.navbar__link--with-icon { gap:.25rem; }
+.navbar__search { border:0; border-radius:999px; padding:.5rem; color:var(--color-navy); background:transparent; }
+.navbar__search:hover { background:var(--color-brand-soft); }
+.navbar__login, .navbar__register { border-radius:.6rem; padding:.65rem 1.25rem; font-size:.875rem; font-weight:700; text-align:center; }
+.navbar__login { border:1px solid var(--color-brand); color:var(--color-brand); }
+.navbar__register { color:#fff; background:linear-gradient(135deg,var(--color-brand),var(--color-brand-strong)); }
+.navbar__menu-button { display:none; border:0; border-radius:.6rem; padding:.5rem; color:var(--color-navy); background:transparent; }
+.navbar__mobile-panel { display:none; border-top:1px solid #eef2f5; background:#fff; }
+.navbar__mobile-nav { display:grid; gap:.25rem; padding-top:.75rem; padding-bottom:1.5rem; }
+.navbar__mobile-link { border-radius:.6rem; padding:.75rem; color:#173c61; font-weight:600; }
+.navbar__mobile-link:hover { background:var(--color-brand-soft); }
+.navbar__mobile-actions { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-top:.75rem; }
+.navbar__login--mobile,.navbar__register--mobile { padding:.75rem 1.25rem; }
+@media (max-width:1023px){ .navbar__nav,.navbar__actions{display:none}.navbar__menu-button,.navbar__mobile-panel{display:block} }

@@ -1,0 +1,74 @@
+.portal-dashboard__state {
+  padding: 24px;
+  color: var(--color-text-muted);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.portal-dashboard__state--error {
+  color: var(--color-danger);
+}
+
+.portal-dashboard__account-card {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.portal-dashboard__account-item {
+  padding: 22px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-dashboard__account-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.portal-dashboard__account-value {
+  display: block;
+  overflow: hidden;
+  color: var(--color-heading);
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-dashboard__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.portal-dashboard__status--active {
+  color: var(--color-success);
+  background: rgb(35 135 92 / 10%);
+}
+
+.portal-dashboard__status--inactive {
+  color: var(--color-danger);
+  background: rgb(192 57 43 / 10%);
+}
+
+@media (max-width: 1100px) {
+  .portal-dashboard__account-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .portal-dashboard__account-card {
+    grid-template-columns: 1fr;
+  }
+}

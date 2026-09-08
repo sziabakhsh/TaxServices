@@ -9,6 +9,7 @@ namespace TaxServices.Domain.Cases
     {
         public Guid ClientId { get; set; }
         public Guid? EmployeeId { get; set; }
+        [Range(1900, 2100)]
         public int TaxYear { get; set; }
         public CaseStatus Status { get; set; }
         [Required]

@@ -1,0 +1,143 @@
+.portal-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid var(--color-border);
+}
+
+.portal-sidebar__logo-section {
+  display: flex;
+  align-items: center;
+  min-height: 92px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.portal-sidebar__logo-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.portal-sidebar__logo {
+  display: block;
+  width: auto;
+  height: 44px;
+}
+
+.portal-sidebar__user-section {
+  padding: 24px 20px 16px;
+}
+
+.portal-sidebar__user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: #f5faff;
+  border: 1px solid #e4f2fa;
+  border-radius: 16px;
+}
+
+.portal-sidebar__avatar {
+  display: flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-primary);
+  background: #e1f2fc;
+  border-radius: 50%;
+}
+
+.portal-sidebar__user-info {
+  min-width: 0;
+}
+
+.portal-sidebar__user-name {
+  overflow: hidden;
+  color: var(--color-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-sidebar__user-email {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-sidebar__nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px 20px;
+}
+
+.portal-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: #5a7897;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 12px;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.portal-sidebar__link:hover {
+  color: var(--color-heading);
+  background: #eef7fc;
+}
+
+.portal-sidebar__link--active {
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+.portal-sidebar__link--active:hover {
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+.portal-sidebar__footer {
+  padding: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.portal-sidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  color: #5a7897;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.portal-sidebar__logout:hover {
+  color: #c0392b;
+  background: #fff3f2;
+}

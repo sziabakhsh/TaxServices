@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TaxServices.Application.DTOs.Cases;
 using TaxServices.Application.Interfaces;
 
@@ -18,17 +19,19 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetAll()
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetAll(CancellationToken cancellationToken)
         {
-            var taxCases = await _taxCaseService.GetAllAsync();
+            var taxCases = await _taxCaseService.GetAllAsync(cancellationToken);
 
             return Ok(taxCases);
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<TaxCaseResponse>> GetById(Guid id)
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<TaxCaseResponse>> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var taxCase = await _taxCaseService.GetByIdAsync(id);
+            var taxCase = await _taxCaseService.GetByIdAsync(id, cancellationToken);
 
             if (taxCase == null)
                 return NotFound();
@@ -37,10 +40,10 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<TaxCaseResponse>> Create(
-            CreateTaxCaseRequest request)
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<TaxCaseResponse>> Create(CreateTaxCaseRequest request, CancellationToken cancellationToken)
         {
-            var taxCase = await _taxCaseService.CreateAsync(request);
+            var taxCase = await _taxCaseService.CreateAsync(request, cancellationToken);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -49,13 +52,28 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<TaxCaseResponse>> Update(
-            Guid id,
-            UpdateTaxCaseRequest request)
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<TaxCaseResponse>> Update(Guid id, UpdateTaxCaseRequest request, CancellationToken cancellationToken)
         {
-            var taxCase = await _taxCaseService.UpdateAsync(id, request);
+            var taxCase = await _taxCaseService.UpdateAsync(id, request, cancellationToken);
 
             return Ok(taxCase);
+        }
+
+        [HttpGet("me")]
+        [Authorize(Roles = "Client")]
+        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetMine(CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            var taxCases = await _taxCaseService.GetMineAsync(
+                userId,
+                cancellationToken);
+
+            return Ok(taxCases);
         }
     }
 }

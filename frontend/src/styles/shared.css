@@ -1,0 +1,14 @@
+.section-shell { width: min(1248px, calc(100% - 40px)); margin-inline: auto; }
+.brand-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:0; border-radius:.7rem; padding:.875rem 1.5rem; color:#fff; font-size:.875rem; font-weight:700; background:linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-strong) 100%); box-shadow:0 10px 24px rgba(8,127,201,.15); transition:filter .15s ease, transform .15s ease; }
+.brand-button:hover { filter:brightness(.97); }
+.outline-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:1px solid var(--color-brand); border-radius:.7rem; padding:.875rem 1.5rem; color:var(--color-brand); background:rgba(255,255,255,.7); font-size:.875rem; font-weight:700; }
+.section-eyebrow { display:flex; align-items:center; gap:.75rem; margin:0 0 .75rem; color:var(--color-brand); font-size:.75rem; font-weight:800; letter-spacing:.16em; }
+.section-eyebrow::before { content:""; width:2.25rem; height:1px; background:var(--color-brand); }
+.section-title { margin:0; color:var(--color-navy); font-size:clamp(1.8rem,3vw,2.25rem); line-height:1.15; font-weight:800; letter-spacing:-.025em; }
+.section-copy { margin:1rem 0 0; max-width:42rem; color:var(--color-muted); font-size:.95rem; line-height:1.8; }
+.glass-card { background:rgba(255,255,255,.92); box-shadow:var(--shadow-card); border:1px solid rgba(148,205,235,.28); }
+.icon-box { display:flex; height:2.75rem; width:2.75rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:999px; background:#e6f4fc; color:var(--color-brand); }
+.field { display:grid; gap:.45rem; color:var(--color-navy); font-size:.8rem; font-weight:700; }
+.field input,.field textarea { width:100%; border:1px solid #d8e8f2; border-radius:var(--radius-sm); background:#fff; padding:.75rem .9rem; color:var(--color-navy); outline:none; transition:border-color .15s,box-shadow .15s; font-weight:400; }
+.field input:focus,.field textarea:focus { border-color:#69b9e4; box-shadow:0 0 0 3px rgba(8,127,201,.1); }
+.field textarea { resize:vertical; }
