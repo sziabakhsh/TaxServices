@@ -16,7 +16,7 @@ namespace TaxServices.Application.DTOs.Clients
         public string Email { get; set; } = string.Empty;
         [MaxLength(30)]
         public string PhoneNumber { get; set; } = string.Empty;
-        public string UserId { get; set; } = string.Empty;
+        //public string UserId { get; set; } = string.Empty;
         public UpdateIndividualProfileRequest? IndividualProfile { get; set; }
     }
 

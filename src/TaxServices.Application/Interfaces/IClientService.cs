@@ -18,5 +18,6 @@ namespace TaxServices.Application.Interfaces
         Task<bool> ActivateAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task<ClientDto?> GetCurrentAsync(string userId, CancellationToken cancellationToken = default);
+        Task<ClientDto?> UpdateCurrentAsync(string userId, UpdateClientRequest request, CancellationToken cancellationToken = default);
     }
 }

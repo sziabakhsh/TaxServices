@@ -48,22 +48,6 @@ namespace TaxServices.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = response.Client.Id }, response);
         }
 
-
-        //[HttpPut("{id:guid}")]
-        //[Authorize(Roles = "Admin,Employee")]
-        //public async Task<ActionResult<ClientDto>> Update(Guid id, UpdateClientRequest request, CancellationToken cancellationToken)
-        //{
-        //    var client = await _clientService.UpdateAsync(
-        //        id,
-        //        request,
-        //        cancellationToken);
-
-        //    if (client is null)
-        //        return NotFound();
-
-        //    return Ok(client);
-        //}
-
         [HttpPatch("{id:guid}/activate")]
         [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
@@ -118,10 +102,7 @@ namespace TaxServices.Api.Controllers
             if (userId is null)
                 return Unauthorized();
 
-            var client = await _clientService.UpdateAsync(
-                Guid.Parse(userId),
-                request,
-                cancellationToken);
+            var client = await _clientService.UpdateCurrentAsync(userId, request, cancellationToken);
 
             if (client is null)
                 return NotFound();

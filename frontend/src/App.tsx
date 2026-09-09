@@ -18,6 +18,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ClientPortalLayout from './layouts/ClientPortalLayout/ClientPortalLayout'
 import ProfilePage from './pages/portal/ProfilePage'
 import CasesPage from './pages/portal/CasesPage'
+import CaseDetailsPage from './pages/portal/CaseDetailsPage'
+import ChangePasswordPage from './pages/portal/ChangePasswordPage'
 
 
 function SimplePage({ title }: { title: string }) {
@@ -86,6 +88,8 @@ export default function App() {
           <Route index element={<PortalPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="cases" element={<CasesPage />} />
+          <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
+          <Route path="change-password" element={<ChangePasswordPage />} />
         </Route>
 
         {/* Staff portal */}

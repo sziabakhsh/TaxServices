@@ -5,6 +5,7 @@ using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Clients;
 using TaxServices.Domain.Employees;
+using TaxServices.Domain.Documents;
 using TaxServices.Domain.Services;
 using TaxServices.Infrastructure.Identity;
 
@@ -26,6 +27,7 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbCo
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Service> Services => Set<Service>();
     public DbSet<TaxCase> TaxCases => Set<TaxCase>();
+    public DbSet<Document> Documents => Set<Document>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

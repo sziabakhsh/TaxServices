@@ -1,5 +1,13 @@
 import { api } from '../../services/http/api'
-import type { AuthResponse, CreateClientResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.types'
+
+import type {
+  AuthResponse,
+  ChangePasswordRequest,
+  CreateClientResponse,
+  CurrentUser,
+  LoginRequest,
+  RegisterRequest,
+} from './auth.types'
 
 export async function login(request: LoginRequest) {
   const { data } = await api.post<AuthResponse>('/auth/login', request)
@@ -25,4 +33,8 @@ export async function register(request: RegisterRequest) {
 export async function getCurrentUser() {
   const { data } = await api.get<CurrentUser>('/auth/me')
   return data
+}
+
+export async function changePassword(request: ChangePasswordRequest) {
+  await api.post('/auth/change-password', request)
 }

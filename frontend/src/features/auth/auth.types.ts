@@ -34,3 +34,8 @@ export interface CurrentUser {
   lastName: string
   roles: string[]
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}

@@ -1,24 +1,26 @@
+import { CaseStatus } from '../../features/cases/case.types'
 import { useMyTaxCases } from '../../features/cases/useMyTaxCases'
+import { Link } from 'react-router-dom'
 import './CasesPage.css'
 
-function getStatusLabel(status: number) {
+function getStatusLabel(status: CaseStatus) {
   switch (status) {
-    case 1:
+    case CaseStatus.Draft:
       return 'Draft'
 
-    case 2:
+    case CaseStatus.Open:
       return 'Open'
 
-    case 3:
+    case CaseStatus.InProgress:
       return 'In Progress'
 
-    case 4:
-      return 'Waiting for Client'
+    case CaseStatus.WaitingForClient:
+      return 'Waiting for You'
 
-    case 5:
+    case CaseStatus.Completed:
       return 'Completed'
 
-    case 6:
+    case CaseStatus.Cancelled:
       return 'Cancelled'
 
     default:
@@ -26,6 +28,30 @@ function getStatusLabel(status: number) {
   }
 }
 
+function getStatusClassName(status: CaseStatus) {
+  switch (status) {
+    case CaseStatus.Draft:
+      return 'cases-page__status cases-page__status--draft'
+
+    case CaseStatus.Open:
+      return 'cases-page__status cases-page__status--open'
+
+    case CaseStatus.InProgress:
+      return 'cases-page__status cases-page__status--progress'
+
+    case CaseStatus.WaitingForClient:
+      return 'cases-page__status cases-page__status--waiting'
+
+    case CaseStatus.Completed:
+      return 'cases-page__status cases-page__status--completed'
+
+    case CaseStatus.Cancelled:
+      return 'cases-page__status cases-page__status--cancelled'
+
+    default:
+      return 'cases-page__status'
+  }
+}
 
 export default function CasesPage() {
   const {
@@ -85,7 +111,18 @@ export default function CasesPage() {
           </div>
         ) : (
           <div className="cases-page__list">
-            {cases.map((taxCase) => (
+            {cases
+            .sort((a, b) => {
+              if (b.taxYear !== a.taxYear) {
+                return b.taxYear - a.taxYear
+              }
+
+              return (
+                new Date(b.openedAt).getTime() -
+                new Date(a.openedAt).getTime()
+              )
+            })
+            .map((taxCase) => (
               <article
                 key={taxCase.id}
                 className="cases-page__card"
@@ -100,12 +137,10 @@ export default function CasesPage() {
                       {taxCase.taxYear}
                     </h2>
                   </div>
-
-                  <span className="cases-page__status">
+                  <span className={getStatusClassName(taxCase.status)}>
                     {getStatusLabel(taxCase.status)}
                   </span>
                 </div>
-
                 <div className="cases-page__details">
                   <div className="cases-page__detail">
                     <span className="cases-page__detail-label">
@@ -139,6 +174,12 @@ export default function CasesPage() {
                     {taxCase.description || 'No description provided.'}
                   </p>
                 </div>
+                <Link
+                  to={`/portal/cases/${taxCase.id}`}
+                  className="cases-page__details-link"
+                >
+                  View details
+                </Link>
               </article>
             ))}
           </div>

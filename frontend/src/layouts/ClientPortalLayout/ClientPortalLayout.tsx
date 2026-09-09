@@ -38,7 +38,16 @@ export default function ClientPortalLayout() {
           >
             Profile
           </NavLink>
-
+          <NavLink
+            to="/portal/change-password"
+            className={({ isActive }) =>
+              isActive
+                ? 'client-portal__nav-link client-portal__nav-link--active'
+                : 'client-portal__nav-link'
+            }
+          >
+            Change Password
+          </NavLink>
           <NavLink
             to="/portal/cases"
             className={({ isActive }) =>

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Common;
+using TaxServices.Domain.Documents;
 
 namespace TaxServices.Domain.Clients
 {
@@ -31,5 +32,7 @@ namespace TaxServices.Domain.Clients
 
         public ICollection<TaxCase> TaxCases { get; set; }
             = new List<TaxCase>();
+
+
     }
 }

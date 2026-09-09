@@ -96,7 +96,7 @@ namespace TaxServices.Application.Services
                         Id = Guid.NewGuid(),
                         TenantId = _tenantContext.TenantId,
                         ClientId = client.Id,
-                        SIN = request.IndividualProfile.SIN.Trim(),
+                        SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
                         DateOfBirth = request.IndividualProfile.DateOfBirth,
                         Address = request.IndividualProfile.Address.Trim()
                     };
@@ -127,11 +127,8 @@ namespace TaxServices.Application.Services
         public async Task<ClientDto?> UpdateAsync(Guid id, UpdateClientRequest request, CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients
-        .Include(c => c.IndividualProfile)
-        .FirstOrDefaultAsync(
-            c => c.UserId == request.UserId &&
-                 c.TenantId == _tenantContext.TenantId,
-            cancellationToken);
+                .Include(c => c.IndividualProfile)
+                .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == _tenantContext.TenantId, cancellationToken);
 
             if (client is null)
                 return null;
@@ -147,22 +144,29 @@ namespace TaxServices.Application.Services
                 client.PhoneNumber = request.PhoneNumber.Trim();
 
                 // Update IndividualProfile
-                if (client.IndividualProfile is null)
+                if (request.IndividualProfile != null)
                 {
-                    client.IndividualProfile = new IndividualProfile
+                    if (client.IndividualProfile is null)
                     {
-                        Id = Guid.NewGuid(),
-                        ClientId = client.Id,
-                        SIN = request.IndividualProfile.SIN.Trim(),
-                        DateOfBirth = request.IndividualProfile.DateOfBirth,
-                        Address = request.IndividualProfile.Address.Trim()
-                    };
-                }
-                else
-                {
-                    client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
-                    client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
-                    client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+                        client.IndividualProfile = new IndividualProfile
+                        {
+                            Id = Guid.NewGuid(),
+                            TenantId = _tenantContext.TenantId,
+                            ClientId = client.Id,
+                            SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
+                            DateOfBirth = request.IndividualProfile.DateOfBirth,
+                            Address = request.IndividualProfile.Address.Trim()
+                        };
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(request.IndividualProfile.SIN))
+                        {
+                            client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
+                        }
+                        client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
+                        client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+                    }
                 }
 
                 // Sync FirstName / LastName with Identity user
@@ -267,6 +271,74 @@ namespace TaxServices.Application.Services
             return client == null
                 ? null
                 : MapToDto(client);
+        }
+
+        public async Task<ClientDto?> UpdateCurrentAsync(string userId, UpdateClientRequest request, CancellationToken cancellationToken = default)
+        {
+            var client = await _context.Clients
+                .Include(c => c.IndividualProfile)
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.TenantId == _tenantContext.TenantId, cancellationToken);
+
+            if (client is null)
+                return null;
+
+            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                client.FirstName = request.FirstName.Trim();
+                client.LastName = request.LastName.Trim();
+                client.PhoneNumber = request.PhoneNumber.Trim();
+
+                if (request.IndividualProfile != null)
+                {
+                    if (client.IndividualProfile is null)
+                    {
+                        client.IndividualProfile = new IndividualProfile
+                        {
+                            Id = Guid.NewGuid(),
+                            TenantId = _tenantContext.TenantId,
+                            ClientId = client.Id,
+                            SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
+                            DateOfBirth = request.IndividualProfile.DateOfBirth,
+                            Address = request.IndividualProfile.Address.Trim()
+                        };
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(request.IndividualProfile.SIN))
+                        {
+                            client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
+                        }
+                        client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
+                        client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(client.UserId))
+                {
+                    var updatedUser = new UpdatedUserRequestInApp
+                    {
+                        UserId = client.UserId,
+                        Email = client.Email,
+                        FirstName = client.FirstName,
+                        LastName = client.LastName
+                    };
+
+                    await _authService.UpdateUserAsync(updatedUser, cancellationToken);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return MapToDto(client);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
     }
 }

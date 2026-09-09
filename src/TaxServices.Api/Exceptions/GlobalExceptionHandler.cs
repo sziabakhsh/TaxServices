@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TaxServices.Application.Exceptions;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaxServices.Api.Exceptions;
 
@@ -28,8 +29,8 @@ public class GlobalExceptionHandler : IExceptionHandler
         var title = "An unexpected error occurred.";
         var detail =
             "An internal server error occurred. Please try again later.";
-
-        if (exception is ArgumentException)
+                
+        if (exception is ArgumentException or ValidationException)
         {
             statusCode = StatusCodes.Status400BadRequest;
             title = "Validation error.";

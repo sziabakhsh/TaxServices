@@ -75,5 +75,22 @@ namespace TaxServices.Api.Controllers
 
             return Ok(taxCases);
         }
+
+        [HttpGet("me/{id:guid}")]
+        [Authorize(Roles = "Client")]
+        public async Task<ActionResult<TaxCaseResponse>> GetMineById(Guid id, CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            var taxCase = await _taxCaseService.GetMineByIdAsync(userId, id, cancellationToken);
+
+            if (taxCase is null)
+                return NotFound();
+
+            return Ok(taxCase);
+        }
     }
 }

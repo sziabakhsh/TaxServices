@@ -174,6 +174,23 @@ namespace TaxServices.Application.Services
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<TaxCaseResponse?> GetMineByIdAsync(string userId, Guid id, CancellationToken cancellationToken = default)
+        {
+            var taxCase = await _context.TaxCases
+                .Include(tc => tc.Client)
+                .FirstOrDefaultAsync(
+                    tc =>
+                        tc.Id == id &&
+                        tc.TenantId == _tenantContext.TenantId &&
+                        tc.Client.UserId == userId,
+                    cancellationToken);
+
+            if (taxCase is null)
+                return null;
+
+            return MapToResponse(taxCase);
+        }
+
         private static TaxCaseResponse MapToResponse(TaxCase taxCase)
         {
             return new TaxCaseResponse

@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../features/auth/useAuth'
 import AuthLayout from './AuthLayout'
 import './AuthForms.css'
+
 export default function LoginPage() {
   const { login } = useAuth(); const navigate = useNavigate(); const location = useLocation(); const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [show,setShow]=useState(false); const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const from=(location.state as {from?:string}|null)?.from
   async function submit(e:React.FormEvent){e.preventDefault();setError('');setBusy(true);try{const user=await login({email,password});const target=from??(user.roles.includes('Admin')?'/admin':user.roles.includes('Employee')?'/staff':'/portal');navigate(target,{replace:true})}catch(err:any){setError(err?.response?.data?.detail??err?.response?.data?.message??'Invalid email or password.')}finally{setBusy(false)}}
