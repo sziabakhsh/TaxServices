@@ -6,9 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TaxServices.Application.Interfaces;
+using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Identity;
 using TaxServices.Infrastructure.Identity.Services;
 using TaxServices.Infrastructure.Persistence;
+using TaxServices.Infrastructure.Storage;
 
 namespace TaxServices.Infrastructure
 {
@@ -41,6 +43,10 @@ namespace TaxServices.Infrastructure
             // JWT Options
             services.Configure<JwtOptions>(
                 configuration.GetSection(JwtOptions.SectionName));
+
+            // Azure Storage Options
+            services.Configure<AzureStorageOptions>(
+                configuration.GetSection(AzureStorageOptions.SectionName));
 
             // JWT Configuration
             var jwtOptions = configuration
@@ -78,10 +84,11 @@ namespace TaxServices.Infrastructure
                         };
                 });
 
-            // Application Services
+            // Services
             services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IFileStorageService, AzureBlobStorageService>();
 
             return services;
         }

@@ -1,0 +1,7 @@
+cd src\TaxServices.api
+
+dotnet user-secrets init
+
+dotnet user-secrets set "AzureStorage:ConnectionString" "YOUR_CONNECTION_STRING"
+
+dotnet user-secrets list

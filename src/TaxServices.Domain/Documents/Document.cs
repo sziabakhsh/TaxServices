@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using TaxServices.Domain.Clients;
 using TaxServices.Domain.Common;
 
@@ -30,6 +31,7 @@ namespace TaxServices.Domain.Documents
 
         public DateTime UploadedAt { get; set; }
 
+        [ForeignKey(nameof(ClientId))]
         public Client Client { get; set; } = null!;
     }
 }
