@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Interfaces;
+using TaxServices.Application.Services;
 
 namespace TaxServices.Api.Controllers
 {
@@ -11,20 +12,18 @@ namespace TaxServices.Api.Controllers
     public class DocumentsController : ControllerBase
     {
         private readonly IDocumentService _documentService;
+        private readonly IClientService _clientService;
 
-        public DocumentsController(IDocumentService documentService)
+        public DocumentsController(IDocumentService documentService, IClientService clientService)
         {
             _documentService = documentService;
+            _clientService = clientService;
         }
 
         [Authorize(Roles = "Admin,Employee")]
         [Consumes("multipart/form-data")]
         [HttpPost("upload")]
-        public async Task<ActionResult<DocumentResponse>> Upload(
-            Guid clientId,
-            Guid? taxCaseId,
-            IFormFile file,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<DocumentResponse>> Upload(Guid clientId, Guid? taxCaseId, IFormFile file, CancellationToken cancellationToken)
         {
             await using var stream = file.OpenReadStream();
 
@@ -96,5 +95,101 @@ namespace TaxServices.Api.Controllers
 
             return NoContent();
         }
-    }
+
+        [Authorize]
+        [Consumes("multipart/form-data")]
+        [HttpPost("mine/upload")]
+        public async Task<ActionResult<DocumentResponse>> UploadMine(Guid? taxCaseId, IFormFile file, CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirst(
+                System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            var client = await _clientService.GetCurrentAsync(
+                userId,
+                cancellationToken);
+
+            if (client == null)
+                return NotFound("Client profile was not found.");
+
+            await using var stream = file.OpenReadStream();
+
+            var request = new UploadDocumentRequest
+            {
+                ClientId = client.Id,
+                TaxCaseId = taxCaseId,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                FileSize = file.Length,
+                Content = stream
+            };
+
+            var document = await _documentService.UploadAsync(
+                request,
+                cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = document.Id },
+                document);
+        }
+
+        [HttpGet("mine")]
+        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetMine(CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            var client = await _clientService.GetCurrentAsync(
+                userId,
+                cancellationToken);
+
+            if (client == null)
+                return NotFound("Client profile was not found.");
+
+            var documents = await _documentService.GetByClientAsync(
+                client.Id,
+                cancellationToken);
+
+            return Ok(documents);
+        }
+
+        [HttpGet("mine/{id:guid}/download")]
+        public async Task<IActionResult> DownloadMine(Guid id, CancellationToken cancellationToken)
+        {
+            var userId = User.FindFirst(
+                System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
+
+            var client = await _clientService.GetCurrentAsync(
+                userId,
+                cancellationToken);
+
+            if (client == null)
+                return NotFound("Client profile was not found.");
+
+            var document = await _documentService.GetByIdAsync(
+                id,
+                cancellationToken);
+
+            if (document == null || document.ClientId != client.Id)
+                return NotFound();
+
+            var stream = await _documentService.DownloadAsync(
+                id,
+                cancellationToken);
+
+            if (stream == null)
+                return NotFound();
+
+            return File(stream, document.ContentType, document.FileName);
+        }
+
+     }
 }

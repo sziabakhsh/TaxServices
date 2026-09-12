@@ -33,6 +33,8 @@ namespace TaxServices.Domain.Clients
         public ICollection<TaxCase> TaxCases { get; set; }
             = new List<TaxCase>();
 
+        public ICollection<Document> Documents { get; set; }
+            = new List<Document>();
 
     }
 }

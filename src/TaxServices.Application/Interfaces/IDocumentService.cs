@@ -13,5 +13,7 @@ namespace TaxServices.Application.Interfaces
         Task<Stream?> DownloadAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default);
     }
 }

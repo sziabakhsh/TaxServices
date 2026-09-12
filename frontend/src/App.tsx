@@ -20,6 +20,9 @@ import ProfilePage from './pages/portal/ProfilePage'
 import CasesPage from './pages/portal/CasesPage'
 import CaseDetailsPage from './pages/portal/CaseDetailsPage'
 import ChangePasswordPage from './pages/portal/ChangePasswordPage'
+import DocumentsPage from './pages/portal/DocumentsPage'
+
+import StaffPortalLayout from './layouts/StaffPortalLayout/StaffPortalLayout'
 
 
 function SimplePage({ title }: { title: string }) {
@@ -90,13 +93,38 @@ export default function App() {
           <Route path="cases" element={<CasesPage />} />
           <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          
         </Route>
 
         {/* Staff portal */}
-        <Route
+        {/* <Route
           path="/staff"
           element={<RolePlaceholder title="Staff Portal" />}
-        />
+        /> */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/staff" element={<StaffPortalLayout />}>
+            <Route
+              index
+              element={<SimplePage title="Staff Dashboard" />}
+            />
+
+            <Route
+              path="clients"
+              element={<SimplePage title="Clients" />}
+            />
+
+            <Route
+              path="documents"
+              element={<SimplePage title="Documents" />}
+            />
+
+            <Route
+              path="clients/:clientId/documents"
+              element={<SimplePage title="Client Documents" />}
+            />
+          </Route>
+        </Route>
 
         {/* Admin portal */}
         <Route

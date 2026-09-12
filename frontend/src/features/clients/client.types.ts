@@ -27,3 +27,19 @@ export interface UpdateClientProfileRequest {
   phoneNumber: string
   individualProfile?: UpdateIndividualProfileRequest | null
 }
+
+export interface StaffClientIndividualProfile {
+  id: string
+  dateOfBirth: string | null
+  address: string | null
+}
+
+export interface StaffClient {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string | null
+  isActive: boolean
+  individualProfile: StaffClientIndividualProfile | null
+}

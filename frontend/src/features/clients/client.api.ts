@@ -19,3 +19,9 @@ export async function updateMyClientProfile(
 
   return response.data
 }
+
+export async function getClients() {
+  const response = await api.get('/clients')
+  return response.data
+}
+

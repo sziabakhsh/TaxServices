@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TaxServices.Domain.Cases;
-using TaxServices.Domain.Clients;
 using TaxServices.Domain.Documents;
 
 namespace TaxServices.Infrastructure.Persistence.Configurations
@@ -10,8 +9,8 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Document> builder)
         {
-            builder.HasOne<Client>()
-                .WithMany()
+            builder.HasOne(d => d.Client)
+                .WithMany(c => c.Documents)
                 .HasForeignKey(d => d.ClientId)
                 .OnDelete(DeleteBehavior.Restrict);
 

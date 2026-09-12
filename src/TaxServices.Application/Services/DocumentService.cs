@@ -165,5 +165,35 @@ namespace TaxServices.Application.Services
                 UploadedAt = document.UploadedAt
             };
         }
+
+        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default)
+        {
+            var clientExists = await _context.Clients
+                .AsNoTracking()
+                .AnyAsync(
+                    c => c.Id == clientId && c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
+
+            if (!clientExists)
+                throw new ArgumentException("Client does not exist.");
+
+            return await _context.Documents
+                .AsNoTracking()
+                .Where(d =>
+                    d.ClientId == clientId &&
+                    d.TenantId == _tenantContext.TenantId)
+                .OrderByDescending(d => d.UploadedAt)
+                .Select(d => new DocumentResponse
+                {
+                    Id = d.Id,
+                    ClientId = d.ClientId,
+                    TaxCaseId = d.TaxCaseId,
+                    FileName = d.OriginalFileName,
+                    ContentType = d.ContentType,
+                    FileSize = d.FileSize,
+                    UploadedAt = d.UploadedAt
+                })
+                .ToListAsync(cancellationToken);
+        }
     }
 }
