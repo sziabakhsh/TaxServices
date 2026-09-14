@@ -91,6 +91,59 @@
   background: #f9eeee;
 }
 
+/* start of logout styles */
+
+.staff-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+.staff-layout__sidebar {
+  width: 260px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+}
+
+.staff-layout__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.staff-layout__logout {
+  margin-top: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 12px 16px;
+
+  border: 0;
+  background: transparent;
+
+  font: inherit;
+  font-weight: 600;
+  color: #64748b;
+
+  cursor: pointer;
+  text-align: left;
+}
+
+.staff-layout__logout:hover {
+  background: #f8fafc;
+  color: #dc2626;
+}
+
+/* end of logout styles */
+
+
+
+
 .staff-layout__main {
   min-width: 0;
   padding: 32px;

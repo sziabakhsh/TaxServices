@@ -25,3 +25,7 @@ export async function getClients() {
   return response.data
 }
 
+export async function getClientById(clientId: string) {
+  const response = await api.get(`/clients/${clientId}`)
+  return response.data
+}

@@ -15,5 +15,7 @@ namespace TaxServices.Application.Interfaces
         Task<IEnumerable<TaxCaseResponse>> GetMineAsync(string userId, CancellationToken cancellationToken = default);
 
         Task<TaxCaseResponse?> GetMineByIdAsync(string userId, Guid id, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<TaxCaseResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default);
     }
 }

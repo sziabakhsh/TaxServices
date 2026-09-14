@@ -6,6 +6,8 @@ export interface DocumentItem {
   contentType: string
   fileSize: number
   uploadedAt: string
+  taxYear?: number | null
+  caseStatus?: number | null
 }
 
 export interface UploadDocumentRequest {

@@ -17,3 +17,10 @@ export interface TaxCase {
   openedAt: string
   closedAt?: string | null
 }
+
+export interface CreateTaxCaseRequest {
+  clientId: string
+  employeeId?: string | null
+  taxYear: number
+  description: string
+}

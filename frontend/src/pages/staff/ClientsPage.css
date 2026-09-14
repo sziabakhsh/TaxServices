@@ -1,0 +1,133 @@
+.staff-clients-page {
+  width: 100%;
+}
+
+.staff-clients-page__header {
+  margin-bottom: 28px;
+}
+
+.staff-clients-page__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #267346;
+}
+
+.staff-clients-page__header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #1d2a24;
+}
+
+.staff-clients-page__header p {
+  margin: 0;
+  color: #68756e;
+}
+
+.staff-clients-page__table-wrapper {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #e3e8e5;
+  border-radius: 12px;
+}
+
+.staff-clients-page__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-clients-page__table th,
+.staff-clients-page__table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.staff-clients-page__table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #68756e;
+  background: #f8faf9;
+}
+
+.staff-clients-page__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.staff-clients-page__status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.staff-clients-page__status--active {
+  background: #e7f2eb;
+  color: #267346;
+}
+
+.staff-clients-page__status--inactive {
+  background: #f3eeee;
+  color: #8a4743;
+}
+
+.staff-clients-page__action {
+  font-weight: 600;
+  color: #267346;
+  text-decoration: none;
+}
+
+.staff-clients-page__action:hover {
+  text-decoration: underline;
+}
+
+.staff-clients-page__state {
+  padding: 24px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e3e8e5;
+  color: #68756e;
+}
+
+.staff-clients-page__state--error {
+  color: #8a4743;
+  border-color: #ecd7d5;
+  background: #fbf5f4;
+}
+
+/* filter clients */
+
+.staff-clients-page__search {
+  margin-bottom: 24px;
+  max-width: 420px;
+}
+
+.staff-clients-page__search-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.staff-clients-page__search-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.staff-clients-page__search-input:focus {
+  outline: none;
+  border-color: #94a3b8;
+}
+
+/* tax case link */
+.staff-clients-page__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+} 

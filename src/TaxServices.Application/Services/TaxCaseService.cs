@@ -133,7 +133,19 @@ namespace TaxServices.Application.Services
 
             taxCase.EmployeeId = request.EmployeeId;
             taxCase.TaxYear = request.TaxYear;
+            taxCase.Status = request.Status;
             taxCase.Description = request.Description;
+
+            if (request.Status == CaseStatus.Completed ||
+                request.Status == CaseStatus.Cancelled)
+            {
+                taxCase.ClosedAt ??= DateTime.UtcNow;
+            }
+            else
+            {
+                taxCase.ClosedAt = null;
+            }
+
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -191,6 +203,31 @@ namespace TaxServices.Application.Services
             return MapToResponse(taxCase);
         }
 
+        public async Task<IEnumerable<TaxCaseResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default)
+        {
+            var tenantId = _tenantContext.TenantId;
+
+            return await _context.TaxCases
+                .AsNoTracking()
+                .Where(x =>
+                    x.ClientId == clientId &&
+                    x.TenantId == tenantId)
+                .OrderByDescending(x => x.TaxYear)
+                .ThenByDescending(x => x.OpenedAt)
+                .Select(x => new TaxCaseResponse
+                {
+                    Id = x.Id,
+                    ClientId = x.ClientId,
+                    EmployeeId = x.EmployeeId,
+                    TaxYear = x.TaxYear,
+                    Status = x.Status,
+                    Description = x.Description,
+                    OpenedAt = x.OpenedAt,
+                    ClosedAt = x.ClosedAt
+                })
+                .ToListAsync(cancellationToken);
+        }
+        
         private static TaxCaseResponse MapToResponse(TaxCase taxCase)
         {
             return new TaxCaseResponse
@@ -205,5 +242,6 @@ namespace TaxServices.Application.Services
                 ClosedAt = taxCase.ClosedAt
             };
         }
+
     }
 }

@@ -59,3 +59,62 @@ export async function downloadMyDocument(
 
   window.URL.revokeObjectURL(url)
 }
+
+export async function getClientDocuments(clientId: string) {
+  const response = await api.get(`/documents/client/${clientId}`)
+  return response.data
+}
+
+export async function downloadClientDocument(
+  documentId: string,
+  fileName: string
+) {
+  const response = await api.get(
+    `/documents/${documentId}/download`,
+    {
+      responseType: 'blob',
+    }
+  )
+
+  const url = window.URL.createObjectURL(response.data)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+
+  window.URL.revokeObjectURL(url)
+}
+
+export async function uploadClientDocument(
+  clientId: string,
+  file: File,
+  taxCaseId?: string
+) {
+  const formData = new FormData()
+
+  formData.append('file', file)
+
+  const params = new URLSearchParams()
+
+  params.append('clientId', clientId)
+
+  if (taxCaseId) {
+    params.append('taxCaseId', taxCaseId)
+  }
+
+  const response = await api.post(
+    `/documents/upload?${params.toString()}`,
+    formData,
+    {
+      headers: {
+        'Content-Type': undefined,
+      },
+    }
+  )
+
+  return response.data
+}

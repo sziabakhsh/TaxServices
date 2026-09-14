@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Interfaces;
-using TaxServices.Application.Services;
 
 namespace TaxServices.Api.Controllers
 {
@@ -190,6 +189,7 @@ namespace TaxServices.Api.Controllers
 
             return File(stream, document.ContentType, document.FileName);
         }
+
 
      }
 }

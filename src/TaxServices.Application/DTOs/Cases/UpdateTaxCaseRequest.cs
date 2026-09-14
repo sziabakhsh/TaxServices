@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TaxServices.Domain.Cases;
 
 namespace TaxServices.Application.DTOs.Cases
 {
@@ -8,6 +9,8 @@ namespace TaxServices.Application.DTOs.Cases
 
         [Range(2000, 2100)]
         public int TaxYear { get; set; }
+
+        public CaseStatus Status { get; set; }
 
         [Required]
         [MaxLength(2000)]

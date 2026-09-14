@@ -23,7 +23,10 @@ import ChangePasswordPage from './pages/portal/ChangePasswordPage'
 import DocumentsPage from './pages/portal/DocumentsPage'
 
 import StaffPortalLayout from './layouts/StaffPortalLayout/StaffPortalLayout'
-
+import ClientsPage from './pages/staff/ClientsPage'
+import StaffClientDocumentsPage from './pages/staff/StaffClientDocumentsPage'
+import StaffClientCasesPage from './pages/staff/StaffClientCasesPage'
+import StaffTaxCaseDetailsPage from './pages/staff/StaffTaxCaseDetailsPage'
 
 function SimplePage({ title }: { title: string }) {
   return (
@@ -111,7 +114,7 @@ export default function App() {
 
             <Route
               path="clients"
-              element={<SimplePage title="Clients" />}
+              element={<ClientsPage />}
             />
 
             <Route
@@ -121,11 +124,20 @@ export default function App() {
 
             <Route
               path="clients/:clientId/documents"
-              element={<SimplePage title="Client Documents" />}
+              element={<StaffClientDocumentsPage />}
+            />
+
+            <Route
+              path="clients/:clientId/cases"
+              element={<StaffClientCasesPage />}
+            />
+
+            <Route
+              path="cases/:id"
+              element={<StaffTaxCaseDetailsPage />}
             />
           </Route>
         </Route>
-
         {/* Admin portal */}
         <Route
           path="/admin"

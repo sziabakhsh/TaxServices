@@ -1,15 +1,36 @@
-import { Outlet, NavLink } from 'react-router-dom'
-import { FileText, LayoutDashboard, LogOut, Users } from 'lucide-react'
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+} from 'react-router-dom'
+
+import {
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Users,
+} from 'lucide-react'
+
 import { useAuth } from '../../features/auth/useAuth'
 import './StaffPortalLayout.css'
 
 export default function StaffPortalLayout() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
-  const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+  const getNavLinkClass = ({
+    isActive,
+  }: {
+    isActive: boolean
+  }) =>
     isActive
       ? 'staff-layout__nav-link staff-layout__nav-link--active'
       : 'staff-layout__nav-link'
+
+  function handleLogout() {
+    logout()
+    navigate('/', { replace: true })
+  }
 
   return (
     <div className="staff-layout">
@@ -62,7 +83,7 @@ export default function StaffPortalLayout() {
         <button
           type="button"
           className="staff-layout__logout"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <LogOut size={19} />
           <span>Sign out</span>

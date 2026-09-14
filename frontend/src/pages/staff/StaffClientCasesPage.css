@@ -1,0 +1,200 @@
+.staff-client-cases {
+  padding: 32px;
+}
+
+.staff-client-cases__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.staff-client-cases__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.staff-client-cases__header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.staff-client-cases__header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.staff-client-cases__back {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.staff-client-cases__back:hover {
+  background: #f8fafc;
+}
+
+.staff-client-cases__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.staff-client-cases__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-client-cases__table th,
+.staff-client-cases__table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.staff-client-cases__table th {
+  background: #f8fafc;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.staff-client-cases__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.staff-client-cases__table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.staff-client-cases__state {
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.staff-client-cases__state--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+@media (max-width: 768px) {
+  .staff-client-cases {
+    padding: 20px;
+  }
+
+  .staff-client-cases__header {
+    flex-direction: column;
+  }
+
+  .staff-client-cases__table th,
+  .staff-client-cases__table td {
+    padding: 12px;
+  }
+}
+
+/* Create Tax Case Form */
+.staff-client-cases__create {
+  margin-bottom: 32px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.staff-client-cases__create-header {
+  margin-bottom: 20px;
+}
+
+.staff-client-cases__create-header h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.staff-client-cases__create-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.staff-client-cases__create-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.staff-client-cases__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.staff-client-cases__field--description {
+  flex: 1;
+  min-width: 260px;
+}
+
+.staff-client-cases__field label {
+  font-weight: 600;
+}
+
+.staff-client-cases__field input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.staff-client-cases__create-button {
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.staff-client-cases__create-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.staff-client-cases__message {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.staff-client-cases__message--success {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.staff-client-cases__message--error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.staff-client-cases__view-link {
+  display: inline-block;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.staff-client-cases__view-link:hover {
+  text-decoration: underline;
+}

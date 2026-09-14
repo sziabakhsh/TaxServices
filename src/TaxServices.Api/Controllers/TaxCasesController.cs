@@ -92,5 +92,14 @@ namespace TaxServices.Api.Controllers
 
             return Ok(taxCase);
         }
+
+        [HttpGet("client/{clientId:guid}")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetByClient(Guid clientId, CancellationToken cancellationToken)
+        {
+            var taxCases = await _taxCaseService.GetByClientIdAsync(clientId, cancellationToken);
+
+            return Ok(taxCases);
+        }
     }
 }

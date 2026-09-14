@@ -2,6 +2,7 @@
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
+using TaxServices.Domain.Cases;
 using TaxServices.Domain.Documents;
 
 namespace TaxServices.Application.Services
@@ -84,7 +85,9 @@ namespace TaxServices.Application.Services
             return MapToResponse(document);
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(Guid clientId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(
+    Guid clientId,
+    CancellationToken cancellationToken = default)
         {
             return await _context.Documents
                 .AsNoTracking()
@@ -100,7 +103,25 @@ namespace TaxServices.Application.Services
                     FileName = d.OriginalFileName,
                     ContentType = d.ContentType,
                     FileSize = d.FileSize,
-                    UploadedAt = d.UploadedAt
+                    UploadedAt = d.UploadedAt,
+
+                    TaxYear = d.TaxCaseId.HasValue
+                        ? _context.TaxCases
+                            .Where(tc =>
+                                tc.Id == d.TaxCaseId.Value &&
+                                tc.TenantId == _tenantContext.TenantId)
+                            .Select(tc => (int?)tc.TaxYear)
+                            .FirstOrDefault()
+                        : null,
+
+                    CaseStatus = d.TaxCaseId.HasValue
+                        ? _context.TaxCases
+                            .Where(tc =>
+                                tc.Id == d.TaxCaseId.Value &&
+                                tc.TenantId == _tenantContext.TenantId)
+                            .Select(tc => (CaseStatus?)tc.Status)
+                            .FirstOrDefault()
+                        : null
                 })
                 .ToListAsync(cancellationToken);
         }

@@ -1,4 +1,6 @@
-﻿namespace TaxServices.Application.DTOs.Documents
+﻿using TaxServices.Domain.Cases;
+
+namespace TaxServices.Application.DTOs.Documents
 {
     public class DocumentResponse
     {
@@ -15,5 +17,9 @@
         public long FileSize { get; set; }
 
         public DateTime UploadedAt { get; set; }
+
+        public int? TaxYear { get; set; }
+
+        public CaseStatus? CaseStatus { get; set; }
     }
 }

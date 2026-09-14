@@ -1,0 +1,164 @@
+.staff-tax-case-details {
+  min-height: 100%;
+  padding: 32px;
+}
+
+.staff-tax-case-details__container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.staff-tax-case-details__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.staff-tax-case-details__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.staff-tax-case-details__title {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.staff-tax-case-details__subtitle {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.staff-tax-case-details__back-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.staff-tax-case-details__card {
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.staff-tax-case-details__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.staff-tax-case-details__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.staff-tax-case-details__label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.staff-tax-case-details__value {
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.staff-tax-case-details__description {
+  margin-top: 24px;
+}
+
+.staff-tax-case-details__description-text {
+  margin: 8px 0 0;
+  line-height: 1.7;
+}
+
+.staff-tax-case-details__section-title {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.staff-tax-case-details__section-description {
+  margin: 0 0 24px;
+}
+
+.staff-tax-case-details__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.staff-tax-case-details__select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font: inherit;
+}
+
+.staff-tax-case-details__select:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.staff-tax-case-details__actions {
+  margin-top: 20px;
+}
+
+.staff-tax-case-details__save-button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.staff-tax-case-details__save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.staff-tax-case-details__success {
+  margin: 16px 0 0;
+  font-weight: 600;
+}
+
+.staff-tax-case-details__error {
+  margin: 16px 0 0;
+  font-weight: 600;
+}
+
+.staff-tax-case-details__state {
+  padding: 24px;
+}
+
+.staff-tax-case-details__state--error {
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .staff-tax-case-details {
+    padding: 20px;
+  }
+
+  .staff-tax-case-details__header {
+    flex-direction: column;
+  }
+
+  .staff-tax-case-details__grid {
+    grid-template-columns: 1fr;
+  }
+}
