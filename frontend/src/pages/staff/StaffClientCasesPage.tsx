@@ -1,10 +1,12 @@
 import { FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+
 import { useClient } from '../../features/clients/useClient'
 import { useClientTaxCases } from '../../features/cases/useClientTaxCases'
 import { useCreateTaxCase } from '../../features/cases/useCreateTaxCase'
-import './StaffClientCasesPage.css'
+import { useEmployees } from '../../features/employees/useEmployees'
 
+import './StaffClientCasesPage.css'
 
 function getCaseStatusLabel(status: number) {
   switch (status) {
@@ -39,6 +41,7 @@ export default function StaffClientCasesPage() {
   )
 
   const [description, setDescription] = useState('')
+  const [employeeId, setEmployeeId] = useState('')
 
   const {
     data: client,
@@ -51,6 +54,12 @@ export default function StaffClientCasesPage() {
     isLoading: areCasesLoading,
     isError: areCasesError,
   } = useClientTaxCases(clientId)
+
+  const {
+    data: employees,
+    isLoading: areEmployeesLoading,
+    isError: areEmployeesError,
+  } = useEmployees()
 
   const createTaxCase = useCreateTaxCase()
 
@@ -66,18 +75,23 @@ export default function StaffClientCasesPage() {
     try {
       await createTaxCase.mutateAsync({
         clientId,
-        employeeId: null,
+        employeeId: employeeId || null,
         taxYear,
         description: description.trim(),
       })
 
       setDescription('')
+      setEmployeeId('')
     } catch {
       // Error state is displayed below.
     }
   }
 
-  if (isClientLoading || areCasesLoading) {
+  if (
+    isClientLoading ||
+    areCasesLoading ||
+    areEmployeesLoading
+  ) {
     return (
       <section className="staff-client-cases">
         <div className="staff-client-cases__state">
@@ -90,6 +104,7 @@ export default function StaffClientCasesPage() {
   if (
     isClientError ||
     areCasesError ||
+    areEmployeesError ||
     !client
   ) {
     return (
@@ -155,6 +170,43 @@ export default function StaffClientCasesPage() {
             />
           </div>
 
+          <div className="staff-client-cases__field">
+            <label htmlFor="tax-case-employee">
+              Assigned Employee
+            </label>
+
+            <select
+              id="tax-case-employee"
+              value={employeeId}
+              onChange={(event) =>
+                setEmployeeId(event.target.value)
+              }
+              disabled={
+                createTaxCase.isPending ||
+                areEmployeesLoading ||
+                areEmployeesError
+              }
+            >
+              <option value="">
+                Not assigned
+              </option>
+
+              {employees
+                ?.filter((employee) => employee.isActive)
+                .map((employee) => (
+                  <option
+                    key={employee.id}
+                    value={employee.id}
+                  >
+                    {employee.firstName} {employee.lastName}
+                    {employee.jobTitle
+                      ? ` — ${employee.jobTitle}`
+                      : ''}
+                  </option>
+                ))}
+            </select>
+          </div>
+
           <div className="staff-client-cases__field staff-client-cases__field--description">
             <label htmlFor="tax-case-description">
               Description
@@ -206,34 +258,48 @@ export default function StaffClientCasesPage() {
               <tr>
                 <th>Tax Year</th>
                 <th>Status</th>
+                <th>Assigned Employee</th>
                 <th>Description</th>
                 <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {taxCases.map((taxCase) => (
-                <tr key={taxCase.id}>
-                  <td>{taxCase.taxYear}</td>
+              {taxCases.map((taxCase) => {
+                const assignedEmployee = employees?.find(
+                  (employee) =>
+                    employee.id === taxCase.employeeId
+                )
 
-                  <td>
-                    {getCaseStatusLabel(taxCase.status)}
-                  </td>
+                return (
+                  <tr key={taxCase.id}>
+                    <td>{taxCase.taxYear}</td>
 
-                  <td>
-                    {taxCase.description || '—'}
-                  </td>
+                    <td>
+                      {getCaseStatusLabel(taxCase.status)}
+                    </td>
 
-                  <td>
-                    <Link
-                      to={`/staff/cases/${taxCase.id}`}
-                      className="staff-client-cases__view-link"
-                    >
-                      View Case
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      {assignedEmployee
+                        ? `${assignedEmployee.firstName} ${assignedEmployee.lastName}`
+                        : 'Not assigned'}
+                    </td>
+
+                    <td>
+                      {taxCase.description || '—'}
+                    </td>
+
+                    <td>
+                      <Link
+                        to={`/staff/cases/${taxCase.id}`}
+                        className="staff-client-cases__view-link"
+                      >
+                        View Case
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { useClient } from '../../features/clients/useClient'
 import { useTaxCase } from '../../features/cases/useTaxCase'
 import { useUpdateTaxCase } from '../../features/cases/useUpdateTaxCase'
+import { useEmployees } from '../../features/employees/useEmployees'
 
 import { CaseStatus } from '../../features/cases/case.types'
 
@@ -42,17 +44,42 @@ export default function StaffTaxCaseDetailsPage() {
     isError,
   } = useTaxCase(id)
 
+  const {
+    data: client,
+    isLoading: isClientLoading,
+    isError: isClientError,
+  } = useClient(taxCase?.clientId)
+
+  const {
+    data: employees,
+    isLoading: areEmployeesLoading,
+    isError: areEmployeesError,
+  } = useEmployees()
+
   const updateTaxCase = useUpdateTaxCase()
 
-  const [status, setStatus] = useState<CaseStatus>(CaseStatus.Open)
+  const [taxYear, setTaxYear] = useState(
+    new Date().getFullYear()
+  )
+
+  const [status, setStatus] = useState<CaseStatus>(
+    CaseStatus.Open
+  )
+
+  const [description, setDescription] = useState('')
+
+  const [employeeId, setEmployeeId] = useState('')
 
   useEffect(() => {
     if (taxCase) {
+      setTaxYear(taxCase.taxYear)
       setStatus(taxCase.status)
+      setDescription(taxCase.description)
+      setEmployeeId(taxCase.employeeId ?? '')
     }
   }, [taxCase])
 
-  function handleSaveStatus() {
+  function handleSaveChanges() {
     if (!taxCase || !id) {
       return
     }
@@ -60,10 +87,10 @@ export default function StaffTaxCaseDetailsPage() {
     updateTaxCase.mutate({
       id,
       request: {
-        employeeId: taxCase.employeeId ?? null,
-        taxYear: taxCase.taxYear,
+        employeeId: employeeId || null,
+        taxYear,
         status,
-        description: taxCase.description,
+        description: description.trim(),
       },
     })
   }
@@ -99,7 +126,21 @@ export default function StaffTaxCaseDetailsPage() {
     )
   }
 
-  const statusChanged = status !== taxCase.status
+  const assignedEmployee = employees?.find(
+    (employee) => employee.id === taxCase.employeeId
+  )
+
+  const activeEmployees = employees?.filter(
+    (employee) =>
+      employee.isActive ||
+      employee.id === taxCase.employeeId
+  )
+
+  const hasChanges =
+    taxYear !== taxCase.taxYear ||
+    status !== taxCase.status ||
+    description.trim() !== taxCase.description ||
+    employeeId !== (taxCase.employeeId ?? '')
 
   return (
     <section className="staff-tax-case-details">
@@ -121,15 +162,14 @@ export default function StaffTaxCaseDetailsPage() {
           </div>
 
           <Link
-            to="/staff"
+            to={`/staff/clients/${taxCase.clientId}/cases`}
             className="staff-tax-case-details__back-link"
           >
-            Back to Staff Panel
+            Back to Client Cases
           </Link>
         </div>
 
         <div className="staff-tax-case-details__card">
-
           <div className="staff-tax-case-details__grid">
 
             <div className="staff-tax-case-details__info">
@@ -154,21 +194,41 @@ export default function StaffTaxCaseDetailsPage() {
 
             <div className="staff-tax-case-details__info">
               <span className="staff-tax-case-details__label">
-                Client ID
+                Client
               </span>
 
               <span className="staff-tax-case-details__value">
-                {taxCase.clientId}
+                {isClientLoading
+                  ? 'Loading...'
+                  : client
+                    ? `${client.firstName} ${client.lastName}`
+                    : 'Unavailable'}
               </span>
             </div>
 
             <div className="staff-tax-case-details__info">
               <span className="staff-tax-case-details__label">
-                Employee ID
+                Email
               </span>
 
               <span className="staff-tax-case-details__value">
-                {taxCase.employeeId ?? 'Not assigned'}
+                {isClientLoading
+                  ? 'Loading...'
+                  : client?.email ?? 'Unavailable'}
+              </span>
+            </div>
+
+            <div className="staff-tax-case-details__info">
+              <span className="staff-tax-case-details__label">
+                Employee
+              </span>
+
+              <span className="staff-tax-case-details__value">
+                {areEmployeesLoading
+                  ? 'Loading...'
+                  : assignedEmployee
+                    ? `${assignedEmployee.firstName} ${assignedEmployee.lastName}`
+                    : 'Not assigned'}
               </span>
             </div>
 
@@ -180,21 +240,55 @@ export default function StaffTaxCaseDetailsPage() {
             </span>
 
             <p className="staff-tax-case-details__description-text">
-              {taxCase.description}
+              {taxCase.description ||
+                'No description provided.'}
             </p>
           </div>
 
+          {isClientError && (
+            <p className="staff-tax-case-details__error">
+              Client information could not be loaded.
+            </p>
+          )}
+
+          {areEmployeesError && (
+            <p className="staff-tax-case-details__error">
+              Employee information could not be loaded.
+            </p>
+          )}
         </div>
 
         <div className="staff-tax-case-details__card">
 
           <h2 className="staff-tax-case-details__section-title">
-            Update Case Status
+            Edit Tax Case
           </h2>
 
           <p className="staff-tax-case-details__section-description">
-            Change the current status of this tax case.
+            Update the tax year, status, employee, or description.
           </p>
+
+          <div className="staff-tax-case-details__field">
+            <label
+              htmlFor="taxYear"
+              className="staff-tax-case-details__label"
+            >
+              Tax Year
+            </label>
+
+            <input
+              id="taxYear"
+              type="number"
+              min="2000"
+              max="2100"
+              className="staff-tax-case-details__input"
+              value={taxYear}
+              onChange={(event) =>
+                setTaxYear(Number(event.target.value))
+              }
+              disabled={updateTaxCase.isPending}
+            />
+          </div>
 
           <div className="staff-tax-case-details__field">
             <label
@@ -241,33 +335,93 @@ export default function StaffTaxCaseDetailsPage() {
             </select>
           </div>
 
-          <div className="staff-tax-case-details__actions">
+          <div className="staff-tax-case-details__field">
+            <label
+              htmlFor="employee"
+              className="staff-tax-case-details__label"
+            >
+              Assigned Employee
+            </label>
 
+            <select
+              id="employee"
+              className="staff-tax-case-details__select"
+              value={employeeId}
+              onChange={(event) =>
+                setEmployeeId(event.target.value)
+              }
+              disabled={
+                updateTaxCase.isPending ||
+                areEmployeesLoading ||
+                areEmployeesError
+              }
+            >
+              <option value="">
+                Not assigned
+              </option>
+
+              {activeEmployees?.map((employee) => (
+                <option
+                  key={employee.id}
+                  value={employee.id}
+                >
+                  {employee.firstName} {employee.lastName}
+                  {employee.jobTitle
+                    ? ` — ${employee.jobTitle}`
+                    : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="staff-tax-case-details__field">
+            <label
+              htmlFor="description"
+              className="staff-tax-case-details__label"
+            >
+              Description
+            </label>
+
+            <textarea
+              id="description"
+              className="staff-tax-case-details__textarea"
+              value={description}
+              onChange={(event) =>
+                setDescription(event.target.value)
+              }
+              maxLength={2000}
+              rows={5}
+              disabled={updateTaxCase.isPending}
+            />
+          </div>
+
+          <div className="staff-tax-case-details__actions">
             <button
               type="button"
               className="staff-tax-case-details__save-button"
-              onClick={handleSaveStatus}
+              onClick={handleSaveChanges}
               disabled={
                 updateTaxCase.isPending ||
-                !statusChanged
+                !hasChanges ||
+                taxYear < 2000 ||
+                taxYear > 2100
               }
             >
               {updateTaxCase.isPending
                 ? 'Saving...'
-                : 'Save Status'}
+                : 'Save Changes'}
             </button>
-
           </div>
 
           {updateTaxCase.isSuccess && (
             <p className="staff-tax-case-details__success">
-              Status updated successfully.
+              Tax case updated successfully.
             </p>
           )}
 
           {updateTaxCase.isError && (
             <p className="staff-tax-case-details__error">
-              Failed to update status.
+              Failed to update tax case.
             </p>
           )}
 
