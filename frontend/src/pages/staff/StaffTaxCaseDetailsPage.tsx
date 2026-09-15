@@ -5,6 +5,10 @@ import { useClient } from '../../features/clients/useClient'
 import { useTaxCase } from '../../features/cases/useTaxCase'
 import { useUpdateTaxCase } from '../../features/cases/useUpdateTaxCase'
 import { useEmployees } from '../../features/employees/useEmployees'
+import { useTaxCaseDocuments } from '../../features/documents/useTaxCaseDocuments'
+import { useUploadClientDocument } from '../../features/documents/useUploadClientDocument'
+import { useDeleteClientDocument } from '../../features/documents/useDeleteClientDocument'
+import { downloadClientDocument } from '../../features/documents/documents.api'
 
 import { CaseStatus } from '../../features/cases/case.types'
 
@@ -35,6 +39,22 @@ function getStatusLabel(status: CaseStatus) {
   }
 }
 
+function formatFileSize(fileSize: number) {
+  if (fileSize < 1024) {
+    return `${fileSize} B`
+  }
+
+  if (fileSize < 1024 * 1024) {
+    return `${(fileSize / 1024).toFixed(1)} KB`
+  }
+
+  return `${(fileSize / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function formatUploadDate(uploadedAt: string) {
+  return new Date(uploadedAt).toLocaleDateString()
+}
+
 export default function StaffTaxCaseDetailsPage() {
   const { id } = useParams<{ id: string }>()
 
@@ -56,7 +76,15 @@ export default function StaffTaxCaseDetailsPage() {
     isError: areEmployeesError,
   } = useEmployees()
 
+  const {
+    data: documents,
+    isLoading: areDocumentsLoading,
+    isError: areDocumentsError,
+  } = useTaxCaseDocuments(id)
+
   const updateTaxCase = useUpdateTaxCase()
+  const uploadDocument = useUploadClientDocument()
+  const deleteDocument = useDeleteClientDocument()
 
   const [taxYear, setTaxYear] = useState(
     new Date().getFullYear()
@@ -69,6 +97,12 @@ export default function StaffTaxCaseDetailsPage() {
   const [description, setDescription] = useState('')
 
   const [employeeId, setEmployeeId] = useState('')
+
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null)
+
+  const [downloadingDocumentId, setDownloadingDocumentId] =
+    useState<string | null>(null)
 
   useEffect(() => {
     if (taxCase) {
@@ -93,6 +127,67 @@ export default function StaffTaxCaseDetailsPage() {
         description: description.trim(),
       },
     })
+  }
+
+  async function handleUploadDocument() {
+    if (!taxCase || !id || !selectedFile) {
+      return
+    }
+
+    try {
+      await uploadDocument.mutateAsync({
+        clientId: taxCase.clientId,
+        taxCaseId: id,
+        file: selectedFile,
+      })
+
+      setSelectedFile(null)
+    } catch {
+      // Error state is displayed below.
+    }
+  }
+
+  async function handleDownload(
+    documentId: string,
+    fileName: string
+  ) {
+    try {
+      setDownloadingDocumentId(documentId)
+
+      await downloadClientDocument(
+        documentId,
+        fileName
+      )
+    } finally {
+      setDownloadingDocumentId(null)
+    }
+  }
+
+  async function handleDeleteDocument(
+    documentId: string,
+    fileName: string
+  ) {
+    if (!taxCase || !id) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${fileName}"?`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteDocument.mutateAsync({
+        documentId,
+        clientId: taxCase.clientId,
+        taxCaseId: id,
+      })
+    } catch {
+      // Error state is displayed below.
+    }
   }
 
   if (isLoading) {
@@ -427,6 +522,168 @@ export default function StaffTaxCaseDetailsPage() {
 
         </div>
 
+        <div className="staff-tax-case-details__card">
+          <h2 className="staff-tax-case-details__section-title">
+            Documents
+          </h2>
+
+          <p className="staff-tax-case-details__section-description">
+            Upload and manage documents attached to this tax case.
+          </p>
+
+          <div className="staff-tax-case-details__document-upload">
+            <div className="staff-tax-case-details__document-file">
+              <label
+                htmlFor="caseDocument"
+                className="staff-tax-case-details__label"
+              >
+                Select File
+              </label>
+
+              <input
+                id="caseDocument"
+                type="file"
+                className="staff-tax-case-details__file-input"
+                onChange={(event) =>
+                  setSelectedFile(
+                    event.target.files?.[0] ?? null
+                  )
+                }
+                disabled={uploadDocument.isPending}
+              />
+            </div>
+
+            <button
+              type="button"
+              className="staff-tax-case-details__upload-button"
+              onClick={handleUploadDocument}
+              disabled={
+                !selectedFile ||
+                uploadDocument.isPending
+              }
+            >
+              {uploadDocument.isPending
+                ? 'Uploading...'
+                : 'Upload Document'}
+            </button>
+          </div>
+
+          {uploadDocument.isSuccess && (
+            <p className="staff-tax-case-details__success">
+              Document uploaded successfully.
+            </p>
+          )}
+
+          {uploadDocument.isError && (
+            <p className="staff-tax-case-details__error">
+              Failed to upload document.
+            </p>
+          )}
+
+          {deleteDocument.isError && (
+            <p className="staff-tax-case-details__error">
+              Failed to delete document.
+            </p>
+          )}
+
+          {areDocumentsLoading && (
+            <p className="staff-tax-case-details__state">
+              Loading documents...
+            </p>
+          )}
+
+          {areDocumentsError && (
+            <p className="staff-tax-case-details__error">
+              Documents could not be loaded.
+            </p>
+          )}
+
+          {!areDocumentsLoading &&
+            !areDocumentsError &&
+            documents?.length === 0 && (
+              <p className="staff-tax-case-details__state">
+                No documents are attached to this tax case.
+              </p>
+            )}
+
+          {!areDocumentsLoading &&
+            !areDocumentsError &&
+            documents &&
+            documents.length > 0 && (
+              <div className="staff-tax-case-details__documents-wrapper">
+                <table className="staff-tax-case-details__documents-table">
+                  <thead>
+                    <tr>
+                      <th>File Name</th>
+                      <th>File Size</th>
+                      <th>Uploaded</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {documents.map((document) => (
+                      <tr key={document.id}>
+                        <td>{document.fileName}</td>
+
+                        <td>
+                          {formatFileSize(document.fileSize)}
+                        </td>
+
+                        <td>
+                          {formatUploadDate(document.uploadedAt)}
+                        </td>
+
+                        <td>
+                          <div className="staff-tax-case-details__document-actions">
+                            <button
+                              type="button"
+                              className="staff-tax-case-details__download-button"
+                              onClick={() =>
+                                handleDownload(
+                                  document.id,
+                                  document.fileName
+                                )
+                              }
+                              disabled={
+                                downloadingDocumentId === document.id ||
+                                deleteDocument.isPending
+                              }
+                            >
+                              {downloadingDocumentId === document.id
+                                ? 'Downloading...'
+                                : 'Download'}
+                            </button>
+
+                            <button
+                              type="button"
+                              className="staff-tax-case-details__delete-button"
+                              onClick={() =>
+                                handleDeleteDocument(
+                                  document.id,
+                                  document.fileName
+                                )
+                              }
+                              disabled={
+                                deleteDocument.isPending ||
+                                downloadingDocumentId === document.id
+                              }
+                            >
+                              {deleteDocument.isPending &&
+                              deleteDocument.variables?.documentId ===
+                                document.id
+                                ? 'Deleting...'
+                                : 'Delete'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+        </div>
       </div>
     </section>
   )

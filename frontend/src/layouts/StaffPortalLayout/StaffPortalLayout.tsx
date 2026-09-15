@@ -8,8 +8,10 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  UserRoundCog,
   Users,
 } from 'lucide-react'
+
 
 import { useAuth } from '../../features/auth/useAuth'
 import './StaffPortalLayout.css'
@@ -69,6 +71,14 @@ export default function StaffPortalLayout() {
           >
             <Users size={19} />
             <span>Clients</span>
+          </NavLink>
+
+          <NavLink
+            to="/staff/employees"
+            className={getNavLinkClass}
+          >
+            <UserRoundCog size={19} />
+            <span>Employees</span>
           </NavLink>
 
           <NavLink

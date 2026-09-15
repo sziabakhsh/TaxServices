@@ -27,6 +27,7 @@ import ClientsPage from './pages/staff/ClientsPage'
 import StaffClientDocumentsPage from './pages/staff/StaffClientDocumentsPage'
 import StaffClientCasesPage from './pages/staff/StaffClientCasesPage'
 import StaffTaxCaseDetailsPage from './pages/staff/StaffTaxCaseDetailsPage'
+import EmployeesPage from './pages/staff/EmployeesPage'
 
 function SimplePage({ title }: { title: string }) {
   return (
@@ -115,6 +116,11 @@ export default function App() {
             <Route
               path="clients"
               element={<ClientsPage />}
+            />
+
+            <Route
+              path="employees"
+              element={<EmployeesPage />}
             />
 
             <Route

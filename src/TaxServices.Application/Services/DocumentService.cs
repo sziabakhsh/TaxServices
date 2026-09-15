@@ -23,9 +23,10 @@ namespace TaxServices.Application.Services
             _tenantContext = tenantContext;
         }
 
-        public async Task<DocumentResponse> UploadAsync(UploadDocumentRequest request, CancellationToken cancellationToken = default)
+        public async Task<DocumentResponse> UploadAsync(
+            UploadDocumentRequest request,
+            CancellationToken cancellationToken = default)
         {
-
             UploadFileException.CheckFileValidation(request);
 
             var clientExists = await _context.Clients
@@ -57,7 +58,8 @@ namespace TaxServices.Application.Services
 
             var storedFileName = $"{Guid.NewGuid()}{extension}";
 
-            var storagePath = $"{_tenantContext.TenantId}/{request.ClientId}/{storedFileName}";
+            var storagePath =
+                $"{_tenantContext.TenantId}/{request.ClientId}/{storedFileName}";
 
             await _fileStorageService.UploadAsync(
                 request.Content,
@@ -86,8 +88,8 @@ namespace TaxServices.Application.Services
         }
 
         public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(
-    Guid clientId,
-    CancellationToken cancellationToken = default)
+            Guid clientId,
+            CancellationToken cancellationToken = default)
         {
             return await _context.Documents
                 .AsNoTracking()
@@ -126,7 +128,42 @@ namespace TaxServices.Application.Services
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<DocumentResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByTaxCaseAsync(
+            Guid taxCaseId,
+            CancellationToken cancellationToken = default)
+        {
+            var taxCaseExists = await _context.TaxCases
+                .AsNoTracking()
+                .AnyAsync(
+                    tc => tc.Id == taxCaseId &&
+                          tc.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
+
+            if (!taxCaseExists)
+                throw new ArgumentException("Tax case does not exist.");
+
+            return await _context.Documents
+                .AsNoTracking()
+                .Where(d =>
+                    d.TaxCaseId == taxCaseId &&
+                    d.TenantId == _tenantContext.TenantId)
+                .OrderByDescending(d => d.UploadedAt)
+                .Select(d => new DocumentResponse
+                {
+                    Id = d.Id,
+                    ClientId = d.ClientId,
+                    TaxCaseId = d.TaxCaseId,
+                    FileName = d.OriginalFileName,
+                    ContentType = d.ContentType,
+                    FileSize = d.FileSize,
+                    UploadedAt = d.UploadedAt
+                })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<DocumentResponse?> GetByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .AsNoTracking()
@@ -135,10 +172,14 @@ namespace TaxServices.Application.Services
                          d.TenantId == _tenantContext.TenantId,
                     cancellationToken);
 
-            return document == null ? null : MapToResponse(document);
+            return document == null
+                ? null
+                : MapToResponse(document);
         }
 
-        public async Task<Stream?> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Stream?> DownloadAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .AsNoTracking()
@@ -150,10 +191,14 @@ namespace TaxServices.Application.Services
             if (document == null)
                 return null;
 
-            return await _fileStorageService.DownloadAsync(document.StoragePath, cancellationToken);
+            return await _fileStorageService.DownloadAsync(
+                document.StoragePath,
+                cancellationToken);
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .FirstOrDefaultAsync(
@@ -173,7 +218,8 @@ namespace TaxServices.Application.Services
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        private static DocumentResponse MapToResponse(Document document)
+        private static DocumentResponse MapToResponse(
+            Document document)
         {
             return new DocumentResponse
             {
@@ -187,12 +233,15 @@ namespace TaxServices.Application.Services
             };
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(
+            Guid clientId,
+            CancellationToken cancellationToken = default)
         {
             var clientExists = await _context.Clients
                 .AsNoTracking()
                 .AnyAsync(
-                    c => c.Id == clientId && c.TenantId == _tenantContext.TenantId,
+                    c => c.Id == clientId &&
+                         c.TenantId == _tenantContext.TenantId,
                     cancellationToken);
 
             if (!clientExists)

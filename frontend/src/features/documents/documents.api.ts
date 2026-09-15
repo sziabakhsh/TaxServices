@@ -60,8 +60,23 @@ export async function downloadMyDocument(
   window.URL.revokeObjectURL(url)
 }
 
-export async function getClientDocuments(clientId: string) {
-  const response = await api.get(`/documents/client/${clientId}`)
+export async function getClientDocuments(
+  clientId: string
+): Promise<DocumentItem[]> {
+  const response = await api.get<DocumentItem[]>(
+    `/documents/client/${clientId}`
+  )
+
+  return response.data
+}
+
+export async function getTaxCaseDocuments(
+  taxCaseId: string
+): Promise<DocumentItem[]> {
+  const response = await api.get<DocumentItem[]>(
+    `/documents/case/${taxCaseId}`
+  )
+
   return response.data
 }
 
@@ -87,6 +102,14 @@ export async function downloadClientDocument(
   link.remove()
 
   window.URL.revokeObjectURL(url)
+}
+
+export async function deleteClientDocument(
+  documentId: string
+): Promise<void> {
+  await api.delete(
+    `/documents/${documentId}`
+  )
 }
 
 export async function uploadClientDocument(

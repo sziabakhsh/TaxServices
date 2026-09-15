@@ -15,5 +15,7 @@ namespace TaxServices.Application.Interfaces
         Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<DocumentResponse>> GetByTaxCaseAsync(Guid taxCaseId, CancellationToken cancellationToken = default);
     }
 }

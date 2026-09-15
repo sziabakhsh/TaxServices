@@ -1,26 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { uploadClientDocument } from './documents.api'
+import { deleteClientDocument } from './documents.api'
 
-type UploadClientDocumentRequest = {
+type DeleteClientDocumentRequest = {
+  documentId: string
   clientId: string
-  file: File
-  taxCaseId?: string
+  taxCaseId?: string | null
 }
 
-export function useUploadClientDocument() {
+export function useDeleteClientDocument() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({
-      clientId,
-      file,
-      taxCaseId,
-    }: UploadClientDocumentRequest) =>
-      uploadClientDocument(
-        clientId,
-        file,
-        taxCaseId
-      ),
+      documentId,
+    }: DeleteClientDocumentRequest) =>
+      deleteClientDocument(documentId),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
