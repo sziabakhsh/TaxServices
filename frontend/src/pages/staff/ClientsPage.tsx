@@ -142,20 +142,24 @@ export default function ClientsPage() {
                   </td>
 
                   <td>
-                    <Link
-                      to={`/staff/clients/${client.id}/cases`}
-                      className="staff-clients-page__action"
-                    >
-                      View Tax Cases
-                    </Link>
-                    <Link
-                      to={`/staff/clients/${client.id}/documents`}
-                      className="staff-clients-page__action"
-                    >
-                      View Documents
-                    </Link>
+                    <div className="staff-clients-page__actions">
+                      <Link
+                        to={`/staff/clients/${client.id}/cases`}
+                        className="staff-clients-page__action"
+                      >
+                        View Tax Cases
+                      </Link>
 
+                      <Link
+                        to={`/staff/clients/${client.id}/documents`}
+                        className="staff-clients-page__action"
+                      >
+                        View Documents
+                      </Link>
+                    </div>
                   </td>
+
+
                 </tr>
               ))}
             </tbody>

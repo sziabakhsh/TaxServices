@@ -249,19 +249,6 @@
   background: #1f603b;
 }
 
-@media (max-width: 700px) {
-  .staff-employees-page__header {
-    flex-direction: column;
-  }
-
-  .staff-employees-page__form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .staff-employees-page__add-button {
-    width: 100%;
-  }
-}
 
 .staff-employees-page__form-error {
   margin-top: 20px;
@@ -337,3 +324,180 @@
   cursor: not-allowed;
 }
 
+/* Responsive */
+
+@media (max-width: 700px) {
+  .staff-employees-page__header {
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .staff-employees-page__header h1 {
+    font-size: 28px;
+  }
+
+  .staff-employees-page__add-button {
+    width: 100%;
+  }
+
+  /* Form */
+
+  .staff-employees-page__form-card {
+    padding: 18px;
+  }
+
+  .staff-employees-page__form-header {
+    gap: 12px;
+  }
+
+  .staff-employees-page__form-header h2 {
+    font-size: 18px;
+  }
+
+  .staff-employees-page__form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .staff-employees-page__form-actions {
+    justify-content: stretch;
+  }
+
+  .staff-employees-page__submit-button {
+    width: 100%;
+  }
+
+  /* Search */
+
+  .staff-employees-page__search {
+    max-width: none;
+    width: 100%;
+  }
+
+  .staff-employees-page__search-input {
+    box-sizing: border-box;
+  }
+
+  /* Employee cards */
+
+  .staff-employees-page__table-wrapper {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .staff-employees-page__table,
+  .staff-employees-page__table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .staff-employees-page__table thead {
+    display: none;
+  }
+
+  .staff-employees-page__table tr {
+    display: block;
+    margin-bottom: 14px;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+  }
+
+  .staff-employees-page__table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf0ee;
+    box-sizing: border-box;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .staff-employees-page__table td::before {
+    flex: 0 0 82px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #68756e;
+  }
+
+  .staff-employees-page__table td:nth-child(1)::before {
+    content: 'Employee';
+  }
+
+  .staff-employees-page__table td:nth-child(2)::before {
+    content: 'Email';
+  }
+
+  .staff-employees-page__table td:nth-child(3)::before {
+    content: 'Phone';
+  }
+
+  .staff-employees-page__table td:nth-child(4)::before {
+    content: 'Job Title';
+  }
+
+  .staff-employees-page__table td:nth-child(5)::before {
+    content: 'Status';
+  }
+
+  .staff-employees-page__table td:nth-child(6)::before {
+    content: 'Actions';
+  }
+
+  .staff-employees-page__table td:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .staff-employees-page__actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .staff-employees-page__form-card {
+    padding: 16px;
+  }
+
+  .staff-employees-page__form-header {
+    flex-direction: column;
+  }
+
+  .staff-employees-page__cancel-button {
+    width: 100%;
+  }
+
+  .staff-employees-page__table tr {
+    padding: 16px;
+  }
+
+  .staff-employees-page__table td {
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .staff-employees-page__table td::before {
+    flex-basis: auto;
+  }
+
+  .staff-employees-page__actions {
+    width: 100%;
+  }
+
+  .staff-employees-page__edit-button,
+  .staff-employees-page__status-button {
+    flex: 1;
+  }
+}

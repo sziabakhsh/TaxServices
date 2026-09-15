@@ -131,3 +131,135 @@
   gap: 10px;
   flex-wrap: wrap;
 } 
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .staff-clients-page__header {
+    margin-bottom: 22px;
+  }
+
+  .staff-clients-page__header h1 {
+    font-size: 28px;
+  }
+
+  /* Search */
+
+  .staff-clients-page__search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .staff-clients-page__search-input {
+    box-sizing: border-box;
+  }
+
+  /* Client cards */
+
+  .staff-clients-page__table-wrapper {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .staff-clients-page__table,
+  .staff-clients-page__table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .staff-clients-page__table thead {
+    display: none;
+  }
+
+  .staff-clients-page__table tr {
+    display: block;
+    margin-bottom: 14px;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+  }
+
+  .staff-clients-page__table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf0ee;
+    box-sizing: border-box;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .staff-clients-page__table td::before {
+    flex: 0 0 78px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #68756e;
+  }
+
+  .staff-clients-page__table td:nth-child(1)::before {
+    content: 'Client';
+  }
+
+  .staff-clients-page__table td:nth-child(2)::before {
+    content: 'Email';
+  }
+
+  .staff-clients-page__table td:nth-child(3)::before {
+    content: 'Phone';
+  }
+
+  .staff-clients-page__table td:nth-child(4)::before {
+    content: 'Status';
+  }
+
+  .staff-clients-page__table td:nth-child(5)::before {
+    content: 'Actions';
+  }
+
+  .staff-clients-page__table td:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .staff-clients-page__actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 420px) {
+  .staff-clients-page__table tr {
+    padding: 16px;
+  }
+
+  .staff-clients-page__table td {
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .staff-clients-page__table td::before {
+    flex-basis: auto;
+  }
+
+  .staff-clients-page__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .staff-clients-page__action {
+    display: block;
+    width: 100%;
+    padding: 8px 0;
+  }
+}
+

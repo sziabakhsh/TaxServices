@@ -1,3 +1,42 @@
+.portal-dashboard {
+  width: 100%;
+  min-height: 100%;
+}
+
+.portal-dashboard__container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Header */
+
+.portal-dashboard__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #087fc9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.portal-dashboard__title {
+  margin: 0 0 10px;
+  color: var(--color-heading);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.portal-dashboard__description {
+  max-width: 680px;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* Loading / Error */
+
 .portal-dashboard__state {
   padding: 24px;
   color: var(--color-text-muted);
@@ -10,6 +49,8 @@
   color: var(--color-danger);
 }
 
+/* Account Cards */
+
 .portal-dashboard__account-card {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -18,11 +59,13 @@
 }
 
 .portal-dashboard__account-item {
+  min-width: 0;
   padding: 22px;
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
 .portal-dashboard__account-label {
@@ -35,12 +78,14 @@
 
 .portal-dashboard__account-value {
   display: block;
-  overflow: hidden;
+  min-width: 0;
   color: var(--color-heading);
   font-size: 0.95rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
+
+/* Status */
 
 .portal-dashboard__status {
   display: inline-flex;
@@ -61,14 +106,53 @@
   background: rgb(192 57 43 / 10%);
 }
 
+/* Medium Desktop / Tablet */
+
 @media (max-width: 1100px) {
   .portal-dashboard__account-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* Mobile */
+
 @media (max-width: 600px) {
+  .portal-dashboard__title {
+    font-size: 1.65rem;
+  }
+
+  .portal-dashboard__description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .portal-dashboard__account-card {
     grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .portal-dashboard__account-item {
+    padding: 18px;
+  }
+
+  .portal-dashboard__account-value {
+    font-size: 0.9rem;
+  }
+
+  .portal-dashboard__state {
+    padding: 18px;
+  }
+}
+
+/* Small Mobile */
+
+@media (max-width: 420px) {
+  .portal-dashboard__title {
+    font-size: 1.5rem;
+  }
+
+  .portal-dashboard__account-item {
+    padding: 16px;
   }
 }

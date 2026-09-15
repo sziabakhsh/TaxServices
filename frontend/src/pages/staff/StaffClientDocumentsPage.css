@@ -89,11 +89,6 @@
   background: #fbf5f4;
 }
 
-@media (max-width: 700px) {
-  .staff-client-documents__header {
-    flex-direction: column;
-  }
-}
 
 .staff-client-documents__download {
   padding: 8px 12px;
@@ -197,4 +192,168 @@
   border-radius: 8px;
   background: #ffffff;
   font: inherit;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  /* Header */
+
+  .staff-client-documents__header {
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .staff-client-documents__header h1 {
+    font-size: 28px;
+  }
+
+  .staff-client-documents__back {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  /* Upload */
+
+  .staff-client-documents__upload {
+    margin-bottom: 24px;
+    padding: 18px;
+  }
+
+  .staff-client-documents__upload-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .staff-client-documents__field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .staff-client-documents__field input,
+  .staff-client-documents__field select {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+  }
+
+  .staff-client-documents__upload-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Document cards */
+
+  .staff-client-documents__table-wrapper {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .staff-client-documents__table,
+  .staff-client-documents__table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .staff-client-documents__table thead {
+    display: none;
+  }
+
+  .staff-client-documents__table tr {
+    display: block;
+    margin-bottom: 14px;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+  }
+
+  .staff-client-documents__table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf0ee;
+    box-sizing: border-box;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .staff-client-documents__table td::before {
+    flex: 0 0 90px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #68756e;
+  }
+
+  .staff-client-documents__table td:nth-child(1)::before {
+    content: 'File';
+  }
+
+  .staff-client-documents__table td:nth-child(2)::before {
+    content: 'Size';
+  }
+
+  .staff-client-documents__table td:nth-child(3)::before {
+    content: 'Uploaded';
+  }
+
+  .staff-client-documents__table td:nth-child(4)::before {
+    content: 'Tax Year';
+  }
+
+  .staff-client-documents__table td:nth-child(5)::before {
+    content: 'Case Status';
+  }
+
+  .staff-client-documents__table td:nth-child(6)::before {
+    content: 'Actions';
+  }
+
+  .staff-client-documents__table td:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .staff-client-documents__download {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .staff-client-documents__header h1 {
+    font-size: 24px;
+  }
+
+  .staff-client-documents__upload {
+    padding: 16px;
+  }
+
+  .staff-client-documents__table tr {
+    padding: 16px;
+  }
+
+  .staff-client-documents__table td {
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .staff-client-documents__table td::before {
+    flex-basis: auto;
+  }
+
+  .staff-client-documents__download {
+    width: 100%;
+  }
 }

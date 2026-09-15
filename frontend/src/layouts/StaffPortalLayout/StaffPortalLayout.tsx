@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   NavLink,
   Outlet,
@@ -8,10 +10,11 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  Menu,
   UserRoundCog,
   Users,
+  X,
 } from 'lucide-react'
-
 
 import { useAuth } from '../../features/auth/useAuth'
 import './StaffPortalLayout.css'
@@ -19,6 +22,9 @@ import './StaffPortalLayout.css'
 export default function StaffPortalLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =
+    useState(false)
 
   const getNavLinkClass = ({
     isActive,
@@ -34,9 +40,61 @@ export default function StaffPortalLayout() {
     navigate('/', { replace: true })
   }
 
+  function handleNavigation() {
+    setIsMobileMenuOpen(false)
+  }
+
   return (
     <div className="staff-layout">
-      <aside className="staff-layout__sidebar">
+      <header className="staff-layout__mobile-header">
+        <NavLink
+          to="/"
+          className="staff-layout__mobile-brand"
+        >
+          <img
+            src="/amazing-logo.png"
+            alt="Amazing Accountant and Tax Services"
+            className="staff-layout__mobile-logo"
+          />
+        </NavLink>
+
+        <button
+          type="button"
+          className="staff-layout__menu-button"
+          aria-label={
+            isMobileMenuOpen
+              ? 'Close navigation menu'
+              : 'Open navigation menu'
+          }
+          aria-expanded={isMobileMenuOpen}
+          onClick={() =>
+            setIsMobileMenuOpen((current) => !current)
+          }
+        >
+          {isMobileMenuOpen ? (
+            <X size={24} />
+          ) : (
+            <Menu size={24} />
+          )}
+        </button>
+      </header>
+
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          className="staff-layout__overlay"
+          aria-label="Close navigation menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside
+        className={
+          isMobileMenuOpen
+            ? 'staff-layout__sidebar staff-layout__sidebar--open'
+            : 'staff-layout__sidebar'
+        }
+      >
         <div className="staff-layout__brand">
           <NavLink to="/">
             <img
@@ -60,6 +118,7 @@ export default function StaffPortalLayout() {
             to="/staff"
             end
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
             <LayoutDashboard size={19} />
             <span>Dashboard</span>
@@ -68,6 +127,7 @@ export default function StaffPortalLayout() {
           <NavLink
             to="/staff/clients"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
             <Users size={19} />
             <span>Clients</span>
@@ -76,6 +136,7 @@ export default function StaffPortalLayout() {
           <NavLink
             to="/staff/employees"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
             <UserRoundCog size={19} />
             <span>Employees</span>
@@ -84,6 +145,7 @@ export default function StaffPortalLayout() {
           <NavLink
             to="/staff/documents"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
             <FileText size={19} />
             <span>Documents</span>

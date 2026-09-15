@@ -95,7 +95,6 @@ export default function StaffTaxCaseDetailsPage() {
   )
 
   const [description, setDescription] = useState('')
-
   const [employeeId, setEmployeeId] = useState('')
 
   const [selectedFile, setSelectedFile] =
@@ -240,7 +239,6 @@ export default function StaffTaxCaseDetailsPage() {
   return (
     <section className="staff-tax-case-details">
       <div className="staff-tax-case-details__container">
-
         <div className="staff-tax-case-details__header">
           <div>
             <span className="staff-tax-case-details__eyebrow">
@@ -264,9 +262,10 @@ export default function StaffTaxCaseDetailsPage() {
           </Link>
         </div>
 
+        {/* Case Information */}
+
         <div className="staff-tax-case-details__card">
           <div className="staff-tax-case-details__grid">
-
             <div className="staff-tax-case-details__info">
               <span className="staff-tax-case-details__label">
                 Tax Year
@@ -326,7 +325,6 @@ export default function StaffTaxCaseDetailsPage() {
                     : 'Not assigned'}
               </span>
             </div>
-
           </div>
 
           <div className="staff-tax-case-details__description">
@@ -353,8 +351,9 @@ export default function StaffTaxCaseDetailsPage() {
           )}
         </div>
 
-        <div className="staff-tax-case-details__card">
+        {/* Edit Tax Case */}
 
+        <div className="staff-tax-case-details__card">
           <h2 className="staff-tax-case-details__section-title">
             Edit Tax Case
           </h2>
@@ -363,131 +362,134 @@ export default function StaffTaxCaseDetailsPage() {
             Update the tax year, status, employee, or description.
           </p>
 
-          <div className="staff-tax-case-details__field">
-            <label
-              htmlFor="taxYear"
-              className="staff-tax-case-details__label"
-            >
-              Tax Year
-            </label>
+          <div className="staff-tax-case-details__edit-grid">
+            <div className="staff-tax-case-details__field">
+              <label
+                htmlFor="taxYear"
+                className="staff-tax-case-details__label"
+              >
+                Tax Year
+              </label>
 
-            <input
-              id="taxYear"
-              type="number"
-              min="2000"
-              max="2100"
-              className="staff-tax-case-details__input"
-              value={taxYear}
-              onChange={(event) =>
-                setTaxYear(Number(event.target.value))
-              }
-              disabled={updateTaxCase.isPending}
-            />
-          </div>
+              <input
+                id="taxYear"
+                type="number"
+                min="2000"
+                max="2100"
+                className="staff-tax-case-details__input"
+                value={taxYear}
+                onChange={(event) =>
+                  setTaxYear(Number(event.target.value))
+                }
+                disabled={updateTaxCase.isPending}
+              />
+            </div>
 
-          <div className="staff-tax-case-details__field">
-            <label
-              htmlFor="status"
-              className="staff-tax-case-details__label"
-            >
-              Case Status
-            </label>
+            <div className="staff-tax-case-details__field">
+              <label
+                htmlFor="status"
+                className="staff-tax-case-details__label"
+              >
+                Case Status
+              </label>
 
-            <select
-              id="status"
-              className="staff-tax-case-details__select"
-              value={status}
-              onChange={(event) =>
-                setStatus(
-                  Number(event.target.value) as CaseStatus
-                )
-              }
-              disabled={updateTaxCase.isPending}
-            >
-              <option value={CaseStatus.Draft}>
-                Draft
-              </option>
-
-              <option value={CaseStatus.Open}>
-                Open
-              </option>
-
-              <option value={CaseStatus.InProgress}>
-                In Progress
-              </option>
-
-              <option value={CaseStatus.WaitingForClient}>
-                Waiting for Client
-              </option>
-
-              <option value={CaseStatus.Completed}>
-                Completed
-              </option>
-
-              <option value={CaseStatus.Cancelled}>
-                Cancelled
-              </option>
-            </select>
-          </div>
-
-          <div className="staff-tax-case-details__field">
-            <label
-              htmlFor="employee"
-              className="staff-tax-case-details__label"
-            >
-              Assigned Employee
-            </label>
-
-            <select
-              id="employee"
-              className="staff-tax-case-details__select"
-              value={employeeId}
-              onChange={(event) =>
-                setEmployeeId(event.target.value)
-              }
-              disabled={
-                updateTaxCase.isPending ||
-                areEmployeesLoading ||
-                areEmployeesError
-              }
-            >
-              <option value="">
-                Not assigned
-              </option>
-
-              {activeEmployees?.map((employee) => (
-                <option
-                  key={employee.id}
-                  value={employee.id}
-                >
-                  {employee.firstName} {employee.lastName}
-                  {employee.jobTitle
-                    ? ` — ${employee.jobTitle}`
-                    : ''}
+              <select
+                id="status"
+                className="staff-tax-case-details__select"
+                value={status}
+                onChange={(event) =>
+                  setStatus(
+                    Number(event.target.value) as CaseStatus
+                  )
+                }
+                disabled={updateTaxCase.isPending}
+              >
+                <option value={CaseStatus.Draft}>
+                  Draft
                 </option>
-              ))}
-            </select>
-          </div>
 
-          <div className="staff-tax-case-details__field">
-            <label
-              htmlFor="description"
-              className="staff-tax-case-details__label"
-            >
-              Description
-            </label>
+                <option value={CaseStatus.Open}>
+                  Open
+                </option>
 
-            <textarea
-              id="description"
-              className="staff-tax-case-details__textarea"
-              value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
-              maxLength={2000}
-              rows={5}
-              disabled={updateTaxCase.isPending}
-            />
+                <option value={CaseStatus.InProgress}>
+                  In Progress
+                </option>
+
+                <option value={CaseStatus.WaitingForClient}>
+                  Waiting for Client
+                </option>
+
+                <option value={CaseStatus.Completed}>
+                  Completed
+                </option>
+
+                <option value={CaseStatus.Cancelled}>
+                  Cancelled
+                </option>
+              </select>
+            </div>
+
+            <div className="staff-tax-case-details__field">
+              <label
+                htmlFor="employee"
+                className="staff-tax-case-details__label"
+              >
+                Assigned Employee
+              </label>
+
+              <select
+                id="employee"
+                className="staff-tax-case-details__select"
+                value={employeeId}
+                onChange={(event) =>
+                  setEmployeeId(event.target.value)
+                }
+                disabled={
+                  updateTaxCase.isPending ||
+                  areEmployeesLoading ||
+                  areEmployeesError
+                }
+              >
+                <option value="">
+                  Not assigned
+                </option>
+
+                {activeEmployees?.map((employee) => (
+                  <option
+                    key={employee.id}
+                    value={employee.id}
+                  >
+                    {employee.firstName}{' '}
+                    {employee.lastName}
+                    {employee.jobTitle
+                      ? ` — ${employee.jobTitle}`
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="staff-tax-case-details__field staff-tax-case-details__field--description">
+              <label
+                htmlFor="description"
+                className="staff-tax-case-details__label"
+              >
+                Description
+              </label>
+
+              <textarea
+                id="description"
+                className="staff-tax-case-details__textarea"
+                value={description}
+                onChange={(event) =>
+                  setDescription(event.target.value)
+                }
+                maxLength={2000}
+                rows={5}
+                disabled={updateTaxCase.isPending}
+              />
+            </div>
           </div>
 
           <div className="staff-tax-case-details__actions">
@@ -519,8 +521,9 @@ export default function StaffTaxCaseDetailsPage() {
               Failed to update tax case.
             </p>
           )}
-
         </div>
+
+        {/* Documents */}
 
         <div className="staff-tax-case-details__card">
           <h2 className="staff-tax-case-details__section-title">
@@ -627,11 +630,15 @@ export default function StaffTaxCaseDetailsPage() {
                         <td>{document.fileName}</td>
 
                         <td>
-                          {formatFileSize(document.fileSize)}
+                          {formatFileSize(
+                            document.fileSize
+                          )}
                         </td>
 
                         <td>
-                          {formatUploadDate(document.uploadedAt)}
+                          {formatUploadDate(
+                            document.uploadedAt
+                          )}
                         </td>
 
                         <td>
@@ -646,11 +653,13 @@ export default function StaffTaxCaseDetailsPage() {
                                 )
                               }
                               disabled={
-                                downloadingDocumentId === document.id ||
+                                downloadingDocumentId ===
+                                  document.id ||
                                 deleteDocument.isPending
                               }
                             >
-                              {downloadingDocumentId === document.id
+                              {downloadingDocumentId ===
+                              document.id
                                 ? 'Downloading...'
                                 : 'Download'}
                             </button>
@@ -666,12 +675,13 @@ export default function StaffTaxCaseDetailsPage() {
                               }
                               disabled={
                                 deleteDocument.isPending ||
-                                downloadingDocumentId === document.id
+                                downloadingDocumentId ===
+                                  document.id
                               }
                             >
                               {deleteDocument.isPending &&
-                              deleteDocument.variables?.documentId ===
-                                document.id
+                              deleteDocument.variables
+                                ?.documentId === document.id
                                 ? 'Deleting...'
                                 : 'Delete'}
                             </button>

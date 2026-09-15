@@ -1,13 +1,16 @@
 .documents-page {
+  width: 100%;
   min-height: 100%;
-  padding: 32px;
 }
 
 .documents-page__container {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
+
+/* Header */
 
 .documents-page__header {
   margin-bottom: 28px;
@@ -16,27 +19,29 @@
 .documents-page__eyebrow {
   display: inline-block;
   margin-bottom: 8px;
+  color: #6b7280;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6b7280;
 }
 
 .documents-page__title {
   margin: 0 0 10px;
+  color: #1f2937;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #1f2937;
 }
 
 .documents-page__description {
   margin: 0;
+  color: #6b7280;
   font-size: 1rem;
   line-height: 1.6;
-  color: #6b7280;
 }
+
+/* Upload Card */
 
 .documents-page__card {
   padding: 28px;
@@ -44,6 +49,7 @@
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
 }
 
 .documents-page__form {
@@ -56,36 +62,40 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .documents-page__label {
+  color: #374151;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #374151;
 }
 
 .documents-page__optional {
-  font-weight: 400;
   color: #9ca3af;
+  font-weight: 400;
 }
+
+/* Inputs */
 
 .documents-page__input,
 .documents-page__file-input {
   width: 100%;
+  min-height: 44px;
   box-sizing: border-box;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #ffffff;
-  font: inherit;
   color: #1f2937;
+  font: inherit;
 }
 
 .documents-page__input {
-  padding: 11px 12px;
+  padding: 10px 12px;
 }
 
 .documents-page__file-input {
-  padding: 9px;
+  padding: 8px;
 }
 
 .documents-page__input:focus,
@@ -95,10 +105,26 @@
   box-shadow: 0 0 0 3px rgba(8, 127, 201, 0.1);
 }
 
+/* Selected File */
+
+.documents-page__selected-file {
+  padding: 11px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Messages */
+
 .documents-page__message {
   padding: 12px 14px;
   border-radius: 8px;
   font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .documents-page__message--success {
@@ -113,10 +139,13 @@
   color: #991b1b;
 }
 
+/* Submit */
+
 .documents-page__submit {
   align-self: flex-start;
   min-width: 160px;
-  padding: 11px 20px;
+  min-height: 44px;
+  padding: 10px 20px;
   border: 0;
   border-radius: 8px;
   background: #087fc9;
@@ -138,33 +167,39 @@
   opacity: 0.55;
 }
 
+/* Field State */
+
+.documents-page__field-state {
+  padding: 11px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.documents-page__field-state--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Loading / Error */
+
 .documents-page__state {
   padding: 24px;
-  text-align: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
   color: #6b7280;
+  text-align: center;
 }
 
 .documents-page__state--error {
   color: #991b1b;
 }
 
-@media (max-width: 768px) {
-  .documents-page {
-    padding: 20px;
-  }
-
-  .documents-page__card {
-    padding: 20px;
-  }
-
-  .documents-page__title {
-    font-size: 1.65rem;
-  }
-
-  .documents-page__submit {
-    width: 100%;
-  }
-}
+/* Documents Section */
 
 .documents-page__list-section {
   margin-top: 32px;
@@ -176,15 +211,18 @@
 
 .documents-page__list-title {
   margin: 0 0 6px;
+  color: #1f2937;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1f2937;
 }
 
 .documents-page__list-description {
   margin: 0;
   color: #6b7280;
+  line-height: 1.5;
 }
+
+/* Documents List */
 
 .documents-page__list {
   display: flex;
@@ -214,19 +252,20 @@
 }
 
 .documents-page__document-name {
-  overflow: hidden;
+  color: #1f2937;
   font-size: 0.98rem;
   font-weight: 600;
-  color: #1f2937;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .documents-page__document-meta {
   margin-top: 5px;
-  font-size: 0.84rem;
   color: #9ca3af;
+  font-size: 0.84rem;
 }
+
+/* Document Actions */
 
 .documents-page__document-actions {
   display: flex;
@@ -237,13 +276,15 @@
 
 .documents-page__document-size {
   min-width: 80px;
-  text-align: right;
-  font-size: 0.86rem;
   color: #6b7280;
+  font-size: 0.86rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .documents-page__download {
   min-width: 100px;
+  min-height: 38px;
   padding: 8px 14px;
   border: 1px solid #087fc9;
   border-radius: 7px;
@@ -269,47 +310,145 @@
   opacity: 0.55;
 }
 
+/* Empty State */
+
+.documents-page__empty {
+  padding: 28px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* =========================
+   Tablet
+   ========================= */
+
+@media (max-width: 768px) {
+  .documents-page__title {
+    font-size: 1.75rem;
+  }
+
+  .documents-page__card {
+    padding: 22px;
+  }
+}
+
+/* =========================
+   Mobile
+   ========================= */
+
 @media (max-width: 600px) {
+  .documents-page__header {
+    margin-bottom: 22px;
+  }
+
+  .documents-page__title {
+    font-size: 1.6rem;
+  }
+
+  .documents-page__description {
+    font-size: 0.95rem;
+  }
+
+  .documents-page__card {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .documents-page__form {
+    gap: 18px;
+  }
+
+  .documents-page__submit {
+    width: 100%;
+  }
+
+  .documents-page__list-section {
+    margin-top: 28px;
+  }
+
+  /* Each document becomes a card */
+
+  .documents-page__list {
+    gap: 12px;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
   .documents-page__document {
-    align-items: flex-start;
     flex-direction: column;
-    gap: 14px;
+    align-items: stretch;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  .documents-page__document:last-child {
+    border-bottom: 1px solid #e5e7eb;
   }
 
   .documents-page__document-info {
     width: 100%;
   }
 
+  .documents-page__document-name {
+    font-size: 0.95rem;
+  }
+
   .documents-page__document-actions {
     width: 100%;
     justify-content: space-between;
+    gap: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
   }
 
   .documents-page__document-size {
-    min-width: auto;
+    min-width: 0;
     text-align: left;
   }
 }
 
-.documents-page__empty {
-  padding: 28px;
-  border: 1px dashed #d1d5db;
-  border-radius: 12px;
-  text-align: center;
-  color: #6b7280;
-}
+/* =========================
+   Small Mobile
+   ========================= */
 
-.documents-page__field-state {
-  padding: 11px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #f9fafb;
-  font-size: 0.9rem;
-  color: #6b7280;
-}
+@media (max-width: 420px) {
+  .documents-page__title {
+    font-size: 1.5rem;
+  }
 
-.documents-page__field-state--error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  .documents-page__card {
+    padding: 16px;
+  }
+
+  .documents-page__document {
+    padding: 16px;
+  }
+
+  .documents-page__document-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .documents-page__document-size {
+    width: 100%;
+  }
+
+  .documents-page__download {
+    width: 100%;
+  }
+
+  .documents-page__empty {
+    padding: 22px 16px;
+  }
+
+  .documents-page__state {
+    padding: 20px 16px;
+  }
 }

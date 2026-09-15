@@ -4,9 +4,13 @@
 }
 
 .staff-tax-case-details__container {
+  width: 100%;
   max-width: 1000px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
+
+/* Header */
 
 .staff-tax-case-details__header {
   display: flex;
@@ -42,13 +46,18 @@
   font-weight: 600;
 }
 
+/* Card */
+
 .staff-tax-case-details__card {
   margin-bottom: 24px;
   padding: 24px;
   border: 1px solid #dddddd;
   border-radius: 12px;
   background-color: #ffffff;
+  box-sizing: border-box;
 }
+
+/* Case Information */
 
 .staff-tax-case-details__grid {
   display: grid;
@@ -81,6 +90,8 @@
   line-height: 1.7;
 }
 
+/* Section */
+
 .staff-tax-case-details__section-title {
   margin: 0 0 8px;
   font-size: 21px;
@@ -90,21 +101,32 @@
   margin: 0 0 24px;
 }
 
+/* Edit Tax Case */
+
+.staff-tax-case-details__edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px 24px;
+  width: 100%;
+}
+
 .staff-tax-case-details__field {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 360px;
+  width: 100%;
+  min-width: 0;
 }
 
-.staff-tax-case-details__field + .staff-tax-case-details__field {
-  margin-top: 18px;
+.staff-tax-case-details__field--description {
+  grid-row: span 2;
 }
 
 .staff-tax-case-details__input,
-.staff-tax-case-details__textarea {
+.staff-tax-case-details__textarea,
+.staff-tax-case-details__select {
   width: 100%;
-  padding: 10px 12px;
   border: 1px solid #cccccc;
   border-radius: 8px;
   background-color: #ffffff;
@@ -114,43 +136,46 @@
 
 .staff-tax-case-details__input {
   min-height: 44px;
+  padding: 10px 12px;
+}
+
+.staff-tax-case-details__select {
+  min-height: 44px;
+  padding: 8px 12px;
 }
 
 .staff-tax-case-details__textarea {
   min-height: 120px;
+  padding: 10px 12px;
   resize: vertical;
   line-height: 1.5;
 }
 
+.staff-tax-case-details__field--description
+  .staff-tax-case-details__textarea {
+  min-height: 120px;
+}
+
 .staff-tax-case-details__input:focus,
-.staff-tax-case-details__textarea:focus {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.staff-tax-case-details__input:disabled,
-.staff-tax-case-details__textarea:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.staff-tax-case-details__select {
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #cccccc;
-  border-radius: 8px;
-  background-color: #ffffff;
-  font: inherit;
-}
-
+.staff-tax-case-details__textarea:focus,
 .staff-tax-case-details__select:focus {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
+.staff-tax-case-details__input:disabled,
+.staff-tax-case-details__textarea:disabled,
+.staff-tax-case-details__select:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Edit Actions */
+
 .staff-tax-case-details__actions {
-  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
 }
 
 .staff-tax-case-details__save-button {
@@ -167,6 +192,8 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* Messages */
 
 .staff-tax-case-details__success {
   margin: 16px 0 0;
@@ -186,61 +213,7 @@
   font-weight: 600;
 }
 
-/* Tax Case Documents */
-
-.staff-tax-case-details__documents-wrapper {
-  overflow-x: auto;
-  border: 1px solid #dddddd;
-  border-radius: 10px;
-}
-
-.staff-tax-case-details__documents-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.staff-tax-case-details__documents-table th,
-.staff-tax-case-details__documents-table td {
-  padding: 14px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.staff-tax-case-details__documents-table th {
-  background-color: #f8f8f8;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.staff-tax-case-details__documents-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.staff-tax-case-details__documents-table tbody tr:hover {
-  background-color: #fafafa;
-}
-
-.staff-tax-case-details__download-button {
-  min-height: 38px;
-  padding: 8px 14px;
-  border: 1px solid #cccccc;
-  border-radius: 8px;
-  background-color: #ffffff;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-}
-
-.staff-tax-case-details__download-button:hover:not(:disabled) {
-  background-color: #f5f5f5;
-}
-
-.staff-tax-case-details__download-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Tax Case Document Upload */
+/* Document Upload */
 
 .staff-tax-case-details__document-upload {
   display: flex;
@@ -258,6 +231,7 @@
   flex: 1;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .staff-tax-case-details__file-input {
@@ -292,13 +266,43 @@
   opacity: 0.6;
 }
 
-.staff-tax-case-details__document-upload {
-  flex-direction: column;
-  align-items: stretch;
+/* Documents Table */
+
+.staff-tax-case-details__documents-wrapper {
+  overflow-x: auto;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
 }
 
-.staff-tax-case-details__upload-button {
+.staff-tax-case-details__documents-table {
   width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-tax-case-details__documents-table th,
+.staff-tax-case-details__documents-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.staff-tax-case-details__documents-table th {
+  background-color: #f8f8f8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.staff-tax-case-details__documents-table
+  tbody
+  tr:last-child
+  td {
+  border-bottom: none;
+}
+
+.staff-tax-case-details__documents-table
+  tbody
+  tr:hover {
+  background-color: #fafafa;
 }
 
 /* Document Actions */
@@ -309,47 +313,241 @@
   gap: 8px;
 }
 
+.staff-tax-case-details__download-button,
 .staff-tax-case-details__delete-button {
   min-height: 38px;
   padding: 8px 14px;
-  border: 1px solid #c94a4a;
   border-radius: 8px;
   background-color: #ffffff;
-  color: #b52f2f;
   cursor: pointer;
   font: inherit;
   font-weight: 600;
+}
+
+.staff-tax-case-details__download-button {
+  border: 1px solid #cccccc;
+}
+
+.staff-tax-case-details__download-button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+.staff-tax-case-details__delete-button {
+  border: 1px solid #c94a4a;
+  color: #b52f2f;
 }
 
 .staff-tax-case-details__delete-button:hover:not(:disabled) {
   background-color: #fff4f4;
 }
 
+.staff-tax-case-details__download-button:disabled,
 .staff-tax-case-details__delete-button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
+/* Tablet and Mobile */
+
 @media (max-width: 700px) {
   .staff-tax-case-details {
-    padding: 20px;
+    padding: 0;
   }
+
+  .staff-tax-case-details__container {
+    max-width: none;
+  }
+
+  /* Header */
 
   .staff-tax-case-details__header {
     flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
   }
+
+  .staff-tax-case-details__title {
+    font-size: 26px;
+  }
+
+  .staff-tax-case-details__back-link {
+    padding: 8px 0;
+  }
+
+  /* Cards */
+
+  .staff-tax-case-details__card {
+    margin-bottom: 18px;
+    padding: 18px;
+  }
+
+  /* Case Information */
 
   .staff-tax-case-details__grid {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
-  .staff-tax-case-details__documents-table {
-    min-width: 650px;
+  .staff-tax-case-details__description {
+    margin-top: 20px;
+  }
+
+  /* Edit Tax Case */
+
+  .staff-tax-case-details__edit-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .staff-tax-case-details__field--description {
+    grid-row: auto;
+  }
+
+  .staff-tax-case-details__save-button {
+    width: 100%;
+  }
+
+  /* Document Upload */
+
+  .staff-tax-case-details__document-upload {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .staff-tax-case-details__document-file {
+    width: 100%;
+  }
+
+  .staff-tax-case-details__upload-button {
+    width: 100%;
+  }
+
+  /* Documents as Cards */
+
+  .staff-tax-case-details__documents-wrapper {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .staff-tax-case-details__documents-table,
+  .staff-tax-case-details__documents-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .staff-tax-case-details__documents-table thead {
+    display: none;
+  }
+
+  .staff-tax-case-details__documents-table tr {
+    display: block;
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background-color: #ffffff;
+  }
+
+  .staff-tax-case-details__documents-table
+    tbody
+    tr:hover {
+    background-color: #ffffff;
+  }
+
+  .staff-tax-case-details__documents-table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 11px 0;
+    border-bottom: 1px solid #e5e5e5;
+    box-sizing: border-box;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .staff-tax-case-details__documents-table td::before {
+    flex: 0 0 85px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #68756e;
+  }
+
+  .staff-tax-case-details__documents-table
+    td:nth-child(1)::before {
+    content: 'File';
+  }
+
+  .staff-tax-case-details__documents-table
+    td:nth-child(2)::before {
+    content: 'Size';
+  }
+
+  .staff-tax-case-details__documents-table
+    td:nth-child(3)::before {
+    content: 'Uploaded';
+  }
+
+  .staff-tax-case-details__documents-table
+    td:nth-child(4)::before {
+    content: 'Actions';
+  }
+
+  .staff-tax-case-details__documents-table td:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
 
   .staff-tax-case-details__document-actions {
-    align-items: stretch;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+/* Small Mobile */
+
+@media (max-width: 420px) {
+  .staff-tax-case-details__title {
+    font-size: 24px;
+  }
+
+  .staff-tax-case-details__card {
+    padding: 16px;
+  }
+
+  .staff-tax-case-details__section-title {
+    font-size: 19px;
+  }
+
+  .staff-tax-case-details__document-upload {
+    padding: 14px;
+  }
+
+  .staff-tax-case-details__documents-table tr {
+    padding: 14px;
+  }
+
+  .staff-tax-case-details__documents-table td {
     flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .staff-tax-case-details__documents-table td::before {
+    flex-basis: auto;
+  }
+
+  .staff-tax-case-details__document-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .staff-tax-case-details__download-button,

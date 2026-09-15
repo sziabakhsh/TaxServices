@@ -1,11 +1,29 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { useState } from 'react'
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+} from 'react-router-dom'
+import {
+  FileText,
+  FolderOpen,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  UserRound,
+  X,
+} from 'lucide-react'
+
 import { useAuth } from '../../features/auth/useAuth'
 import './ClientPortalLayout.css'
 
 export default function ClientPortalLayout() {
   const { logout } = useAuth()
   const navigate = useNavigate()
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =
+    useState(false)
 
   const getNavLinkClass = ({
     isActive,
@@ -19,12 +37,68 @@ export default function ClientPortalLayout() {
   function handleLogout() {
     logout()
     navigate('/', { replace: true })
+  }
 
+  function handleNavigation() {
+    setIsMobileMenuOpen(false)
   }
 
   return (
     <div className="client-portal">
-      <aside className="client-portal__sidebar">
+      {/* Mobile Header */}
+
+      <header className="client-portal__mobile-header">
+        <div className="client-portal__mobile-brand">
+          <span className="client-portal__mobile-eyebrow">
+            TAX SERVICES
+          </span>
+
+          <strong className="client-portal__mobile-title">
+            Client Portal
+          </strong>
+        </div>
+
+        <button
+          type="button"
+          className="client-portal__menu-button"
+          aria-label={
+            isMobileMenuOpen
+              ? 'Close navigation menu'
+              : 'Open navigation menu'
+          }
+          aria-expanded={isMobileMenuOpen}
+          onClick={() =>
+            setIsMobileMenuOpen((current) => !current)
+          }
+        >
+          {isMobileMenuOpen ? (
+            <X size={24} />
+          ) : (
+            <Menu size={24} />
+          )}
+        </button>
+      </header>
+
+      {/* Mobile Overlay */}
+
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          className="client-portal__overlay"
+          aria-label="Close navigation menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+
+      <aside
+        className={
+          isMobileMenuOpen
+            ? 'client-portal__sidebar client-portal__sidebar--open'
+            : 'client-portal__sidebar'
+        }
+      >
         <div className="client-portal__brand">
           <span className="client-portal__brand-eyebrow">
             TAX SERVICES
@@ -40,36 +114,46 @@ export default function ClientPortalLayout() {
             to="/portal"
             end
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
-            Dashboard
+            <LayoutDashboard size={19} />
+            <span>Dashboard</span>
           </NavLink>
 
           <NavLink
             to="/portal/profile"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
-            Profile
+            <UserRound size={19} />
+            <span>Profile</span>
           </NavLink>
 
           <NavLink
             to="/portal/change-password"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
-            Change Password
+            <KeyRound size={19} />
+            <span>Change Password</span>
           </NavLink>
 
           <NavLink
             to="/portal/cases"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
-            Tax Cases
+            <FolderOpen size={19} />
+            <span>Tax Cases</span>
           </NavLink>
 
           <NavLink
             to="/portal/documents"
             className={getNavLinkClass}
+            onClick={handleNavigation}
           >
-            Documents
+            <FileText size={19} />
+            <span>Documents</span>
           </NavLink>
         </nav>
 
@@ -82,6 +166,8 @@ export default function ClientPortalLayout() {
           <span>Sign out</span>
         </button>
       </aside>
+
+      {/* Page Content */}
 
       <main className="client-portal__main">
         <Outlet />
