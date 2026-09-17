@@ -39,3 +39,10 @@ export interface ChangePasswordRequest {
   currentPassword: string
   newPassword: string
 }
+
+export type SetPasswordRequest = {
+  email: string
+  token: string
+  password: string
+  confirmPassword: string
+}

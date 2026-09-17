@@ -111,7 +111,7 @@ namespace TaxServices.Application.Services
                 return new ClientCreatedResponse
                 {
                     Client = MapToDto(client),
-                    TemporaryPassword = userCreatedResponse.TemporaryPassword
+                    //TemporaryPassword = userCreatedResponse.TemporaryPassword
                 };
 
                 //return MapToDto(client);

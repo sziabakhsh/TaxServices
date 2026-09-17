@@ -1,5 +1,5 @@
 .section-shell { width: min(1248px, calc(100% - 40px)); margin-inline: auto; }
-.brand-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:0; border-radius:.7rem; padding:.875rem 1.5rem; color:#fff; font-size:.875rem; font-weight:700; background:linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-strong) 100%); box-shadow:0 10px 24px rgba(8,127,201,.15); transition:filter .15s ease, transform .15s ease; }
+.brand-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:0; border-radius:.7rem; padding:.875rem 1.5rem; color:var(--color-navy); font-size:.875rem; font-weight:700; background:linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-strong) 100%); box-shadow:0 10px 24px rgba(8,127,201,.15); transition:filter .15s ease, transform .15s ease; }
 .brand-button:hover { filter:brightness(.97); }
 .outline-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:1px solid var(--color-brand); border-radius:.7rem; padding:.875rem 1.5rem; color:var(--color-brand); background:rgba(255,255,255,.7); font-size:.875rem; font-weight:700; }
 .section-eyebrow { display:flex; align-items:center; gap:.75rem; margin:0 0 .75rem; color:var(--color-brand); font-size:.75rem; font-weight:800; letter-spacing:.16em; }

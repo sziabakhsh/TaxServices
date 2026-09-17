@@ -7,6 +7,7 @@ import type {
   CurrentUser,
   LoginRequest,
   RegisterRequest,
+  SetPasswordRequest,
 } from './auth.types'
 
 export async function login(request: LoginRequest) {
@@ -37,4 +38,10 @@ export async function getCurrentUser() {
 
 export async function changePassword(request: ChangePasswordRequest) {
   await api.post('/auth/change-password', request)
+}
+
+export async function setPassword(
+  request: SetPasswordRequest
+): Promise<void> {
+  await api.post('/Auth/set-password', request)
 }

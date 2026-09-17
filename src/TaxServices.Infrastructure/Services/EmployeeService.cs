@@ -11,15 +11,19 @@ namespace TaxServices.Infrastructure.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
+        private readonly IEmployeeInvitationService _employeeInvitationService;
 
         public EmployeeService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
-            IAuthService authService)
+            IAuthService authService,
+            IEmployeeInvitationService employeeInvitationService)
         {
             _context = context;
             _tenantContext = tenantContext;
             _authService = authService;
+            _employeeInvitationService = employeeInvitationService;
+
         }
 
         public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -55,26 +59,37 @@ namespace TaxServices.Infrastructure.Services
             var email = request.Email.Trim();
 
             var emailExists = await _context.Employees
-                .AnyAsync(e => e.TenantId == _tenantContext.TenantId && e.Email == email, cancellationToken);
+                .AnyAsync(
+                    e => e.TenantId == _tenantContext.TenantId &&
+                         e.Email == email,
+                    cancellationToken);
 
             if (emailExists)
-                throw new InvalidOperationException("An employee with this email already exists.");
+                throw new InvalidOperationException(
+                    "An employee with this email already exists.");
 
-            NewUserRequestInApp newUser = new NewUserRequestInApp
+            var newUser = new NewUserRequestInApp
             {
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
+                Email = email,
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
                 Role = "Employee"
             };
 
-            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            UserCreatedResponse userCreatedResponse;
+            Employee employee;
+
+            await using var transaction =
+                await _context.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
+                userCreatedResponse =
+                    await _authService.CreateUserAsync(
+                        newUser,
+                        cancellationToken);
 
-                var employee = new Employee
+                employee = new Employee
                 {
                     Id = Guid.NewGuid(),
                     TenantId = _tenantContext.TenantId,
@@ -87,26 +102,31 @@ namespace TaxServices.Infrastructure.Services
                     UserId = userCreatedResponse.UserId
                 };
 
-                await _context.Employees.AddAsync(employee, cancellationToken);
+                await _context.Employees.AddAsync(
+                    employee,
+                    cancellationToken);
 
                 await _context.SaveChangesAsync(cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
-
-                //return MapToDto(employee);
-                return new EmployeeCreatedResponse
-                {
-                    Employee = MapToDto(employee),
-                   // TemporaryPassword = userCreatedResponse.TemporaryPassword
-                };
             }
             catch
             {
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
-        }
 
+            await _employeeInvitationService.SendInvitationAsync(
+                userCreatedResponse.UserId,
+                employee.FirstName,
+                employee.Email,
+                cancellationToken);
+
+            return new EmployeeCreatedResponse
+            {
+                Employee = MapToDto(employee)
+            };
+        }
         public async Task<EmployeeDto?> UpdateAsync(Guid id, UpdateEmployeeRequest request, CancellationToken cancellationToken = default)
         {
             var employee = await _context.Employees

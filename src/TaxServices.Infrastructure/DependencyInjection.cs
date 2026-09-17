@@ -12,6 +12,7 @@ using TaxServices.Infrastructure.Identity;
 using TaxServices.Infrastructure.Identity.Services;
 using TaxServices.Infrastructure.Persistence;
 using TaxServices.Infrastructure.Storage;
+using TaxServices.Infrastructure.Services;
 
 namespace TaxServices.Infrastructure
 {
@@ -39,7 +40,8 @@ namespace TaxServices.Infrastructure
                     options.Password.RequireNonAlphanumeric = true;
                 })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<TaxServicesDbContext>();
+                .AddEntityFrameworkStores<TaxServicesDbContext>()
+                .AddDefaultTokenProviders();
 
             // JWT Options
             services.Configure<JwtOptions>(
@@ -88,13 +90,16 @@ namespace TaxServices.Infrastructure
 
             services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
 
+            services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
+
             // Services
             services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IFileStorageService, AzureBlobStorageService>();
-
+            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
+            services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
 
             return services;
         }

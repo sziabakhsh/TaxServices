@@ -21,6 +21,7 @@ import CasesPage from './pages/portal/CasesPage'
 import CaseDetailsPage from './pages/portal/CaseDetailsPage'
 import ChangePasswordPage from './pages/portal/ChangePasswordPage'
 import DocumentsPage from './pages/portal/DocumentsPage'
+import SetPasswordPage from './pages/auth/SetPasswordPage'
 
 import StaffPortalLayout from './layouts/StaffPortalLayout/StaffPortalLayout'
 import ClientsPage from './pages/staff/ClientsPage'
@@ -84,7 +85,10 @@ export default function App() {
       {/* Authentication */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-
+      <Route
+        path="/set-password"
+        element={<SetPasswordPage />}
+      />
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         {/* Client portal */}

@@ -23,6 +23,17 @@ namespace TaxServices.Api.Controllers
             _emailService = emailService;
         }
 
+        [HttpPost("set-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest request, CancellationToken cancellationToken)
+        {
+            await _authService.SetPasswordAsync(
+                request,
+                cancellationToken);
+
+            return NoContent();
+        }
+
         //[HttpPost("test-email")]
         //public async Task<IActionResult> TestEmail([FromQuery] string email, CancellationToken cancellationToken)
         //{

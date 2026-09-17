@@ -5,6 +5,8 @@ using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Clients;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace TaxServices.Infrastructure.Identity.Services
 {
@@ -231,6 +233,36 @@ namespace TaxServices.Infrastructure.Identity.Services
                 throw new InvalidOperationException("User not found.");
 
             return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task SetPasswordAsync(SetPasswordRequest request, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var user = await _userManager.FindByEmailAsync(
+                request.Email.Trim());
+
+            if (user is null)
+                throw new InvalidOperationException(
+                    "Invalid password setup request.");
+
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, request.Password);
+
+            //var result = await _userManager.ResetPasswordAsync(
+            //    user,
+            //    request.Token,
+            //    request.Password);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    result.Errors.Select(e => e.Description));
+
+                throw new ValidationException(errors);
+            }
         }
 
         //private static string GenerateTemporaryPassword()
