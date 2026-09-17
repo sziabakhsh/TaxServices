@@ -13,11 +13,33 @@ namespace TaxServices.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IEmailService emailService)
         {
             _authService = authService;
+            _emailService = emailService;
         }
+
+        //[HttpPost("test-email")]
+        //public async Task<IActionResult> TestEmail([FromQuery] string email, CancellationToken cancellationToken)
+        //{
+        //    await _emailService.SendAsync(
+        //        email,
+        //        "TaxServices Email Test",
+        //        """
+        //        <h2>Email service is working!</h2>
+        //        <p>This email was sent from the TaxServices API.</p>
+        //        """,
+        //        cancellationToken);
+
+        //    return Ok(new
+        //    {
+        //        message = "Test email sent successfully."
+        //    });
+        //}
 
         //[HttpPost("register")]
         //public async Task<IActionResult> Register(RegisterRequest request)

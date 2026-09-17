@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TaxServices.Application.Interfaces;
 using TaxServices.Infrastructure.Configuration;
+using TaxServices.Infrastructure.Email;
 using TaxServices.Infrastructure.Identity;
 using TaxServices.Infrastructure.Identity.Services;
 using TaxServices.Infrastructure.Persistence;
@@ -84,11 +85,16 @@ namespace TaxServices.Infrastructure
                         };
                 });
 
+
+            services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+
             // Services
             services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+
+            services.AddScoped<IEmailService, SmtpEmailService>();
 
             return services;
         }

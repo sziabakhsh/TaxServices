@@ -175,11 +175,7 @@ namespace TaxServices.Infrastructure.Identity.Services
                 TenantId = _tenantContext.TenantId
             };
 
-            var temporaryPassword = GenerateTemporaryPassword();
-
-            var result = await _userManager.CreateAsync(
-                user,
-                temporaryPassword);
+            var result = await _userManager.CreateAsync(user);
 
             if (!result.Succeeded)
             {
@@ -197,12 +193,9 @@ namespace TaxServices.Infrastructure.Identity.Services
                 throw new InvalidOperationException(errors);
             }
 
-            var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
-
             return new UserCreatedResponse
             {
-                UserId = user.Id,
-                TemporaryPassword = temporaryPassword
+                UserId = user.Id
             };
         }
 
@@ -228,9 +221,21 @@ namespace TaxServices.Infrastructure.Identity.Services
             }
         }
 
-        private static string GenerateTemporaryPassword()
+        public async Task<string> GeneratePasswordSetupTokenAsync(string userId, CancellationToken cancellationToken = default)
         {
-            return $"Ts!{Guid.NewGuid():N}aA1";
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
         }
+
+        //private static string GenerateTemporaryPassword()
+        //{
+        //    return $"Ts!{Guid.NewGuid():N}aA1";
+        //}
     }
 }

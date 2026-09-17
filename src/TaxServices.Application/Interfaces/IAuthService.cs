@@ -12,5 +12,6 @@ namespace TaxServices.Application.Interfaces
         Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
         Task<UserCreatedResponse> CreateUserAsync(NewUserRequestInApp request, CancellationToken cancellationToken = default);
         Task UpdateUserAsync(UpdatedUserRequestInApp request, CancellationToken cancellationToken = default);
+        Task<string> GeneratePasswordSetupTokenAsync(string userId, CancellationToken cancellationToken = default);
     }
 }

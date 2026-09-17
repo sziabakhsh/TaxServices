@@ -97,10 +97,10 @@ namespace TaxServices.Infrastructure.Services
                 return new EmployeeCreatedResponse
                 {
                     Employee = MapToDto(employee),
-                    TemporaryPassword = userCreatedResponse.TemporaryPassword
+                   // TemporaryPassword = userCreatedResponse.TemporaryPassword
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
