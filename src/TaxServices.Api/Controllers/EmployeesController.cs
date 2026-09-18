@@ -77,11 +77,23 @@ namespace TaxServices.Api.Controllers
 
         [HttpPatch("{id:guid}/deactivate")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Deactivate(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
         {
             var result = await _employeeService.DeactivateAsync(
+                id,
+                cancellationToken);
+
+            if (!result)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpPost("{id:guid}/resend-invitation")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ResendInvitation(Guid id, CancellationToken cancellationToken)
+        {
+            var result = await _employeeService.ResendInvitationAsync(
                 id,
                 cancellationToken);
 

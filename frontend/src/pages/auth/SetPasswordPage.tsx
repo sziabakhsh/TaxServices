@@ -16,31 +16,41 @@ export default function SetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false)
+  
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const [submitError, setSubmitError] = useState('')
   const setPasswordMutation = useSetPassword()
 
-  const handleSubmit = (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault()
+  const handleSubmit = async (
+  event: FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault()
 
-    if (!email || !token) {
-      return
-    }
+  setSubmitError('')
 
-    if (password !== confirmPassword) {
-      return
-    }
+  if (!email || !token) {
+    return
+  }
 
-    setPasswordMutation.mutate({
+  if (password !== confirmPassword) {
+    return
+  }
+
+  try {
+    await setPasswordMutation.mutateAsync({
       email,
       token,
       password,
       confirmPassword,
     })
+  } catch (err: any) {
+    setSubmitError(
+      err?.response?.data?.detail ??
+        'This password setup link is invalid or has expired.'
+    )
   }
+}
 
   if (!email || !token) {
     return (
@@ -93,13 +103,17 @@ export default function SetPasswordPage() {
         onSubmit={handleSubmit}
         className="auth-form"
       >
-        {setPasswordMutation.isError && (
+        {submitError && (
           <div
             role="alert"
             className="auth-form__error"
           >
-            Unable to set your password. The link may
-            be invalid or expired.
+            {submitError}
+
+            <div className="auth-form__error-help">
+              Please contact your administrator if you need
+              a new password setup invitation.
+            </div>
           </div>
         )}
 

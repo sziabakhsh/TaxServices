@@ -98,6 +98,7 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IFileStorageService, AzureBlobStorageService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IEmployeeAccountStatusService, EmployeeAccountStatusService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
             services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
 

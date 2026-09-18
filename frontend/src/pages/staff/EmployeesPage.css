@@ -501,3 +501,50 @@
     flex: 1;
   }
 }
+
+.staff-employees-page__invitation-button {
+  border: 1px solid var(--color-brand);
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-brand);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.staff-employees-page__invitation-button:hover:not(:disabled) {
+  background: var(--color-brand);
+  color: var(--color-navy);
+}
+
+.staff-employees-page__invitation-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.staff-employees-page__message {
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.staff-employees-page__message--success {
+  border: 1px solid #a7dfc0;
+  background: #edf9f2;
+  color: #17663a;
+}
+
+.staff-employees-page__message--error {
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}

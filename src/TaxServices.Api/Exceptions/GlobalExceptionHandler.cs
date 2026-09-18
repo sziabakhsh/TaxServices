@@ -29,7 +29,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         var title = "An unexpected error occurred.";
         var detail =
             "An internal server error occurred. Please try again later.";
-                
+         
         if (exception is ArgumentException or ValidationException)
         {
             statusCode = StatusCodes.Status400BadRequest;
@@ -40,6 +40,24 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             statusCode = StatusCodes.Status409Conflict;
             title = "User already exists.";
+            detail = exception.Message;
+        }
+        else if (exception is InvitationNotAllowedException)
+        {
+            statusCode = StatusCodes.Status409Conflict;
+            title = "Invitation cannot be sent.";
+            detail = exception.Message;
+        }
+        else if (exception is InvalidCredentialsException)
+        {
+            statusCode = StatusCodes.Status401Unauthorized;
+            title = "Authentication failed.";
+            detail = exception.Message;
+        }
+        else if (exception is InactiveAccountException)
+        {
+            statusCode = StatusCodes.Status403Forbidden;
+            title = "Account inactive.";
             detail = exception.Message;
         }
 

@@ -1,20 +1,46 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
+import ConfirmModal from '../../components/common/ConfirmModal'
+
 import { useEmployees } from '../../features/employees/useEmployees'
 import { useCreateEmployee } from '../../features/employees/useCreateEmployee'
 import { useUpdateEmployee } from '../../features/employees/useUpdateEmployee'
+import { useChangeEmployeeStatus } from '../../features/employees/useChangeEmployeeStatus'
+import { useResendEmployeeInvitation } from '../../features/employees/useResendEmployeeInvitation'
 
 import type { Employee } from '../../features/employees/employee.types'
-import { useChangeEmployeeStatus } from '../../features/employees/useChangeEmployeeStatus'
 
 import './EmployeesPage.css'
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false)
+  const [isCreateFormOpen, setIsCreateFormOpen] =
+    useState(false)
+
   const [editingEmployee, setEditingEmployee] =
     useState<Employee | null>(null)
+
+  const [resendingEmployeeId, setResendingEmployeeId] =
+    useState<string | null>(null)
+
+  const [invitationEmployee, setInvitationEmployee] =
+    useState<Employee | null>(null)
+
+  const [statusEmployee, setStatusEmployee] =
+  useState<Employee | null>(null)
+
+  const [statusMessage, setStatusMessage] =
+    useState('')
+
+  const [statusError, setStatusError] =
+    useState('')
+
+  const [invitationMessage, setInvitationMessage] =
+    useState('')
+
+  const [invitationError, setInvitationError] =
+    useState('')
 
   const {
     data: employees,
@@ -25,12 +51,14 @@ export default function EmployeesPage() {
   const createEmployee = useCreateEmployee()
   const updateEmployee = useUpdateEmployee()
   const changeEmployeeStatus = useChangeEmployeeStatus()
+  const resendInvitation = useResendEmployeeInvitation()
 
   const isFormOpen =
     isCreateFormOpen || editingEmployee !== null
 
   const isSubmitting =
-    createEmployee.isPending || updateEmployee.isPending
+    createEmployee.isPending ||
+    updateEmployee.isPending
 
   const filteredEmployees = useMemo(() => {
     if (!employees) {
@@ -134,30 +162,97 @@ export default function EmployeesPage() {
     setEditingEmployee(null)
   }
 
+function handleChangeStatus(employee: Employee) {
+  setStatusMessage('')
+  setStatusError('')
+  setStatusEmployee(employee)
+}
 
-  async function handleChangeStatus(employee: Employee) {
+  async function confirmChangeStatus() {
+    if (!statusEmployee) {
+      return
+    }
+
+    const employee = statusEmployee
     const action = employee.isActive
       ? 'deactivate'
       : 'activate'
 
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} ${employee.firstName} ${employee.lastName}?`
-    )
-
-    if (!confirmed) {
-      return
-    }
+    setStatusMessage('')
+    setStatusError('')
 
     try {
       await changeEmployeeStatus.mutateAsync({
         employeeId: employee.id,
         isActive: employee.isActive,
       })
-    } catch {
-      window.alert(
-        `We couldn't ${action} this employee. Please try again.`
+
+      setStatusEmployee(null)
+
+      setStatusMessage(
+        `${employee.firstName} ${employee.lastName} was ${employee.isActive ? 'deactivated' : 'activated'} successfully.`
+      )
+    } catch (err: any) {
+      setStatusEmployee(null)
+
+      setStatusError(
+        err?.response?.data?.detail ??
+          `We couldn't ${action} this employee. Please try again.`
       )
     }
+  }
+
+  function cancelChangeStatus() {
+    if (changeEmployeeStatus.isPending) {
+      return
+    }
+
+    setStatusEmployee(null)
+  }
+
+  function handleResendInvitation(employee: Employee) {
+    setInvitationMessage('')
+    setInvitationError('')
+    setInvitationEmployee(employee)
+  }
+
+  async function confirmResendInvitation() {
+    if (!invitationEmployee) {
+      return
+    }
+
+    const employee = invitationEmployee
+
+    setResendingEmployeeId(employee.id)
+    setInvitationMessage('')
+    setInvitationError('')
+
+    try {
+      await resendInvitation.mutateAsync(employee.id)
+
+      setInvitationEmployee(null)
+
+      setInvitationMessage(
+        `Invitation sent successfully to ${employee.email}.`
+      )
+    } catch (err: any) {
+      setInvitationEmployee(null)
+
+      setInvitationError(
+        err?.response?.data?.detail ??
+          "We couldn't send the invitation. Please try again."
+      )
+    } finally {
+      setResendingEmployeeId(null)
+    }
+  }
+
+  function cancelResendInvitation() {
+    if (resendInvitation.isPending) {
+      return
+    }
+
+    setInvitationEmployee(null)
   }
 
   if (isLoading) {
@@ -353,6 +448,30 @@ export default function EmployeesPage() {
         </div>
       )}
 
+      {invitationMessage && (
+        <div className="staff-employees-page__message staff-employees-page__message--success">
+          {invitationMessage}
+        </div>
+      )}
+
+      {invitationError && (
+        <div className="staff-employees-page__message staff-employees-page__message--error">
+          {invitationError}
+        </div>
+      )}
+
+      {statusMessage && (
+        <div className="staff-employees-page__message staff-employees-page__message--success">
+          {statusMessage}
+        </div>
+      )}
+
+      {statusError && (
+        <div className="staff-employees-page__message staff-employees-page__message--error">
+          {statusError}
+        </div>
+      )}
+
       <div className="staff-employees-page__search">
         <label
           htmlFor="employee-search"
@@ -434,10 +553,30 @@ export default function EmployeesPage() {
                       <button
                         type="button"
                         className="staff-employees-page__edit-button"
-                        onClick={() => openEditForm(employee)}
-                        disabled={changeEmployeeStatus.isPending}
+                        onClick={() =>
+                          openEditForm(employee)
+                        }
+                        disabled={
+                          changeEmployeeStatus.isPending ||
+                          resendInvitation.isPending
+                        }
                       >
                         Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="staff-employees-page__invitation-button"
+                        onClick={() =>
+                          handleResendInvitation(employee)
+                        }
+                        disabled={
+                          resendInvitation.isPending
+                        }
+                      >
+                        {resendingEmployeeId === employee.id
+                          ? 'Sending...'
+                          : 'Resend Invitation'}
                       </button>
 
                       <button
@@ -447,8 +586,13 @@ export default function EmployeesPage() {
                             ? 'staff-employees-page__status-button staff-employees-page__status-button--deactivate'
                             : 'staff-employees-page__status-button staff-employees-page__status-button--activate'
                         }
-                        onClick={() => handleChangeStatus(employee)}
-                        disabled={changeEmployeeStatus.isPending}
+                        onClick={() =>
+                          handleChangeStatus(employee)
+                        }
+                        disabled={
+                          changeEmployeeStatus.isPending ||
+                          resendInvitation.isPending
+                        }
                       >
                         {employee.isActive
                           ? 'Deactivate'
@@ -456,13 +600,53 @@ export default function EmployeesPage() {
                       </button>
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={invitationEmployee !== null}
+        title="Resend Invitation"
+        message={
+          invitationEmployee
+            ? `Send a new password setup invitation to ${invitationEmployee.email}?`
+            : ''
+        }
+        confirmText="Send Invitation"
+        isPending={resendInvitation.isPending}
+        onConfirm={confirmResendInvitation}
+        onCancel={cancelResendInvitation}
+      />
+
+      <ConfirmModal
+        isOpen={statusEmployee !== null}
+        title={
+          statusEmployee?.isActive
+            ? 'Deactivate Employee'
+            : 'Activate Employee'
+        }
+        message={
+          statusEmployee
+            ? `Are you sure you want to ${
+                statusEmployee.isActive
+                  ? 'deactivate'
+                  : 'activate'
+              } ${statusEmployee.firstName} ${statusEmployee.lastName}?`
+            : ''
+        }
+        confirmText={
+          statusEmployee?.isActive
+            ? 'Deactivate'
+            : 'Activate'
+        }
+        isPending={changeEmployeeStatus.isPending}
+        onConfirm={confirmChangeStatus}
+        onCancel={cancelChangeStatus}
+      />
+
     </section>
   )
 }

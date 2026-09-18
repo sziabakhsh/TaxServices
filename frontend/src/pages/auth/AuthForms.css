@@ -1,1 +1,5 @@
 .auth-form{display:grid;gap:1.25rem;margin-top:2rem}.auth-form__error{border:1px solid var(--color-danger-border);border-radius:.75rem;padding:.75rem 1rem;background:var(--color-danger-bg);color:var(--color-danger);font-size:.875rem}.auth-form__row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}.auth-form__password{position:relative}.auth-form__password input{padding-right:3rem}.auth-form__visibility{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);border:0;border-radius:.4rem;padding:.5rem;color:#66819b;background:transparent}.auth-form__submit{margin-top:.25rem;width:100%}.auth-form__submit:disabled{cursor:not-allowed;opacity:.6}.auth-form__switch{text-align:center;color:#66819b;font-size:.875rem}.auth-form__switch a{color:var(--color-brand);font-weight:700}.auth-form__optional{color:var(--color-muted-light);font-weight:400}@media(max-width:639px){.auth-form__row{grid-template-columns:1fr}}
+.auth-form__error-help {
+  margin-top: 0.5rem;
+  font-weight: 400;
+}

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Employees;
+using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Employees;
 
@@ -127,6 +128,7 @@ namespace TaxServices.Infrastructure.Services
                 Employee = MapToDto(employee)
             };
         }
+
         public async Task<EmployeeDto?> UpdateAsync(Guid id, UpdateEmployeeRequest request, CancellationToken cancellationToken = default)
         {
             var employee = await _context.Employees
@@ -214,6 +216,35 @@ namespace TaxServices.Infrastructure.Services
             employee.IsActive = true;
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+
+        public async Task<bool> ResendInvitationAsync(Guid employeeId, CancellationToken cancellationToken = default)
+        {
+            var employee = await _context.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    e => e.Id == employeeId &&
+                         e.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
+
+            if (employee is null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(employee.UserId))
+                throw new InvalidOperationException("This employee does not have a user account.");
+
+            var hasPassword = await _authService.HasPasswordAsync(employee.UserId, cancellationToken);
+
+            if (hasPassword)
+                throw new InvitationNotAllowedException("This employee has already set a password.");
+
+            await _employeeInvitationService.SendInvitationAsync(
+                employee.UserId,
+                employee.FirstName,
+                employee.Email,
+                cancellationToken);
 
             return true;
         }

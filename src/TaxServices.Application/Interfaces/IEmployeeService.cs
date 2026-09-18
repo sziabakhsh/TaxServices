@@ -15,5 +15,8 @@ namespace TaxServices.Application.Interfaces
         Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task<bool> ActivateAsync(Guid id, CancellationToken cancellationToken = default);
+
+        Task<bool> ResendInvitationAsync(Guid employeeId, CancellationToken cancellationToken = default);
+
     }
 }

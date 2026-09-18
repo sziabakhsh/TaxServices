@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Clients;
-using System.Text;
-using Microsoft.AspNetCore.WebUtilities;
+using TaxServices.Infrastructure.Services;
 
 namespace TaxServices.Infrastructure.Identity.Services
 {
     public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEmployeeAccountStatusService _employeeAccountStatusService;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IOptions<JwtOptions> _jwtOptions;
         private readonly ITaxServicesDbContext _context;
@@ -24,12 +26,14 @@ namespace TaxServices.Infrastructure.Identity.Services
 
         public AuthService(
             UserManager<AppUser> userManager,
+            IEmployeeAccountStatusService employeeAccountStatusService,
             IJwtTokenService jwtTokenService,
             IOptions<JwtOptions> jwtOptions,
             ITaxServicesDbContext context,
             ITenantContext tenantContext)
         {
             _userManager = userManager;
+            _employeeAccountStatusService = employeeAccountStatusService;
             _jwtTokenService = jwtTokenService;
             _jwtOptions = jwtOptions;
             _context = context;
@@ -102,12 +106,18 @@ namespace TaxServices.Infrastructure.Identity.Services
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user is null)
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidCredentialsException();
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
 
             if (!passwordValid)
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidCredentialsException();
+
+            var employeeIsActive = await _employeeAccountStatusService.GetActiveStatusAsync(user.Id);
+
+            if (employeeIsActive == false)
+                throw new InactiveAccountException();
+
 
             var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
 
@@ -263,6 +273,18 @@ namespace TaxServices.Infrastructure.Identity.Services
 
                 throw new ValidationException(errors);
             }
+        }
+
+        public async Task<bool> HasPasswordAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            return await _userManager.HasPasswordAsync(user);
         }
 
         //private static string GenerateTemporaryPassword()

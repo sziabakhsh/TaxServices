@@ -1,43 +1,109 @@
 :root {
-  /* Brand */
+  /* ================================
+     Brand
+     ================================ */
+
   --color-primary: #087fc9;
   --color-primary-dark: #066ca9;
   --color-primary-light: #eaf6fd;
 
-  /* Typography */
+
+  /* ================================
+     Typography
+     ================================ */
+
   --color-heading: #123d69;
   --color-text: #3f5f7c;
   --color-text-muted: #7890a7;
 
-  /* Background */
+
+  /* ================================
+     Background
+     ================================ */
+
   --color-background: #ffffff;
   --color-background-soft: #f5faff;
 
-  /* Border */
+
+  /* ================================
+     Border
+     ================================ */
+
   --color-border: #dcecf5;
   --color-border-light: #e5f0f6;
 
-  /* Status */
+
+  /* ================================
+     Status
+     ================================ */
+
   --color-success: #23875c;
   --color-warning: #b7791f;
   --color-danger: #c0392b;
 
-  /* Radius */
+  --color-danger-bg: #fff4f2;
+  --color-danger-border: #f3c5bf;
+
+
+  /* ================================
+     Radius
+     ================================ */
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  /* Shadows */
+
+  /* ================================
+     Shadows
+     ================================ */
+
   --shadow-sm: 0 4px 14px rgb(18 61 105 / 6%);
   --shadow-md: 0 12px 30px rgb(18 61 105 / 10%);
 
-  /* Portal */
+
+  /* ================================
+     Portal
+     ================================ */
+
   --portal-sidebar-width: 280px;
 
-  /* Layout */
+
+  /* ================================
+     Layout
+     ================================ */
+
   --content-max-width: 1280px;
 
-  /* Transition */
+
+  /* ================================
+     Transition
+     ================================ */
+
   --transition-fast: 0.2s ease;
+
+
+  /* ==================================================
+     Legacy aliases
+
+     Existing pages still use these variable names.
+     Keep them until the old CSS files are migrated
+     to the new design-token names.
+     ================================================== */
+
+  --color-brand: var(--color-primary);
+  --color-brand-strong: var(--color-primary-dark);
+
+  --color-navy: var(--color-heading);
+  --color-navy-deep: var(--color-heading);
+
+  --color-muted: var(--color-text-muted);
+  --color-muted-light: var(--color-text-muted);
+
+  --color-surface: var(--color-background);
+  --color-surface-soft: var(--color-background-soft);
+
+  --shadow-card: var(--shadow-sm);
+  --shadow-panel: var(--shadow-md);
 }

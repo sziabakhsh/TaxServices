@@ -57,3 +57,11 @@ export async function deactivateEmployee(
 ): Promise<void> {
   await api.patch(`/Employees/${employeeId}/deactivate`)
 }
+
+export async function resendEmployeeInvitation(
+  employeeId: string
+): Promise<void> {
+  await api.post(
+    `/employees/${employeeId}/resend-invitation`
+  )
+}
