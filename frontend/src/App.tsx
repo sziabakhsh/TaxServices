@@ -8,6 +8,8 @@ import ServicesPage from './pages/public/ServicesPage'
 import ServiceDetailPage from './pages/public/ServiceDetailPage'
 import ContactPage from './pages/public/ContactPage'
 import FaqPage from './pages/public/FaqPage'
+import StaffDashboardPage from './pages/staff/StaffDashboardPage'
+import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -22,6 +24,7 @@ import CaseDetailsPage from './pages/portal/CaseDetailsPage'
 import ChangePasswordPage from './pages/portal/ChangePasswordPage'
 import DocumentsPage from './pages/portal/DocumentsPage'
 import SetPasswordPage from './pages/auth/SetPasswordPage'
+import StaffTaxCasesPage from './pages/staff/StaffTaxCasesPage'
 
 import StaffPortalLayout from './layouts/StaffPortalLayout/StaffPortalLayout'
 import ClientsPage from './pages/staff/ClientsPage'
@@ -114,7 +117,7 @@ export default function App() {
           <Route path="/staff" element={<StaffPortalLayout />}>
             <Route
               index
-              element={<SimplePage title="Staff Dashboard" />}
+              element={<StaffDashboardPage />}
             />
 
             <Route
@@ -129,7 +132,7 @@ export default function App() {
 
             <Route
               path="documents"
-              element={<SimplePage title="Documents" />}
+              element={<StaffDocumentsPage />}
             />
 
             <Route
@@ -140,6 +143,16 @@ export default function App() {
             <Route
               path="clients/:clientId/cases"
               element={<StaffClientCasesPage />}
+            />
+
+            <Route
+              path="cases"
+              element={<StaffTaxCasesPage />}
+            />
+
+            <Route
+              path="cases/:id"
+              element={<StaffTaxCaseDetailsPage />}
             />
 
             <Route

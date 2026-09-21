@@ -25,10 +25,12 @@ namespace TaxServices.Application.Services
             return await _context.TaxCases
                 .AsNoTracking()
                 .Where(x => x.TenantId == tenantId)
+                .OrderByDescending(x => x.OpenedAt)
                 .Select(x => new TaxCaseResponse
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = x.Client.FirstName + " " + x.Client.LastName,
                     EmployeeId = x.EmployeeId,
                     TaxYear = x.TaxYear,
                     Status = x.Status,
@@ -227,7 +229,7 @@ namespace TaxServices.Application.Services
                 })
                 .ToListAsync(cancellationToken);
         }
-        
+
         private static TaxCaseResponse MapToResponse(TaxCase taxCase)
         {
             return new TaxCaseResponse

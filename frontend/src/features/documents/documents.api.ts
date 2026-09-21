@@ -1,6 +1,9 @@
 import { api } from '../../services/http/api'
+
 import type {
   DocumentItem,
+  DocumentQueryParameters,
+  PagedDocuments,
   UploadDocumentRequest,
 } from './documents.types'
 
@@ -135,6 +138,26 @@ export async function uploadClientDocument(
     {
       headers: {
         'Content-Type': undefined,
+      },
+    }
+  )
+
+  return response.data
+}
+
+export async function getDocuments(
+  parameters: DocumentQueryParameters
+): Promise<PagedDocuments> {
+  const response = await api.get<PagedDocuments>(
+    '/documents',
+    {
+      params: {
+        pageNumber: parameters.pageNumber,
+        pageSize: parameters.pageSize,
+        search: parameters.search || undefined,
+        clientId: parameters.clientId || undefined,
+        taxCaseId: parameters.taxCaseId || undefined,
+        taxYear: parameters.taxYear || undefined,
       },
     }
   )

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import ConfirmModal from '../../components/common/ConfirmModal'
 
@@ -14,7 +15,12 @@ import type { Employee } from '../../features/employees/employee.types'
 import './EmployeesPage.css'
 
 export default function EmployeesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const statusFilter = searchParams.get('status')
+
   const [searchTerm, setSearchTerm] = useState('')
+
   const [isCreateFormOpen, setIsCreateFormOpen] =
     useState(false)
 
@@ -28,7 +34,7 @@ export default function EmployeesPage() {
     useState<Employee | null>(null)
 
   const [statusEmployee, setStatusEmployee] =
-  useState<Employee | null>(null)
+    useState<Employee | null>(null)
 
   const [statusMessage, setStatusMessage] =
     useState('')
@@ -65,26 +71,63 @@ export default function EmployeesPage() {
       return []
     }
 
+    let result = employees
+
+    if (statusFilter === 'active') {
+      result = result.filter(
+        (employee) => employee.isActive
+      )
+    }
+
+    if (statusFilter === 'inactive') {
+      result = result.filter(
+        (employee) => !employee.isActive
+      )
+    }
+
     const search = searchTerm.trim().toLowerCase()
 
     if (!search) {
-      return employees
+      return result
     }
 
-    return employees.filter((employee) => {
+    return result.filter((employee) => {
       const fullName =
         `${employee.firstName} ${employee.lastName}`.toLowerCase()
 
       return (
         fullName.includes(search) ||
-        employee.firstName.toLowerCase().includes(search) ||
-        employee.lastName.toLowerCase().includes(search) ||
-        employee.email.toLowerCase().includes(search) ||
-        employee.phoneNumber?.toLowerCase().includes(search) ||
-        employee.jobTitle.toLowerCase().includes(search)
+        employee.firstName
+          .toLowerCase()
+          .includes(search) ||
+        employee.lastName
+          .toLowerCase()
+          .includes(search) ||
+        employee.email
+          .toLowerCase()
+          .includes(search) ||
+        employee.phoneNumber
+          ?.toLowerCase()
+          .includes(search) ||
+        employee.jobTitle
+          .toLowerCase()
+          .includes(search)
       )
     })
-  }, [employees, searchTerm])
+  }, [employees, searchTerm, statusFilter])
+
+  function handleStatusFilterChange(
+    value: string
+  ) {
+    if (value === 'all') {
+      setSearchParams({})
+      return
+    }
+
+    setSearchParams({
+      status: value,
+    })
+  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -162,11 +205,11 @@ export default function EmployeesPage() {
     setEditingEmployee(null)
   }
 
-function handleChangeStatus(employee: Employee) {
-  setStatusMessage('')
-  setStatusError('')
-  setStatusEmployee(employee)
-}
+  function handleChangeStatus(employee: Employee) {
+    setStatusMessage('')
+    setStatusError('')
+    setStatusEmployee(employee)
+  }
 
   async function confirmChangeStatus() {
     if (!statusEmployee) {
@@ -174,6 +217,7 @@ function handleChangeStatus(employee: Employee) {
     }
 
     const employee = statusEmployee
+
     const action = employee.isActive
       ? 'deactivate'
       : 'activate'
@@ -190,7 +234,11 @@ function handleChangeStatus(employee: Employee) {
       setStatusEmployee(null)
 
       setStatusMessage(
-        `${employee.firstName} ${employee.lastName} was ${employee.isActive ? 'deactivated' : 'activated'} successfully.`
+        `${employee.firstName} ${employee.lastName} was ${
+          employee.isActive
+            ? 'deactivated'
+            : 'activated'
+        } successfully.`
       )
     } catch (err: any) {
       setStatusEmployee(null)
@@ -210,7 +258,9 @@ function handleChangeStatus(employee: Employee) {
     setStatusEmployee(null)
   }
 
-  function handleResendInvitation(employee: Employee) {
+  function handleResendInvitation(
+    employee: Employee
+  ) {
     setInvitationMessage('')
     setInvitationError('')
     setInvitationEmployee(employee)
@@ -472,24 +522,58 @@ function handleChangeStatus(employee: Employee) {
         </div>
       )}
 
-      <div className="staff-employees-page__search">
-        <label
-          htmlFor="employee-search"
-          className="staff-employees-page__search-label"
-        >
-          Search Employees
-        </label>
+      <div className="staff-employees-page__filters">
+        <div className="staff-employees-page__search">
+          <label
+            htmlFor="employee-search"
+            className="staff-employees-page__search-label"
+          >
+            Search Employees
+          </label>
 
-        <input
-          id="employee-search"
-          type="search"
-          value={searchTerm}
-          placeholder="Search by name, email, phone or job title..."
-          className="staff-employees-page__search-input"
-          onChange={(event) =>
-            setSearchTerm(event.target.value)
-          }
-        />
+          <input
+            id="employee-search"
+            type="search"
+            value={searchTerm}
+            placeholder="Search by name, email, phone or job title..."
+            className="staff-employees-page__search-input"
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
+          />
+        </div>
+
+        <div className="staff-employees-page__filter">
+          <label
+            htmlFor="employee-status-filter"
+            className="staff-employees-page__search-label"
+          >
+            Status
+          </label>
+
+          <select
+            id="employee-status-filter"
+            className="staff-employees-page__filter-select"
+            value={statusFilter ?? 'all'}
+            onChange={(event) =>
+              handleStatusFilterChange(
+                event.target.value
+              )
+            }
+          >
+            <option value="all">
+              All Employees
+            </option>
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+          </select>
+        </div>
       </div>
 
       {!employees?.length ? (
@@ -498,7 +582,7 @@ function handleChangeStatus(employee: Employee) {
         </div>
       ) : !filteredEmployees.length ? (
         <div className="staff-employees-page__state">
-          No employees match your search.
+          No employees match the selected filters.
         </div>
       ) : (
         <div className="staff-employees-page__table-wrapper">
@@ -568,13 +652,16 @@ function handleChangeStatus(employee: Employee) {
                         type="button"
                         className="staff-employees-page__invitation-button"
                         onClick={() =>
-                          handleResendInvitation(employee)
+                          handleResendInvitation(
+                            employee
+                          )
                         }
                         disabled={
                           resendInvitation.isPending
                         }
                       >
-                        {resendingEmployeeId === employee.id
+                        {resendingEmployeeId ===
+                        employee.id
                           ? 'Sending...'
                           : 'Resend Invitation'}
                       </button>
@@ -642,11 +729,12 @@ function handleChangeStatus(employee: Employee) {
             ? 'Deactivate'
             : 'Activate'
         }
-        isPending={changeEmployeeStatus.isPending}
+        isPending={
+          changeEmployeeStatus.isPending
+        }
         onConfirm={confirmChangeStatus}
         onCancel={cancelChangeStatus}
       />
-
     </section>
   )
 }

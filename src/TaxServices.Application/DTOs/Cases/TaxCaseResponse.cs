@@ -6,6 +6,7 @@ namespace TaxServices.Application.DTOs.Cases
     {
         public Guid Id { get; set; }
         public Guid ClientId { get; set; }
+        public string ClientName { get; set; } = string.Empty;
         public Guid? EmployeeId { get; set; }
         public int TaxYear { get; set; }
         public CaseStatus Status { get; set; }

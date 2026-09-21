@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
@@ -23,9 +24,7 @@ namespace TaxServices.Application.Services
             _tenantContext = tenantContext;
         }
 
-        public async Task<DocumentResponse> UploadAsync(
-            UploadDocumentRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<DocumentResponse> UploadAsync(UploadDocumentRequest request, CancellationToken cancellationToken = default)
         {
             UploadFileException.CheckFileValidation(request);
 
@@ -87,9 +86,7 @@ namespace TaxServices.Application.Services
             return MapToResponse(document);
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(
-            Guid clientId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(Guid clientId, CancellationToken cancellationToken = default)
         {
             return await _context.Documents
                 .AsNoTracking()
@@ -128,9 +125,7 @@ namespace TaxServices.Application.Services
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByTaxCaseAsync(
-            Guid taxCaseId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByTaxCaseAsync(Guid taxCaseId, CancellationToken cancellationToken = default)
         {
             var taxCaseExists = await _context.TaxCases
                 .AsNoTracking()
@@ -161,9 +156,7 @@ namespace TaxServices.Application.Services
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<DocumentResponse?> GetByIdAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task<DocumentResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .AsNoTracking()
@@ -177,9 +170,7 @@ namespace TaxServices.Application.Services
                 : MapToResponse(document);
         }
 
-        public async Task<Stream?> DownloadAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task<Stream?> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .AsNoTracking()
@@ -196,9 +187,7 @@ namespace TaxServices.Application.Services
                 cancellationToken);
         }
 
-        public async Task DeleteAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .FirstOrDefaultAsync(
@@ -218,8 +207,7 @@ namespace TaxServices.Application.Services
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        private static DocumentResponse MapToResponse(
-            Document document)
+        private static DocumentResponse MapToResponse(Document document)
         {
             return new DocumentResponse
             {
@@ -233,9 +221,7 @@ namespace TaxServices.Application.Services
             };
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(
-            Guid clientId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByClientkdIdAsync(Guid clientId, CancellationToken cancellationToken = default)
         {
             var clientExists = await _context.Clients
                 .AsNoTracking()
@@ -265,5 +251,90 @@ namespace TaxServices.Application.Services
                 })
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default) { var clientExists = await _context.Clients.AsNoTracking().AnyAsync(c => c.Id == clientId && c.TenantId == _tenantContext.TenantId, cancellationToken); if (!clientExists) throw new ArgumentException("Client does not exist."); return await _context.Documents.AsNoTracking().Where(d => d.ClientId == clientId && d.TenantId == _tenantContext.TenantId).OrderByDescending(d => d.UploadedAt).Select(d => new DocumentResponse { Id = d.Id, ClientId = d.ClientId, TaxCaseId = d.TaxCaseId, FileName = d.OriginalFileName, ContentType = d.ContentType, FileSize = d.FileSize, UploadedAt = d.UploadedAt }).ToListAsync(cancellationToken); }
+
+        public async Task<PagedResult<DocumentResponse>> GetAllAsync(DocumentQueryParameters parameters, CancellationToken cancellationToken = default)
+        {
+            var query = _context.Documents
+                .AsNoTracking()
+                .Where(d => d.TenantId == _tenantContext.TenantId);
+
+            if (!string.IsNullOrWhiteSpace(parameters.Search))
+            {
+                var search = parameters.Search.Trim();
+
+                query = query.Where(d =>
+                    d.OriginalFileName.Contains(search));
+            }
+
+            if (parameters.ClientId.HasValue)
+            {
+                query = query.Where(d =>
+                    d.ClientId == parameters.ClientId.Value);
+            }
+
+            if (parameters.TaxCaseId.HasValue)
+            {
+                query = query.Where(d =>
+                    d.TaxCaseId == parameters.TaxCaseId.Value);
+            }
+
+            if (parameters.TaxYear.HasValue)
+            {
+                query = query.Where(d =>
+                    d.TaxCaseId.HasValue &&
+                    _context.TaxCases.Any(tc =>
+                        tc.Id == d.TaxCaseId.Value &&
+                        tc.TenantId == _tenantContext.TenantId &&
+                        tc.TaxYear == parameters.TaxYear.Value));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(d => d.UploadedAt)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .Select(d => new DocumentResponse
+                {
+                    Id = d.Id,
+                    ClientId = d.ClientId,
+                    TaxCaseId = d.TaxCaseId,
+                    FileName = d.OriginalFileName,
+                    ContentType = d.ContentType,
+                    FileSize = d.FileSize,
+                    UploadedAt = d.UploadedAt,
+
+                    TaxYear = d.TaxCaseId.HasValue
+                        ? _context.TaxCases
+                            .Where(tc =>
+                                tc.Id == d.TaxCaseId.Value &&
+                                tc.TenantId == _tenantContext.TenantId)
+                            .Select(tc => (int?)tc.TaxYear)
+                            .FirstOrDefault()
+                        : null,
+
+                    CaseStatus = d.TaxCaseId.HasValue
+                        ? _context.TaxCases
+                            .Where(tc =>
+                                tc.Id == d.TaxCaseId.Value &&
+                                tc.TenantId == _tenantContext.TenantId)
+                            .Select(tc => (CaseStatus?)tc.Status)
+                            .FirstOrDefault()
+                        : null
+                })
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<DocumentResponse>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount
+            };
+        }
+
+
     }
 }

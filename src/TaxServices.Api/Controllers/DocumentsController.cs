@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Interfaces;
 
@@ -13,9 +14,7 @@ namespace TaxServices.Api.Controllers
         private readonly IDocumentService _documentService;
         private readonly IClientService _clientService;
 
-        public DocumentsController(
-            IDocumentService documentService,
-            IClientService clientService)
+        public DocumentsController(IDocumentService documentService, IClientService clientService)
         {
             _documentService = documentService;
             _clientService = clientService;
@@ -24,11 +23,7 @@ namespace TaxServices.Api.Controllers
         [Authorize(Roles = "Admin,Employee")]
         [Consumes("multipart/form-data")]
         [HttpPost("upload")]
-        public async Task<ActionResult<DocumentResponse>> Upload(
-            Guid clientId,
-            Guid? taxCaseId,
-            IFormFile file,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<DocumentResponse>> Upload(Guid clientId, Guid? taxCaseId, IFormFile file, CancellationToken cancellationToken)
         {
             await using var stream = file.OpenReadStream();
 
@@ -42,9 +37,7 @@ namespace TaxServices.Api.Controllers
                 Content = stream
             };
 
-            var document = await _documentService.UploadAsync(
-                request,
-                cancellationToken);
+            var document = await _documentService.UploadAsync(request, cancellationToken);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -54,13 +47,9 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet("{id:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<DocumentResponse>> GetById(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<DocumentResponse>> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var document = await _documentService.GetByIdAsync(
-                id,
-                cancellationToken);
+            var document = await _documentService.GetByIdAsync(id, cancellationToken);
 
             if (document == null)
                 return NotFound();
@@ -70,46 +59,32 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet("client/{clientId:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetByClient(
-            Guid clientId,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetByClient(Guid clientId, CancellationToken cancellationToken)
         {
-            var documents = await _documentService.GetByClientAsync(
-                clientId,
-                cancellationToken);
+            var documents = await _documentService.GetByClientAsync(clientId, cancellationToken);
 
             return Ok(documents);
         }
 
         [HttpGet("case/{taxCaseId:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetByTaxCase(
-            Guid taxCaseId,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetByTaxCase(Guid taxCaseId, CancellationToken cancellationToken)
         {
-            var documents = await _documentService.GetByTaxCaseAsync(
-                taxCaseId,
-                cancellationToken);
+            var documents = await _documentService.GetByTaxCaseAsync(taxCaseId, cancellationToken);
 
             return Ok(documents);
         }
 
         [HttpGet("{id:guid}/download")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> Download(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> Download(Guid id, CancellationToken cancellationToken)
         {
-            var document = await _documentService.GetByIdAsync(
-                id,
-                cancellationToken);
+            var document = await _documentService.GetByIdAsync(id, cancellationToken);
 
             if (document == null)
                 return NotFound();
 
-            var stream = await _documentService.DownloadAsync(
-                id,
-                cancellationToken);
+            var stream = await _documentService.DownloadAsync(id, cancellationToken);
 
             if (stream == null)
                 return NotFound();
@@ -122,20 +97,14 @@ namespace TaxServices.Api.Controllers
 
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> Delete(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var document = await _documentService.GetByIdAsync(
-                id,
-                cancellationToken);
+            var document = await _documentService.GetByIdAsync(id, cancellationToken);
 
             if (document == null)
                 return NotFound();
 
-            await _documentService.DeleteAsync(
-                id,
-                cancellationToken);
+            await _documentService.DeleteAsync(id, cancellationToken);
 
             return NoContent();
         }
@@ -143,20 +112,14 @@ namespace TaxServices.Api.Controllers
         [Authorize]
         [Consumes("multipart/form-data")]
         [HttpPost("mine/upload")]
-        public async Task<ActionResult<DocumentResponse>> UploadMine(
-            Guid? taxCaseId,
-            IFormFile file,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<DocumentResponse>> UploadMine(Guid? taxCaseId, IFormFile file, CancellationToken cancellationToken)
         {
-            var userId = User.FindFirst(
-                System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized();
 
-            var client = await _clientService.GetCurrentAsync(
-                userId,
-                cancellationToken);
+            var client = await _clientService.GetCurrentAsync(userId, cancellationToken);
 
             if (client == null)
                 return NotFound("Client profile was not found.");
@@ -184,8 +147,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpGet("mine")]
-        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetMine(
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetMine(CancellationToken cancellationToken)
         {
             var userId = User.FindFirst(
                 System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -208,9 +170,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpGet("mine/{id:guid}/download")]
-        public async Task<IActionResult> DownloadMine(
-            Guid id,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> DownloadMine(Guid id, CancellationToken cancellationToken)
         {
             var userId = User.FindFirst(
                 System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -246,6 +206,17 @@ namespace TaxServices.Api.Controllers
                 stream,
                 document.ContentType,
                 document.FileName);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<PagedResult<DocumentResponse>>> GetAll([FromQuery] DocumentQueryParameters parameters, CancellationToken cancellationToken)
+        {
+            var documents = await _documentService.GetAllAsync(
+                parameters,
+                cancellationToken);
+
+            return Ok(documents);
         }
     }
 }

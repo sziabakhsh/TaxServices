@@ -56,3 +56,10 @@ export async function updateTaxCase(
   return response.data
 }
 
+export async function getTaxCases(): Promise<TaxCase[]> {
+  const response = await api.get<TaxCase[]>(
+    '/TaxCases'
+  )
+
+  return response.data
+}

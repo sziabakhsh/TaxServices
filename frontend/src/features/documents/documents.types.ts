@@ -14,3 +14,20 @@ export interface UploadDocumentRequest {
   taxCaseId?: string | null
   file: File
 }
+
+export interface DocumentQueryParameters {
+  pageNumber: number
+  pageSize: number
+  search?: string
+  clientId?: string
+  taxCaseId?: string
+  taxYear?: number
+}
+
+export interface PagedDocuments {
+  items: DocumentItem[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}

@@ -10,6 +10,7 @@ export enum CaseStatus {
 export interface TaxCase {
   id: string
   clientId: string
+  clientName: string
   employeeId?: string | null
   taxYear: number
   status: CaseStatus
