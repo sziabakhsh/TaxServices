@@ -1,7 +1,9 @@
 import { api } from '../../services/http/api'
 import type {
   CreateTaxCaseRequest,
+  PagedTaxCases,
   TaxCase,
+  TaxCaseQueryParameters,
 } from './case.types'
 
 export async function createTaxCase(
@@ -56,9 +58,14 @@ export async function updateTaxCase(
   return response.data
 }
 
-export async function getTaxCases(): Promise<TaxCase[]> {
-  const response = await api.get<TaxCase[]>(
-    '/TaxCases'
+export async function getTaxCases(
+  parameters: TaxCaseQueryParameters
+): Promise<PagedTaxCases> {
+  const response = await api.get<PagedTaxCases>(
+    '/TaxCases',
+    {
+      params: parameters,
+    }
   )
 
   return response.data

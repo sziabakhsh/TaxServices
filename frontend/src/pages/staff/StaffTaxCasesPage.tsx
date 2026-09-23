@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import {
-  CaseStatus,
-  type TaxCase,
+  CaseStatus
 } from '../../features/cases/case.types'
 import { useTaxCases } from '../../features/cases/useTaxCases'
+import Pagination from '../../components/common/Pagination'
 
 import './StaffTaxCasesPage.css'
 
@@ -49,43 +50,43 @@ function getStatusClassName(status: CaseStatus) {
   }
 }
 
-function filterCases(
-  cases: TaxCase[],
-  filter: string | null
-) {
-  if (filter === 'open') {
-    return cases.filter(
-      (taxCase) =>
-        taxCase.status === CaseStatus.Open ||
-        taxCase.status === CaseStatus.InProgress
-    )
-  }
-
-  if (filter === 'waitingForClient') {
-    return cases.filter(
-      (taxCase) =>
-        taxCase.status === CaseStatus.WaitingForClient
-    )
-  }
-
-  return cases
-}
-
 export default function StaffTaxCasesPage() {
-  const { data: taxCases = [], isLoading, isError } =
-    useTaxCases()
-
-  const [searchParams, setSearchParams] =
-    useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   const statusFilter = searchParams.get('status')
 
-  const filteredCases = filterCases(
-    taxCases,
-    statusFilter
-  )
+  const [pageNumber, setPageNumber] = useState(1)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search)
+      setPageNumber(1)
+    }, 400)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [search])
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+  } =   useTaxCases({
+    pageNumber,
+    pageSize: 20,
+    search: debouncedSearch.trim() || undefined,
+    status: statusFilter ?? undefined,
+  })
+
+  const taxCases = data?.items ?? []
 
   function changeFilter(value: string) {
+    setPageNumber(1)
+
     if (value === 'all') {
       setSearchParams({})
       return
@@ -113,24 +114,41 @@ export default function StaffTaxCasesPage() {
           </p>
         </div>
 
-        <label className="staff-cases__filter">
-          <span>Status</span>
+        <div className="staff-cases__controls">
+          <label className="staff-cases__search">
+            <span>Search</span>
 
-          <select
-            value={statusFilter ?? 'all'}
-            onChange={(event) =>
-              changeFilter(event.target.value)
-            }
-          >
-            <option value="all">All Cases</option>
-            <option value="open">
-              Open & In Progress
-            </option>
-            <option value="waitingForClient">
-              Waiting for Client
-            </option>
-          </select>
-        </label>
+            <input
+              type="search"
+              value={search}
+              placeholder="Search client or description..."
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+            />
+          </label>
+
+          <label className="staff-cases__filter">
+            <span>Status</span>
+
+            <select
+              value={statusFilter ?? 'all'}
+              onChange={(event) =>
+                changeFilter(event.target.value)
+              }
+            >
+              <option value="all">All Cases</option>
+
+              <option value="open">
+                Open & In Progress
+              </option>
+
+              <option value="waitingForClient">
+                Waiting for Client
+              </option>
+            </select>
+          </label>
+        </div>
       </header>
 
       {isLoading && (
@@ -147,7 +165,7 @@ export default function StaffTaxCasesPage() {
 
       {!isLoading &&
         !isError &&
-        filteredCases.length === 0 && (
+        taxCases.length === 0 && (
           <div className="staff-cases__empty">
             No tax cases found for this filter.
           </div>
@@ -155,7 +173,7 @@ export default function StaffTaxCasesPage() {
 
       {!isLoading &&
         !isError &&
-        filteredCases.length > 0 && (
+        taxCases.length > 0 && (
           <div className="staff-cases__table-wrapper">
             <table className="staff-cases__table">
               <thead>
@@ -169,7 +187,7 @@ export default function StaffTaxCasesPage() {
               </thead>
 
               <tbody>
-                {filteredCases.map((taxCase) => (
+                {taxCases.map((taxCase) => (
                   <tr key={taxCase.id}>
                     <td>
                       <strong>
@@ -209,6 +227,14 @@ export default function StaffTaxCasesPage() {
                 ))}
               </tbody>
             </table>
+
+            {data && (
+              <Pagination
+                pageNumber={data.pageNumber}
+                totalPages={data.totalPages}
+                onPageChange={setPageNumber}
+              />
+            )}
           </div>
         )}
     </div>

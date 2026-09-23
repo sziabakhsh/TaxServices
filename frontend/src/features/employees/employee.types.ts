@@ -28,3 +28,18 @@ export interface UpdateEmployeeRequest {
   phoneNumber: string
   jobTitle: string
 }
+
+export interface EmployeeQueryParameters {
+  pageNumber: number
+  pageSize: number
+  search?: string
+  isActive?: boolean
+}
+
+export interface PagedEmployees {
+  items: Employee[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}

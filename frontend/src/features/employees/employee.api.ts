@@ -4,11 +4,20 @@ import type {
   CreateEmployeeRequest,
   Employee,
   EmployeeCreatedResponse,
+  EmployeeQueryParameters,
+  PagedEmployees,
   UpdateEmployeeRequest,
 } from './employee.types'
 
-export async function getEmployees(): Promise<Employee[]> {
-  const response = await api.get<Employee[]>('/Employees')
+export async function getEmployees(
+  parameters: EmployeeQueryParameters
+): Promise<PagedEmployees> {
+  const response = await api.get<PagedEmployees>(
+    '/Employees',
+    {
+      params: parameters,
+    }
+  )
 
   return response.data
 }
@@ -64,4 +73,12 @@ export async function resendEmployeeInvitation(
   await api.post(
     `/employees/${employeeId}/resend-invitation`
   )
+}
+
+export async function getEmployeeOptions(): Promise<Employee[]> {
+  const response = await api.get<Employee[]>(
+    '/Employees/options'
+  )
+
+  return response.data
 }

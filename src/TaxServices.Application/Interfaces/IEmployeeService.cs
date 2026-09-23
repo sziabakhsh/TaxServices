@@ -7,7 +7,9 @@ namespace TaxServices.Application.Interfaces
     {
         Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-        Task<PagedResult<EmployeeDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default);
+        Task<PagedResult<EmployeeDto>> GetAllAsync(EmployeeQueryParameters parameters, CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyList<EmployeeDto>> GetOptionsAsync(CancellationToken cancellationToken = default);
 
         Task<EmployeeCreatedResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancellationToken = default);
 

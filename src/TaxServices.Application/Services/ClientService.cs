@@ -25,8 +25,7 @@ namespace TaxServices.Application.Services
             _authService = authService;
         }
 
-        public async Task<ClientDto?> GetByIdAsync(Guid id,
-            CancellationToken cancellationToken = default)
+        public async Task<ClientDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients
                 .Include(c => c.IndividualProfile)

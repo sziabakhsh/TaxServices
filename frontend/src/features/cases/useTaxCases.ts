@@ -2,11 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 
 import { getTaxCases } from './case.api'
 
-import type { TaxCase } from './case.types'
+import type {
+  PagedTaxCases,
+  TaxCaseQueryParameters,
+} from './case.types'
 
-export function useTaxCases() {
-  return useQuery<TaxCase[]>({
-    queryKey: ['tax-cases'],
-    queryFn: getTaxCases,
+export function useTaxCases(
+  parameters: TaxCaseQueryParameters
+) {
+  return useQuery<PagedTaxCases>({
+    queryKey: ['tax-cases', parameters],
+    queryFn: () => getTaxCases(parameters),
   })
 }

@@ -20,13 +20,22 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<PagedResult<EmployeeDto>>> GetAll([FromQuery] PaginationQueryParameters parameters, CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<EmployeeDto>>> GetAll([FromQuery] EmployeeQueryParameters parameters, CancellationToken cancellationToken)
         {
             var result = await _employeeService.GetAllAsync(
                 parameters,
                 cancellationToken);
 
             return Ok(result);
+        }
+
+        [HttpGet("options")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<IReadOnlyList<EmployeeDto>>> GetOptions(CancellationToken cancellationToken)
+        {
+            var employees = await _employeeService.GetOptionsAsync(cancellationToken);
+
+            return Ok(employees);
         }
 
         [HttpGet("{id:guid}")]

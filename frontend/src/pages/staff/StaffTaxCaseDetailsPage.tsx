@@ -8,7 +8,7 @@ import {
 import { useClient } from '../../features/clients/useClient'
 import { useTaxCase } from '../../features/cases/useTaxCase'
 import { useUpdateTaxCase } from '../../features/cases/useUpdateTaxCase'
-import { useEmployees } from '../../features/employees/useEmployees'
+import { useEmployeeOptions } from '../../features/employees/useEmployeeOptions'
 import { useTaxCaseDocuments } from '../../features/documents/useTaxCaseDocuments'
 import { useUploadClientDocument } from '../../features/documents/useUploadClientDocument'
 import { useDeleteClientDocument } from '../../features/documents/useDeleteClientDocument'
@@ -86,7 +86,7 @@ export default function StaffTaxCaseDetailsPage() {
     data: employees,
     isLoading: areEmployeesLoading,
     isError: areEmployeesError,
-  } = useEmployees()
+  } = useEmployeeOptions()
 
   const {
     data: documents,

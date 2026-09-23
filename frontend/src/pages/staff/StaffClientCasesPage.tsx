@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useClient } from '../../features/clients/useClient'
 import { useClientTaxCases } from '../../features/cases/useClientTaxCases'
 import { useCreateTaxCase } from '../../features/cases/useCreateTaxCase'
-import { useEmployees } from '../../features/employees/useEmployees'
+import { useEmployeeOptions } from '../../features/employees/useEmployeeOptions'
 
 import './StaffClientCasesPage.css'
 
@@ -59,7 +59,7 @@ export default function StaffClientCasesPage() {
     data: employees,
     isLoading: areEmployeesLoading,
     isError: areEmployeesError,
-  } = useEmployees()
+  } = useEmployeeOptions()
 
   const createTaxCase = useCreateTaxCase()
 
@@ -191,9 +191,7 @@ export default function StaffClientCasesPage() {
                 Not assigned
               </option>
 
-              {employees
-                ?.filter((employee) => employee.isActive)
-                .map((employee) => (
+              {employees?.map((employee) => (
                   <option
                     key={employee.id}
                     value={employee.id}

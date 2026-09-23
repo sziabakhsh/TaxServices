@@ -28,7 +28,7 @@ namespace TaxServices.Infrastructure.Services
 
         }
 
-        public async Task<PagedResult<EmployeeDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default)
+        public async Task<PagedResult<EmployeeDto>> GetAllAsync(EmployeeQueryParameters parameters, CancellationToken cancellationToken = default)
         {
             var query = _context.Employees
                 .AsNoTracking()
@@ -43,6 +43,12 @@ namespace TaxServices.Infrastructure.Services
                     e.LastName.Contains(search) ||
                     e.Email.Contains(search) ||
                     e.JobTitle.Contains(search));
+            }
+
+            if (parameters.IsActive.HasValue)
+            {
+                query = query.Where(
+                    e => e.IsActive == parameters.IsActive.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -65,6 +71,22 @@ namespace TaxServices.Infrastructure.Services
                 PageSize = parameters.PageSize,
                 TotalCount = totalCount
             };
+        }
+
+        public async Task<IReadOnlyList<EmployeeDto>> GetOptionsAsync(CancellationToken cancellationToken = default)
+        {
+            var employees = await _context.Employees
+                .AsNoTracking()
+                .Where(e =>
+                    e.TenantId == _tenantContext.TenantId &&
+                    e.IsActive)
+                .OrderBy(e => e.LastName)
+                .ThenBy(e => e.FirstName)
+                .ToListAsync(cancellationToken);
+
+            return employees
+                .Select(MapToDto)
+                .ToList();
         }
 
         public async Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

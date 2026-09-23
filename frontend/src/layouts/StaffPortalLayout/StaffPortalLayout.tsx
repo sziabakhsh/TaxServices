@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 
 import {
+  BriefcaseBusiness,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -149,6 +150,15 @@ export default function StaffPortalLayout() {
           >
             <FileText size={19} />
             <span>Documents</span>
+          </NavLink>
+
+          <NavLink
+            to="/staff/services"
+            className={getNavLinkClass}
+            onClick={handleNavigation}
+          >
+            <BriefcaseBusiness size={19} />
+            <span>Services</span>
           </NavLink>
         </nav>
 

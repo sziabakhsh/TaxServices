@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Cases;
 using TaxServices.Application.Interfaces;
 
@@ -20,9 +21,9 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetAll(CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<TaxCaseResponse>>> GetAll([FromQuery] TaxCaseQueryParameters parameters, CancellationToken cancellationToken)
         {
-            var taxCases = await _taxCaseService.GetAllAsync(cancellationToken);
+            var taxCases = await _taxCaseService.GetAllAsync(parameters, cancellationToken);
 
             return Ok(taxCases);
         }

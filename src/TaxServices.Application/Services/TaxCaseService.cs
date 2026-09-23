@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Cases;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Cases;
@@ -18,14 +19,50 @@ namespace TaxServices.Application.Services
             _tenantContext = tenantContext;
         }
 
-        public async Task<IEnumerable<TaxCaseResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PagedResult<TaxCaseResponse>> GetAllAsync(TaxCaseQueryParameters parameters, CancellationToken cancellationToken = default)
         {
             var tenantId = _tenantContext.TenantId;
 
-            return await _context.TaxCases
+            var query = _context.TaxCases
                 .AsNoTracking()
-                .Where(x => x.TenantId == tenantId)
+                .Where(x => x.TenantId == tenantId);
+
+            // Apply filters BEFORE Count, Skip and Take
+            if (!string.IsNullOrWhiteSpace(parameters.Status))
+            {
+                query = parameters.Status switch
+                {
+                    "open" => query.Where(x =>
+                        x.Status == CaseStatus.Open ||
+                        x.Status == CaseStatus.InProgress),
+
+                    "waitingForClient" => query.Where(x =>
+                        x.Status == CaseStatus.WaitingForClient),
+
+                    _ => query
+                };
+            }
+                        
+            if (!string.IsNullOrWhiteSpace(parameters.Search))
+            {
+                var search = parameters.Search.Trim();
+
+                var isTaxYear = int.TryParse(search, out var taxYear);
+
+                query = query.Where(x =>
+                    x.Client.FirstName.Contains(search) ||
+                    x.Client.LastName.Contains(search) ||
+                    (x.Client.FirstName + " " + x.Client.LastName).Contains(search) ||
+                    x.Description.Contains(search) ||
+                    (isTaxYear && x.TaxYear == taxYear));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
                 .OrderByDescending(x => x.OpenedAt)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
                 .Select(x => new TaxCaseResponse
                 {
                     Id = x.Id,
@@ -39,6 +76,14 @@ namespace TaxServices.Application.Services
                     ClosedAt = x.ClosedAt
                 })
                 .ToListAsync(cancellationToken);
+
+            return new PagedResult<TaxCaseResponse>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<TaxCaseResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -82,11 +127,15 @@ namespace TaxServices.Application.Services
                 var employeeExists = await _context.Employees
                     .AnyAsync(
                         x => x.Id == request.EmployeeId.Value &&
-                             x.TenantId == tenantId,
+                             x.TenantId == tenantId &&
+                             x.IsActive,
                         cancellationToken);
 
                 if (!employeeExists)
-                    throw new KeyNotFoundException("Employee not found.");
+                {
+                    throw new KeyNotFoundException(
+                        "Active employee not found.");
+                }
             }
 
             var taxCase = new TaxCase
@@ -126,11 +175,15 @@ namespace TaxServices.Application.Services
                 var employeeExists = await _context.Employees
                     .AnyAsync(
                         x => x.Id == request.EmployeeId.Value &&
-                             x.TenantId == tenantId,
+                             x.TenantId == tenantId &&
+                             x.IsActive,
                         cancellationToken);
 
                 if (!employeeExists)
-                    throw new KeyNotFoundException("Employee not found.");
+                {
+                    throw new KeyNotFoundException(
+                        "Active employee not found.");
+                }
             }
 
             taxCase.EmployeeId = request.EmployeeId;

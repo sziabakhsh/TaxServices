@@ -25,3 +25,18 @@ export interface CreateTaxCaseRequest {
   taxYear: number
   description: string
 }
+
+export interface TaxCaseQueryParameters {
+  pageNumber: number
+  pageSize: number
+  search?: string
+  status?: string
+}
+
+export interface PagedTaxCases {
+  items: TaxCase[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}

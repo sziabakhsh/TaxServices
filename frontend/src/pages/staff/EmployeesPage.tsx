@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import Pagination from '../../components/common/Pagination'
 
 import ConfirmModal from '../../components/common/ConfirmModal'
 
@@ -20,6 +21,20 @@ export default function EmployeesPage() {
   const statusFilter = searchParams.get('status')
 
   const [searchTerm, setSearchTerm] = useState('')
+
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [pageNumber, setPageNumber] = useState(1)
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setPageNumber(1)
+    }, 400)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [searchTerm])
 
   const [isCreateFormOpen, setIsCreateFormOpen] =
     useState(false)
@@ -48,11 +63,23 @@ export default function EmployeesPage() {
   const [invitationError, setInvitationError] =
     useState('')
 
-  const {
-    data: employees,
-    isLoading,
-    isError,
-  } = useEmployees()
+const {
+  data,
+  isLoading,
+  isError,
+} = useEmployees({
+  pageNumber,
+  pageSize: 20,
+  search: debouncedSearch || undefined,
+  isActive:
+    statusFilter === 'active'
+      ? true
+      : statusFilter === 'inactive'
+        ? false
+        : undefined,
+})
+
+const employees = data?.items ?? []
 
   const createEmployee = useCreateEmployee()
   const updateEmployee = useUpdateEmployee()
@@ -66,68 +93,18 @@ export default function EmployeesPage() {
     createEmployee.isPending ||
     updateEmployee.isPending
 
-  const filteredEmployees = useMemo(() => {
-    if (!employees) {
-      return []
+    function handleStatusFilterChange(value: string) {
+      setPageNumber(1)
+
+      if (value === 'all') {
+        setSearchParams({})
+        return
+      }
+
+      setSearchParams({
+        status: value,
+      })
     }
-
-    let result = employees
-
-    if (statusFilter === 'active') {
-      result = result.filter(
-        (employee) => employee.isActive
-      )
-    }
-
-    if (statusFilter === 'inactive') {
-      result = result.filter(
-        (employee) => !employee.isActive
-      )
-    }
-
-    const search = searchTerm.trim().toLowerCase()
-
-    if (!search) {
-      return result
-    }
-
-    return result.filter((employee) => {
-      const fullName =
-        `${employee.firstName} ${employee.lastName}`.toLowerCase()
-
-      return (
-        fullName.includes(search) ||
-        employee.firstName
-          .toLowerCase()
-          .includes(search) ||
-        employee.lastName
-          .toLowerCase()
-          .includes(search) ||
-        employee.email
-          .toLowerCase()
-          .includes(search) ||
-        employee.phoneNumber
-          ?.toLowerCase()
-          .includes(search) ||
-        employee.jobTitle
-          .toLowerCase()
-          .includes(search)
-      )
-    })
-  }, [employees, searchTerm, statusFilter])
-
-  function handleStatusFilterChange(
-    value: string
-  ) {
-    if (value === 'all') {
-      setSearchParams({})
-      return
-    }
-
-    setSearchParams({
-      status: value,
-    })
-  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -305,7 +282,7 @@ export default function EmployeesPage() {
     setInvitationEmployee(null)
   }
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <section className="staff-employees-page">
         <div className="staff-employees-page__state">
@@ -535,7 +512,7 @@ export default function EmployeesPage() {
             id="employee-search"
             type="search"
             value={searchTerm}
-            placeholder="Search by name, email, phone or job title..."
+            placeholder="Search by name, email or job title..."
             className="staff-employees-page__search-input"
             onChange={(event) =>
               setSearchTerm(event.target.value)
@@ -576,15 +553,13 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      {!employees?.length ? (
-        <div className="staff-employees-page__state">
-          No employees found.
-        </div>
-      ) : !filteredEmployees.length ? (
-        <div className="staff-employees-page__state">
-          No employees match the selected filters.
-        </div>
-      ) : (
+     {!employees.length ? (
+      <div className="staff-employees-page__state">
+        {debouncedSearch || statusFilter
+          ? 'No employees match the selected filters.'
+          : 'No employees found.'}
+      </div>
+    ) : (    
         <div className="staff-employees-page__table-wrapper">
           <table className="staff-employees-page__table">
             <thead>
@@ -599,7 +574,7 @@ export default function EmployeesPage() {
             </thead>
 
             <tbody>
-              {filteredEmployees.map((employee) => (
+              {employees.map((employee) => (
                 <tr key={employee.id}>
                   <td>
                     <strong>
@@ -692,6 +667,14 @@ export default function EmployeesPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {data && (
+        <Pagination
+          pageNumber={data.pageNumber}
+          totalPages={data.totalPages}
+          onPageChange={setPageNumber}
+        />
       )}
 
       <ConfirmModal

@@ -1,10 +1,11 @@
-﻿using TaxServices.Application.DTOs.Cases;
+﻿using TaxServices.Application.Common.Pagination;
+using TaxServices.Application.DTOs.Cases;
 
 namespace TaxServices.Application.Interfaces
 {
     public interface ITaxCaseService
     {
-        Task<IEnumerable<TaxCaseResponse>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<PagedResult<TaxCaseResponse>> GetAllAsync(TaxCaseQueryParameters parameters, CancellationToken cancellationToken = default);
 
         Task<TaxCaseResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
