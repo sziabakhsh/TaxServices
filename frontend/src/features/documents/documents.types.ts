@@ -1,6 +1,7 @@
 export interface DocumentItem {
   id: string
   clientId: string
+  clientName: string
   taxCaseId?: string | null
   fileName: string
   contentType: string

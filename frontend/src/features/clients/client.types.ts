@@ -43,3 +43,17 @@ export interface StaffClient {
   isActive: boolean
   individualProfile: StaffClientIndividualProfile | null
 }
+
+export interface ClientQueryParameters {
+  pageNumber: number
+  pageSize: number
+  search?: string
+}
+
+export interface PagedClients {
+  items: ClientProfile[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}

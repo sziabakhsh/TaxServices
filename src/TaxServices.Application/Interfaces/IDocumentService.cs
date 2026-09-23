@@ -20,5 +20,7 @@ namespace TaxServices.Application.Interfaces
         Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default);
 
         Task<PagedResult<DocumentResponse>> GetAllAsync(DocumentQueryParameters parameters, CancellationToken cancellationToken = default);
+
+        Task AssignToCaseAsync(Guid documentId, Guid? taxCaseId, CancellationToken cancellationToken = default);
     }
 }

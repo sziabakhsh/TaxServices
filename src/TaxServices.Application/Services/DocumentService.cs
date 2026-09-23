@@ -300,6 +300,13 @@ namespace TaxServices.Application.Services
                 {
                     Id = d.Id,
                     ClientId = d.ClientId,
+                    ClientName = _context.Clients
+                        .Where(c =>
+                            c.Id == d.ClientId &&
+                            c.TenantId == _tenantContext.TenantId)
+                        .Select(c => c.FirstName + " " + c.LastName)
+                        .FirstOrDefault() ?? string.Empty,
+
                     TaxCaseId = d.TaxCaseId,
                     FileName = d.OriginalFileName,
                     ContentType = d.ContentType,
@@ -335,6 +342,45 @@ namespace TaxServices.Application.Services
             };
         }
 
+        public async Task AssignToCaseAsync(Guid documentId, Guid? taxCaseId, CancellationToken cancellationToken = default)
+        {
+            var document = await _context.Documents
+                .FirstOrDefaultAsync(
+                    d => d.Id == documentId,
+                    cancellationToken);
 
+            if (document is null)
+            {
+                throw new KeyNotFoundException("Document not found.");
+            }
+
+            // null means remove the document from its current case
+            if (taxCaseId is null)
+            {
+                document.TaxCaseId = null;
+                await _context.SaveChangesAsync(cancellationToken);
+                return;
+            }
+
+            var taxCase = await _context.TaxCases
+                .FirstOrDefaultAsync(
+                    c => c.Id == taxCaseId.Value,
+                    cancellationToken);
+
+            if (taxCase is null)
+            {
+                throw new KeyNotFoundException("Tax case not found.");
+            }
+
+            if (taxCase.ClientId != document.ClientId)
+            {
+                throw new ArgumentException(
+                    "The document and tax case must belong to the same client.");
+            }
+
+            document.TaxCaseId = taxCase.Id;
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using TaxServices.Application.DTOs.Employees;
+﻿using TaxServices.Application.Common.Pagination;
+using TaxServices.Application.DTOs.Employees;
 
 namespace TaxServices.Application.Interfaces
 {
@@ -6,7 +7,7 @@ namespace TaxServices.Application.Interfaces
     {
         Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-        Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<PagedResult<EmployeeDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default);
 
         Task<EmployeeCreatedResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancellationToken = default);
 

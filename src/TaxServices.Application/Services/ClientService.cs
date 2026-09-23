@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Clients;
 using TaxServices.Application.DTOs.Employees;
@@ -39,15 +40,43 @@ namespace TaxServices.Application.Services
                 : MapToDto(client);
         }
 
-        public async Task<IReadOnlyList<ClientDto>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PagedResult<ClientDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default)
         {
-            var clients = await _context.Clients
+            var query = _context.Clients
+                .AsNoTracking()
                 .Include(c => c.IndividualProfile)
-                .Where(c => c.TenantId == _tenantContext.TenantId).ToListAsync(cancellationToken);
+                .Where(c => c.TenantId == _tenantContext.TenantId);
 
-            return clients
+            if (!string.IsNullOrWhiteSpace(parameters.Search))
+            {
+                var search = parameters.Search.Trim();
+
+                query = query.Where(c =>
+                    c.FirstName.Contains(search) ||
+                    c.LastName.Contains(search) ||
+                    c.Email.Contains(search));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var clients = await query
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync(cancellationToken);
+
+            var items = clients
                 .Select(MapToDto)
                 .ToList();
+
+            return new PagedResult<ClientDto>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<ClientCreatedResponse> CreateAsync(CreateClientRequest request, CancellationToken cancellationToken = default)

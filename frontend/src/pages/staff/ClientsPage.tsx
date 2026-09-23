@@ -1,43 +1,38 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import Pagination from '../../components/common/Pagination'
+
 import { useClients } from '../../features/clients/useClients'
+
 import './ClientsPage.css'
 
 export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [pageNumber, setPageNumber] = useState(1)
+
+useEffect(() => {
+  const timeout = window.setTimeout(() => {
+    setDebouncedSearch(searchTerm)
+    setPageNumber(1)
+  }, 400)
+
+  return () => {
+    window.clearTimeout(timeout)
+  }
+}, [searchTerm])
 
   const {
-    data: clients,
+    data,
     isLoading,
     isError,
-  } = useClients()
+  } = useClients({
+    pageNumber,
+    pageSize: 20,
+    search: debouncedSearch || undefined,
+  })
 
-  const filteredClients = useMemo(() => {
-    if (!clients) {
-      return []
-    }
-
-    const search = searchTerm.trim().toLowerCase()
-
-    if (!search) {
-      return clients
-    }
-
-    return clients.filter((client) => {
-      const fullName =
-        `${client.firstName} ${client.lastName}`.toLowerCase()
-
-      return (
-        fullName.includes(search) ||
-        client.firstName.toLowerCase().includes(search) ||
-        client.lastName.toLowerCase().includes(search) ||
-        client.email.toLowerCase().includes(search) ||
-        client.phoneNumber?.toLowerCase().includes(search)
-      )
-    })
-  }, [clients, searchTerm])
-
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <section className="staff-clients-page">
         <div className="staff-clients-page__state">
@@ -56,6 +51,8 @@ export default function ClientsPage() {
       </section>
     )
   }
+
+  const clients = data?.items ?? []
 
   return (
     <section className="staff-clients-page">
@@ -85,7 +82,7 @@ export default function ClientsPage() {
           id="client-search"
           type="search"
           value={searchTerm}
-          placeholder="Search by name, email or phone..."
+          placeholder="Search by name or email..."
           className="staff-clients-page__search-input"
           onChange={(event) =>
             setSearchTerm(event.target.value)
@@ -93,13 +90,15 @@ export default function ClientsPage() {
         />
       </div>
 
-      {!clients?.length ? (
+      <div className="staff-clients-page__summary">
+        {data?.totalCount ?? 0} clients
+      </div>
+
+      {!clients.length ? (
         <div className="staff-clients-page__state">
-          No clients found.
-        </div>
-      ) : !filteredClients.length ? (
-        <div className="staff-clients-page__state">
-          No clients match your search.
+          {debouncedSearch
+            ? 'No clients match your search.'
+            : 'No clients found.'}
         </div>
       ) : (
         <div className="staff-clients-page__table-wrapper">
@@ -115,11 +114,12 @@ export default function ClientsPage() {
             </thead>
 
             <tbody>
-              {filteredClients.map((client) => (
+              {clients.map((client) => (
                 <tr key={client.id}>
                   <td>
                     <strong>
-                      {client.firstName} {client.lastName}
+                      {client.firstName}{' '}
+                      {client.lastName}
                     </strong>
                   </td>
 
@@ -137,7 +137,9 @@ export default function ClientsPage() {
                           : 'staff-clients-page__status staff-clients-page__status--inactive'
                       }
                     >
-                      {client.isActive ? 'Active' : 'Inactive'}
+                      {client.isActive
+                        ? 'Active'
+                        : 'Inactive'}
                     </span>
                   </td>
 
@@ -158,14 +160,21 @@ export default function ClientsPage() {
                       </Link>
                     </div>
                   </td>
-
-
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+{data && (
+  <Pagination
+    pageNumber={data.pageNumber}
+    totalPages={data.totalPages}
+    onPageChange={setPageNumber}
+  />
+)}
+
     </section>
   )
 }

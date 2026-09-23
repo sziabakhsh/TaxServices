@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Employees;
 using TaxServices.Application.Exceptions;
@@ -27,18 +28,43 @@ namespace TaxServices.Infrastructure.Services
 
         }
 
-        public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PagedResult<EmployeeDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default)
         {
-            var employees = await _context.Employees
+            var query = _context.Employees
                 .AsNoTracking()
-                .Where(e => e.TenantId == _tenantContext.TenantId)
+                .Where(e => e.TenantId == _tenantContext.TenantId);
+
+            if (!string.IsNullOrWhiteSpace(parameters.Search))
+            {
+                var search = parameters.Search.Trim();
+
+                query = query.Where(e =>
+                    e.FirstName.Contains(search) ||
+                    e.LastName.Contains(search) ||
+                    e.Email.Contains(search) ||
+                    e.JobTitle.Contains(search));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var employees = await query
                 .OrderBy(e => e.LastName)
                 .ThenBy(e => e.FirstName)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return employees
+            var items = employees
                 .Select(MapToDto)
                 .ToList();
+
+            return new PagedResult<EmployeeDto>
+            {
+                Items = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

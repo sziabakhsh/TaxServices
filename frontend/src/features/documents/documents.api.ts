@@ -164,3 +164,12 @@ export async function getDocuments(
 
   return response.data
 }
+
+export async function assignDocumentToCase(
+  documentId: string,
+  taxCaseId: string | null
+): Promise<void> {
+  await api.put(`/documents/${documentId}/case`, {
+    taxCaseId,
+  })
+}

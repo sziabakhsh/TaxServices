@@ -8,6 +8,8 @@ namespace TaxServices.Application.DTOs.Documents
 
         public Guid ClientId { get; set; }
 
+        public string ClientName { get; set; } = string.Empty;
+
         public Guid? TaxCaseId { get; set; }
 
         public string FileName { get; set; } = string.Empty;

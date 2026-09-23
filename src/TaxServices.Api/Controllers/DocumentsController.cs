@@ -218,5 +218,14 @@ namespace TaxServices.Api.Controllers
 
             return Ok(documents);
         }
+
+        [HttpPut("{id:guid}/case")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> AssignToCase(Guid id, [FromBody] AssignDocumentToCaseRequest request, CancellationToken cancellationToken)
+        {
+            await _documentService.AssignToCaseAsync(id, request.TaxCaseId, cancellationToken);
+
+            return NoContent();
+        }
     }
 }

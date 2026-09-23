@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Employees;
 using TaxServices.Application.Interfaces;
 
@@ -19,11 +20,13 @@ namespace TaxServices.Api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<ActionResult<IReadOnlyList<EmployeeDto>>> GetAll(CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedResult<EmployeeDto>>> GetAll([FromQuery] PaginationQueryParameters parameters, CancellationToken cancellationToken)
         {
-            var employees = await _employeeService.GetAllAsync(cancellationToken);
+            var result = await _employeeService.GetAllAsync(
+                parameters,
+                cancellationToken);
 
-            return Ok(employees);
+            return Ok(result);
         }
 
         [HttpGet("{id:guid}")]

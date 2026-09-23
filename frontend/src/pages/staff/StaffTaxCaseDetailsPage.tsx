@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useParams,
+} from 'react-router-dom'
 
 import { useClient } from '../../features/clients/useClient'
 import { useTaxCase } from '../../features/cases/useTaxCase'
@@ -57,6 +61,14 @@ function formatUploadDate(uploadedAt: string) {
 
 export default function StaffTaxCaseDetailsPage() {
   const { id } = useParams<{ id: string }>()
+
+  const location = useLocation()
+
+  const navigationState = location.state as
+  | {
+      from?: string
+    }
+  | null
 
   const {
     data: taxCase,
@@ -209,16 +221,20 @@ export default function StaffTaxCaseDetailsPage() {
             Tax case could not be loaded.
           </p>
 
-          <Link
-            to="/staff"
-            className="staff-tax-case-details__back-link"
-          >
-            Back to Staff Panel
-          </Link>
+          
         </div>
       </section>
     )
   }
+
+  const backTo =
+  navigationState?.from ??
+  `/staff/clients/${taxCase.clientId}/cases`
+
+const backLabel =
+  navigationState?.from === '/staff/documents'
+    ? 'Back to Documents'
+    : 'Back to Client Cases'
 
   const assignedEmployee = employees?.find(
     (employee) => employee.id === taxCase.employeeId
@@ -254,12 +270,13 @@ export default function StaffTaxCaseDetailsPage() {
             </p>
           </div>
 
-          <Link
-            to={`/staff/clients/${taxCase.clientId}/cases`}
-            className="staff-tax-case-details__back-link"
-          >
-            Back to Client Cases
-          </Link>
+       <Link
+          to={backTo}
+          className="staff-tax-case-details__back-link"
+        >
+          {backLabel}
+        </Link>
+
         </div>
 
         {/* Case Information */}
