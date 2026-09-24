@@ -11,9 +11,7 @@ namespace TaxServices.Application.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
 
-        public TaxCaseService(
-            ITaxServicesDbContext context,
-            ITenantContext tenantContext)
+        public TaxCaseService(ITaxServicesDbContext context, ITenantContext tenantContext)
         {
             _context = context;
             _tenantContext = tenantContext;
@@ -27,7 +25,6 @@ namespace TaxServices.Application.Services
                 .AsNoTracking()
                 .Where(x => x.TenantId == tenantId);
 
-            // Apply filters BEFORE Count, Skip and Take
             if (!string.IsNullOrWhiteSpace(parameters.Status))
             {
                 query = parameters.Status switch
@@ -42,32 +39,42 @@ namespace TaxServices.Application.Services
                     _ => query
                 };
             }
-                        
+
             if (!string.IsNullOrWhiteSpace(parameters.Search))
             {
                 var search = parameters.Search.Trim();
 
-                var isTaxYear = int.TryParse(search, out var taxYear);
+                var isTaxYear =
+                    int.TryParse(search, out var taxYear);
 
                 query = query.Where(x =>
                     x.Client.FirstName.Contains(search) ||
                     x.Client.LastName.Contains(search) ||
-                    (x.Client.FirstName + " " + x.Client.LastName).Contains(search) ||
+                    (x.Client.FirstName + " " + x.Client.LastName)
+                        .Contains(search) ||
+                    x.Service.Name.Contains(search) ||
                     x.Description.Contains(search) ||
                     (isTaxYear && x.TaxYear == taxYear));
             }
 
-            var totalCount = await query.CountAsync(cancellationToken);
+            var totalCount =
+                await query.CountAsync(cancellationToken);
 
             var items = await query
                 .OrderByDescending(x => x.OpenedAt)
-                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Skip(
+                    (parameters.PageNumber - 1) *
+                    parameters.PageSize)
                 .Take(parameters.PageSize)
                 .Select(x => new TaxCaseResponse
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
-                    ClientName = x.Client.FirstName + " " + x.Client.LastName,
+                    ClientName =
+                        x.Client.FirstName + " " +
+                        x.Client.LastName,
+                    ServiceId = x.ServiceId,
+                    ServiceName = x.Service.Name,
                     EmployeeId = x.EmployeeId,
                     TaxYear = x.TaxYear,
                     Status = x.Status,
@@ -99,6 +106,11 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName =
+                        x.Client.FirstName + " " +
+                        x.Client.LastName,
+                    ServiceId = x.ServiceId,
+                    ServiceName = x.Service.Name,
                     EmployeeId = x.EmployeeId,
                     TaxYear = x.TaxYear,
                     Status = x.Status,
@@ -115,20 +127,37 @@ namespace TaxServices.Application.Services
 
             var clientExists = await _context.Clients
                 .AnyAsync(
-                    x => x.Id == request.ClientId &&
-                         x.TenantId == tenantId,
+                    x =>
+                        x.Id == request.ClientId &&
+                        x.TenantId == tenantId,
                     cancellationToken);
 
             if (!clientExists)
-                throw new KeyNotFoundException("Client not found.");
+                throw new KeyNotFoundException(
+                    "Client not found.");
+
+            var serviceExists = await _context.Services
+                .AnyAsync(
+                    x =>
+                        x.Id == request.ServiceId &&
+                        x.TenantId == tenantId &&
+                        x.IsActive,
+                    cancellationToken);
+
+            if (!serviceExists)
+            {
+                throw new KeyNotFoundException(
+                    "Active service not found.");
+            }
 
             if (request.EmployeeId.HasValue)
             {
                 var employeeExists = await _context.Employees
                     .AnyAsync(
-                        x => x.Id == request.EmployeeId.Value &&
-                             x.TenantId == tenantId &&
-                             x.IsActive,
+                        x =>
+                            x.Id == request.EmployeeId.Value &&
+                            x.TenantId == tenantId &&
+                            x.IsActive,
                         cancellationToken);
 
                 if (!employeeExists)
@@ -143,6 +172,7 @@ namespace TaxServices.Application.Services
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 ClientId = request.ClientId,
+                ServiceId = request.ServiceId,
                 EmployeeId = request.EmployeeId,
                 TaxYear = request.TaxYear,
                 Status = CaseStatus.Draft,
@@ -152,9 +182,14 @@ namespace TaxServices.Application.Services
 
             _context.TaxCases.Add(taxCase);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
-            return MapToResponse(taxCase);
+            return await GetByIdAsync(
+                       taxCase.Id,
+                       cancellationToken)
+                   ?? throw new InvalidOperationException(
+                       "Unable to load the created tax case.");
         }
 
         public async Task<TaxCaseResponse> UpdateAsync(Guid id, UpdateTaxCaseRequest request, CancellationToken cancellationToken = default)
@@ -163,20 +198,41 @@ namespace TaxServices.Application.Services
 
             var taxCase = await _context.TaxCases
                 .FirstOrDefaultAsync(
-                    x => x.Id == id &&
-                         x.TenantId == tenantId,
+                    x =>
+                        x.Id == id &&
+                        x.TenantId == tenantId,
                     cancellationToken);
 
             if (taxCase == null)
-                throw new KeyNotFoundException("Tax case not found.");
+                throw new KeyNotFoundException(
+                    "Tax case not found.");
+
+            /*
+             * An existing case may continue using an inactive
+             * service. We only require that the service exists
+             * in the current tenant.
+             */
+            var serviceExists = await _context.Services
+                .AnyAsync(
+                    x =>
+                        x.Id == request.ServiceId &&
+                        x.TenantId == tenantId,
+                    cancellationToken);
+
+            if (!serviceExists)
+            {
+                throw new KeyNotFoundException(
+                    "Service not found.");
+            }
 
             if (request.EmployeeId.HasValue)
             {
                 var employeeExists = await _context.Employees
                     .AnyAsync(
-                        x => x.Id == request.EmployeeId.Value &&
-                             x.TenantId == tenantId &&
-                             x.IsActive,
+                        x =>
+                            x.Id == request.EmployeeId.Value &&
+                            x.TenantId == tenantId &&
+                            x.IsActive,
                         cancellationToken);
 
                 if (!employeeExists)
@@ -186,6 +242,7 @@ namespace TaxServices.Application.Services
                 }
             }
 
+            taxCase.ServiceId = request.ServiceId;
             taxCase.EmployeeId = request.EmployeeId;
             taxCase.TaxYear = request.TaxYear;
             taxCase.Status = request.Status;
@@ -201,10 +258,14 @@ namespace TaxServices.Application.Services
                 taxCase.ClosedAt = null;
             }
 
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return MapToResponse(taxCase);
+            return await GetByIdAsync(
+                       taxCase.Id,
+                       cancellationToken)
+                   ?? throw new InvalidOperationException(
+                       "Unable to load the updated tax case.");
         }
 
         public async Task<IEnumerable<TaxCaseResponse>> GetMineAsync(string userId, CancellationToken cancellationToken = default)
@@ -227,10 +288,17 @@ namespace TaxServices.Application.Services
                 .Where(tc =>
                     tc.TenantId == tenantId &&
                     tc.ClientId == clientId.Value)
+                .OrderByDescending(x => x.TaxYear)
+                .ThenByDescending(x => x.OpenedAt)
                 .Select(x => new TaxCaseResponse
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName =
+                        x.Client.FirstName + " " +
+                        x.Client.LastName,
+                    ServiceId = x.ServiceId,
+                    ServiceName = x.Service.Name,
                     EmployeeId = x.EmployeeId,
                     TaxYear = x.TaxYear,
                     Status = x.Status,
@@ -243,19 +311,31 @@ namespace TaxServices.Application.Services
 
         public async Task<TaxCaseResponse?> GetMineByIdAsync(string userId, Guid id, CancellationToken cancellationToken = default)
         {
-            var taxCase = await _context.TaxCases
-                .Include(tc => tc.Client)
-                .FirstOrDefaultAsync(
-                    tc =>
-                        tc.Id == id &&
-                        tc.TenantId == _tenantContext.TenantId &&
-                        tc.Client.UserId == userId,
-                    cancellationToken);
+            var tenantId = _tenantContext.TenantId;
 
-            if (taxCase is null)
-                return null;
-
-            return MapToResponse(taxCase);
+            return await _context.TaxCases
+                .AsNoTracking()
+                .Where(x =>
+                    x.Id == id &&
+                    x.TenantId == tenantId &&
+                    x.Client.UserId == userId)
+                .Select(x => new TaxCaseResponse
+                {
+                    Id = x.Id,
+                    ClientId = x.ClientId,
+                    ClientName =
+                        x.Client.FirstName + " " +
+                        x.Client.LastName,
+                    ServiceId = x.ServiceId,
+                    ServiceName = x.Service.Name,
+                    EmployeeId = x.EmployeeId,
+                    TaxYear = x.TaxYear,
+                    Status = x.Status,
+                    Description = x.Description,
+                    OpenedAt = x.OpenedAt,
+                    ClosedAt = x.ClosedAt
+                })
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<TaxCaseResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default)
@@ -273,6 +353,11 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName =
+                        x.Client.FirstName + " " +
+                        x.Client.LastName,
+                    ServiceId = x.ServiceId,
+                    ServiceName = x.Service.Name,
                     EmployeeId = x.EmployeeId,
                     TaxYear = x.TaxYear,
                     Status = x.Status,
@@ -282,21 +367,5 @@ namespace TaxServices.Application.Services
                 })
                 .ToListAsync(cancellationToken);
         }
-
-        private static TaxCaseResponse MapToResponse(TaxCase taxCase)
-        {
-            return new TaxCaseResponse
-            {
-                Id = taxCase.Id,
-                ClientId = taxCase.ClientId,
-                EmployeeId = taxCase.EmployeeId,
-                TaxYear = taxCase.TaxYear,
-                Status = taxCase.Status,
-                Description = taxCase.Description,
-                OpenedAt = taxCase.OpenedAt,
-                ClosedAt = taxCase.ClosedAt
-            };
-        }
-
     }
 }

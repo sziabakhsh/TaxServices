@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  updateTaxCase,
-  type UpdateTaxCaseRequest,
-} from './case.api'
+import { updateTaxCase } from './case.api'
+import type { UpdateTaxCaseRequest } from './case.types'
 
 type UpdateTaxCaseVariables = {
   id: string

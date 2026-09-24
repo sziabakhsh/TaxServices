@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import {
-  CaseStatus
+  CaseStatus,
 } from '../../features/cases/case.types'
 import { useTaxCases } from '../../features/cases/useTaxCases'
 import Pagination from '../../components/common/Pagination'
@@ -13,16 +13,22 @@ function getStatusLabel(status: CaseStatus) {
   switch (status) {
     case CaseStatus.Draft:
       return 'Draft'
+
     case CaseStatus.Open:
       return 'Open'
+
     case CaseStatus.InProgress:
       return 'In Progress'
+
     case CaseStatus.WaitingForClient:
       return 'Waiting for Client'
+
     case CaseStatus.Completed:
       return 'Completed'
+
     case CaseStatus.Cancelled:
       return 'Cancelled'
+
     default:
       return 'Unknown'
   }
@@ -51,8 +57,11 @@ function getStatusClassName(status: CaseStatus) {
 }
 
 export default function StaffTaxCasesPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [searchParams, setSearchParams] =
+    useSearchParams()
+
+  const [debouncedSearch, setDebouncedSearch] =
+    useState('')
 
   const statusFilter = searchParams.get('status')
 
@@ -75,7 +84,7 @@ export default function StaffTaxCasesPage() {
     isLoading,
     isError,
     isFetching,
-  } =   useTaxCases({
+  } = useTaxCases({
     pageNumber,
     pageSize: 20,
     search: debouncedSearch.trim() || undefined,
@@ -121,7 +130,7 @@ export default function StaffTaxCasesPage() {
             <input
               type="search"
               value={search}
-              placeholder="Search client or description..."
+              placeholder="Search client, service, year, or description..."
               onChange={(event) =>
                 setSearch(event.target.value)
               }
@@ -137,7 +146,9 @@ export default function StaffTaxCasesPage() {
                 changeFilter(event.target.value)
               }
             >
-              <option value="all">All Cases</option>
+              <option value="all">
+                All Cases
+              </option>
 
               <option value="open">
                 Open & In Progress
@@ -150,6 +161,12 @@ export default function StaffTaxCasesPage() {
           </label>
         </div>
       </header>
+
+      {isFetching && !isLoading && (
+        <p className="staff-cases__message">
+          Updating tax cases...
+        </p>
+      )}
 
       {isLoading && (
         <p className="staff-cases__message">
@@ -179,6 +196,7 @@ export default function StaffTaxCasesPage() {
               <thead>
                 <tr>
                   <th>Client</th>
+                  <th>Service</th>
                   <th>Tax Year</th>
                   <th>Status</th>
                   <th>Opened</th>
@@ -195,7 +213,13 @@ export default function StaffTaxCasesPage() {
                       </strong>
                     </td>
 
-                    <td>{taxCase.taxYear}</td>
+                    <td>
+                      {taxCase.serviceName}
+                    </td>
+
+                    <td>
+                      {taxCase.taxYear}
+                    </td>
 
                     <td>
                       <span

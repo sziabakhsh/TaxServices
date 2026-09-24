@@ -11,6 +11,9 @@ export interface TaxCase {
   id: string
   clientId: string
   clientName: string
+  serviceId: string
+  serviceName: string
+
   employeeId?: string | null
   taxYear: number
   status: CaseStatus
@@ -21,8 +24,17 @@ export interface TaxCase {
 
 export interface CreateTaxCaseRequest {
   clientId: string
+  serviceId: string
   employeeId?: string | null
   taxYear: number
+  description: string
+}
+
+export interface UpdateTaxCaseRequest {
+  serviceId: string
+  employeeId?: string | null
+  taxYear: number
+  status: CaseStatus
   description: string
 }
 

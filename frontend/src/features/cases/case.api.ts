@@ -1,6 +1,8 @@
 import { api } from '../../services/http/api'
+
 import type {
   CreateTaxCaseRequest,
+  UpdateTaxCaseRequest,
   PagedTaxCases,
   TaxCase,
   TaxCaseQueryParameters,
@@ -18,15 +20,18 @@ export async function createTaxCase(
 }
 
 export async function getMyTaxCases(): Promise<TaxCase[]> {
-  const response = await api.get<TaxCase[]>('/TaxCases/me')
+  const response = await api.get<TaxCase[]>(
+    '/TaxCases/me'
+  )
+
   return response.data
 }
 
 export async function getMyTaxCaseById(
-  id: string,
+  id: string
 ): Promise<TaxCase> {
   const response = await api.get<TaxCase>(
-    `/TaxCases/me/${id}`,
+    `/TaxCases/me/${id}`
   )
 
   return response.data
@@ -42,18 +47,14 @@ export async function getClientTaxCases(
   return response.data
 }
 
-export type UpdateTaxCaseRequest = {
-  employeeId: string | null
-  taxYear: number
-  status: number
-  description: string
-}
-
 export async function updateTaxCase(
   id: string,
   request: UpdateTaxCaseRequest
-) {
-  const response = await api.put(`/TaxCases/${id}`, request)
+): Promise<TaxCase> {
+  const response = await api.put<TaxCase>(
+    `/TaxCases/${id}`,
+    request
+  )
 
   return response.data
 }

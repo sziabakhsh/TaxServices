@@ -6,6 +6,8 @@ namespace TaxServices.Application.DTOs.Cases
     {
         public Guid ClientId { get; set; }
 
+        public Guid ServiceId { get; set; }
+
         public Guid? EmployeeId { get; set; }
 
         [Range(2000, 2100)]

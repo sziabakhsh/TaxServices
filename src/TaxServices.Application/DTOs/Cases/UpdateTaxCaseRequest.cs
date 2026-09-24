@@ -5,6 +5,8 @@ namespace TaxServices.Application.DTOs.Cases
 {
     public class UpdateTaxCaseRequest
     {
+        public Guid ServiceId { get; set; }
+
         public Guid? EmployeeId { get; set; }
 
         [Range(2000, 2100)]

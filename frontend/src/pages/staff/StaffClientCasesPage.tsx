@@ -5,6 +5,7 @@ import { useClient } from '../../features/clients/useClient'
 import { useClientTaxCases } from '../../features/cases/useClientTaxCases'
 import { useCreateTaxCase } from '../../features/cases/useCreateTaxCase'
 import { useEmployeeOptions } from '../../features/employees/useEmployeeOptions'
+import { useServices } from '../../features/services/useServices'
 
 import './StaffClientCasesPage.css'
 
@@ -40,6 +41,7 @@ export default function StaffClientCasesPage() {
     new Date().getFullYear()
   )
 
+  const [serviceId, setServiceId] = useState('')
   const [description, setDescription] = useState('')
   const [employeeId, setEmployeeId] = useState('')
 
@@ -61,25 +63,36 @@ export default function StaffClientCasesPage() {
     isError: areEmployeesError,
   } = useEmployeeOptions()
 
+  const {
+    data: services,
+    isLoading: areServicesLoading,
+    isError: areServicesError,
+  } = useServices()
+
   const createTaxCase = useCreateTaxCase()
+
+  const activeServices =
+    services?.filter((service) => service.isActive) ?? []
 
   async function handleCreateCase(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
 
-    if (!clientId) {
+    if (!clientId || !serviceId) {
       return
     }
 
     try {
       await createTaxCase.mutateAsync({
         clientId,
+        serviceId,
         employeeId: employeeId || null,
         taxYear,
         description: description.trim(),
       })
 
+      setServiceId('')
       setDescription('')
       setEmployeeId('')
     } catch {
@@ -90,7 +103,8 @@ export default function StaffClientCasesPage() {
   if (
     isClientLoading ||
     areCasesLoading ||
-    areEmployeesLoading
+    areEmployeesLoading ||
+    areServicesLoading
   ) {
     return (
       <section className="staff-client-cases">
@@ -105,6 +119,7 @@ export default function StaffClientCasesPage() {
     isClientError ||
     areCasesError ||
     areEmployeesError ||
+    areServicesError ||
     !client
   ) {
     return (
@@ -153,6 +168,42 @@ export default function StaffClientCasesPage() {
           onSubmit={handleCreateCase}
         >
           <div className="staff-client-cases__field">
+            <label htmlFor="tax-case-service">
+              Service
+            </label>
+
+            <select
+              id="tax-case-service"
+              value={serviceId}
+              onChange={(event) =>
+                setServiceId(event.target.value)
+              }
+              disabled={
+                createTaxCase.isPending ||
+                areServicesLoading ||
+                areServicesError
+              }
+              required
+            >
+              <option value="">
+                Select service
+              </option>
+
+              {activeServices.map((service) => (
+                <option
+                  key={service.id}
+                  value={service.id}
+                >
+                  {service.name}
+                  {service.basePrice != null
+                    ? ` — $${service.basePrice.toFixed(2)}`
+                    : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="staff-client-cases__field">
             <label htmlFor="tax-case-year">
               Tax Year
             </label>
@@ -192,16 +243,17 @@ export default function StaffClientCasesPage() {
               </option>
 
               {employees?.map((employee) => (
-                  <option
-                    key={employee.id}
-                    value={employee.id}
-                  >
-                    {employee.firstName} {employee.lastName}
-                    {employee.jobTitle
-                      ? ` — ${employee.jobTitle}`
-                      : ''}
-                  </option>
-                ))}
+                <option
+                  key={employee.id}
+                  value={employee.id}
+                >
+                  {employee.firstName}{' '}
+                  {employee.lastName}
+                  {employee.jobTitle
+                    ? ` — ${employee.jobTitle}`
+                    : ''}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -214,23 +266,34 @@ export default function StaffClientCasesPage() {
               id="tax-case-description"
               type="text"
               value={description}
-              placeholder="Example: 2025 Personal Tax Return"
+              placeholder="Additional details about this case"
               onChange={(event) =>
                 setDescription(event.target.value)
               }
+              required
             />
           </div>
 
           <button
             type="submit"
             className="staff-client-cases__create-button"
-            disabled={createTaxCase.isPending}
+            disabled={
+              createTaxCase.isPending ||
+              !serviceId
+            }
           >
             {createTaxCase.isPending
               ? 'Creating...'
               : 'Create Tax Case'}
           </button>
         </form>
+
+        {!activeServices.length && (
+          <div className="staff-client-cases__message staff-client-cases__message--error">
+            No active services are available. Add or activate
+            a service before creating a tax case.
+          </div>
+        )}
 
         {createTaxCase.isSuccess && (
           <div className="staff-client-cases__message staff-client-cases__message--success">
@@ -254,6 +317,7 @@ export default function StaffClientCasesPage() {
           <table className="staff-client-cases__table">
             <thead>
               <tr>
+                <th>Service</th>
                 <th>Tax Year</th>
                 <th>Status</th>
                 <th>Assigned Employee</th>
@@ -271,10 +335,18 @@ export default function StaffClientCasesPage() {
 
                 return (
                   <tr key={taxCase.id}>
+                    <td>
+                      <strong>
+                        {taxCase.serviceName}
+                      </strong>
+                    </td>
+
                     <td>{taxCase.taxYear}</td>
 
                     <td>
-                      {getCaseStatusLabel(taxCase.status)}
+                      {getCaseStatusLabel(
+                        taxCase.status
+                      )}
                     </td>
 
                     <td>

@@ -155,12 +155,6 @@ export default function App() {
               path="cases/:id"
               element={<StaffTaxCaseDetailsPage />}
             />
-
-            <Route
-              path="cases/:id"
-              element={<StaffTaxCaseDetailsPage />}
-            />
-
             <Route
               path="services"
               element={<StaffServicesPage />}
