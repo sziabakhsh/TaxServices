@@ -82,7 +82,12 @@ namespace TaxServices.Application.Services
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return MapToResponse(document);
+            var response = await GetDocumentResponseQuery()
+                .FirstAsync(
+                    d => d.Id == document.Id,
+                    cancellationToken);
+
+            return response;
         }
 
         public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(Guid clientId, CancellationToken cancellationToken = default)
