@@ -238,7 +238,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 18px 20px;
+  padding: 20px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -259,10 +259,78 @@
   overflow-wrap: anywhere;
 }
 
-.documents-page__document-meta {
-  margin-top: 5px;
-  color: #9ca3af;
+/* Service */
+
+.documents-page__document-service {
+  margin-top: 7px;
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Case Details */
+
+.documents-page__document-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  color: #6b7280;
   font-size: 0.84rem;
+}
+
+/* Status */
+
+.documents-page__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.documents-page__status--draft {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.documents-page__status--open {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.documents-page__status--progress {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.documents-page__status--waiting {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.documents-page__status--completed {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.documents-page__status--cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Upload Date */
+
+.documents-page__document-meta {
+  margin-top: 8px;
+  color: #9ca3af;
+  font-size: 0.82rem;
 }
 
 /* Document Actions */
@@ -398,6 +466,14 @@
 
   .documents-page__document-name {
     font-size: 0.95rem;
+  }
+
+  .documents-page__document-service {
+    font-size: 0.9rem;
+  }
+
+  .documents-page__document-details {
+    gap: 7px;
   }
 
   .documents-page__document-actions {

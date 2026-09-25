@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom'
+
 import { CaseStatus } from '../../features/cases/case.types'
 import { useMyTaxCases } from '../../features/cases/useMyTaxCases'
-import { Link } from 'react-router-dom'
+
 import './CasesPage.css'
 
 function getStatusLabel(status: CaseStatus) {
@@ -84,6 +86,17 @@ export default function CasesPage() {
     )
   }
 
+  const sortedCases = [...(cases ?? [])].sort((a, b) => {
+    if (b.taxYear !== a.taxYear) {
+      return b.taxYear - a.taxYear
+    }
+
+    return (
+      new Date(b.openedAt).getTime() -
+      new Date(a.openedAt).getTime()
+    )
+  })
+
   return (
     <section className="cases-page">
       <div className="cases-page__container">
@@ -99,56 +112,64 @@ export default function CasesPage() {
           Review your current and previous tax service cases.
         </p>
 
-        {!cases || cases.length === 0 ? (
+        {sortedCases.length === 0 ? (
           <div className="cases-page__empty">
             <h2 className="cases-page__empty-title">
               No tax cases yet
             </h2>
 
             <p className="cases-page__empty-text">
-              You don't currently have any tax cases associated with your account.
+              You don't currently have any tax cases associated
+              with your account.
             </p>
           </div>
         ) : (
           <div className="cases-page__list">
-            {cases
-            .sort((a, b) => {
-              if (b.taxYear !== a.taxYear) {
-                return b.taxYear - a.taxYear
-              }
-
-              return (
-                new Date(b.openedAt).getTime() -
-                new Date(a.openedAt).getTime()
-              )
-            })
-            .map((taxCase) => (
+            {sortedCases.map((taxCase) => (
               <article
                 key={taxCase.id}
                 className="cases-page__card"
               >
                 <div className="cases-page__card-header">
                   <div>
-                    <span className="cases-page__tax-year-label">
-                      Tax Year
+                    <span className="cases-page__service-label">
+                      Service
                     </span>
 
-                    <h2 className="cases-page__tax-year">
-                      {taxCase.taxYear}
+                    <h2 className="cases-page__service-name">
+                      {taxCase.serviceName}
                     </h2>
                   </div>
-                  <span className={getStatusClassName(taxCase.status)}>
+
+                  <span
+                    className={getStatusClassName(
+                      taxCase.status
+                    )}
+                  >
                     {getStatusLabel(taxCase.status)}
                   </span>
                 </div>
+
                 <div className="cases-page__details">
+                  <div className="cases-page__detail">
+                    <span className="cases-page__detail-label">
+                      Tax Year
+                    </span>
+
+                    <strong className="cases-page__detail-value">
+                      {taxCase.taxYear}
+                    </strong>
+                  </div>
+
                   <div className="cases-page__detail">
                     <span className="cases-page__detail-label">
                       Opened
                     </span>
 
                     <strong className="cases-page__detail-value">
-                      {new Date(taxCase.openedAt).toLocaleDateString()}
+                      {new Date(
+                        taxCase.openedAt
+                      ).toLocaleDateString()}
                     </strong>
                   </div>
 
@@ -159,7 +180,9 @@ export default function CasesPage() {
 
                     <strong className="cases-page__detail-value">
                       {taxCase.closedAt
-                        ? new Date(taxCase.closedAt).toLocaleDateString()
+                        ? new Date(
+                            taxCase.closedAt
+                          ).toLocaleDateString()
                         : '—'}
                     </strong>
                   </div>
@@ -171,9 +194,11 @@ export default function CasesPage() {
                   </span>
 
                   <p className="cases-page__case-description">
-                    {taxCase.description || 'No description provided.'}
+                    {taxCase.description ||
+                      'No description provided.'}
                   </p>
                 </div>
+
                 <Link
                   to={`/portal/cases/${taxCase.id}`}
                   className="cases-page__details-link"

@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
+
 import { CaseStatus } from '../../features/cases/case.types'
 import { useMyTaxCase } from '../../features/cases/useMyTaxCases'
+
 import './CaseDetailsPage.css'
 
 function getStatusLabel(status: CaseStatus) {
@@ -110,7 +112,7 @@ export default function CaseDetailsPage() {
             </span>
 
             <h1 className="case-details__title">
-              Tax Year {taxCase.taxYear}
+              {taxCase.serviceName}
             </h1>
 
             <p className="case-details__description">
@@ -118,15 +120,29 @@ export default function CaseDetailsPage() {
             </p>
           </div>
 
-          <span className={getStatusClassName(taxCase.status)}>
+          <span
+            className={getStatusClassName(
+              taxCase.status
+            )}
+          >
             {getStatusLabel(taxCase.status)}
           </span>
         </div>
 
         <div className="case-details__card">
+          <div className="case-details__field case-details__field--wide">
+            <span className="case-details__label">
+              Service
+            </span>
+
+            <strong className="case-details__value">
+              {taxCase.serviceName}
+            </strong>
+          </div>
+
           <div className="case-details__field">
             <span className="case-details__label">
-              Tax year
+              Tax Year
             </span>
 
             <strong className="case-details__value">
@@ -150,7 +166,9 @@ export default function CaseDetailsPage() {
             </span>
 
             <strong className="case-details__value">
-              {new Date(taxCase.openedAt).toLocaleDateString()}
+              {new Date(
+                taxCase.openedAt
+              ).toLocaleDateString()}
             </strong>
           </div>
 
@@ -161,7 +179,9 @@ export default function CaseDetailsPage() {
 
             <strong className="case-details__value">
               {taxCase.closedAt
-                ? new Date(taxCase.closedAt).toLocaleDateString()
+                ? new Date(
+                    taxCase.closedAt
+                  ).toLocaleDateString()
                 : 'Not closed'}
             </strong>
           </div>
@@ -172,7 +192,8 @@ export default function CaseDetailsPage() {
             </span>
 
             <p className="case-details__text">
-              {taxCase.description || 'No description provided.'}
+              {taxCase.description ||
+                'No description provided.'}
             </p>
           </div>
         </div>

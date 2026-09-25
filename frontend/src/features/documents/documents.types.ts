@@ -9,6 +9,7 @@ export interface DocumentItem {
   uploadedAt: string
   taxYear?: number | null
   caseStatus?: number | null
+  serviceName?: string | null
 }
 
 export interface UploadDocumentRequest {

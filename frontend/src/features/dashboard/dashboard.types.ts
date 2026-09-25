@@ -16,3 +16,18 @@ export interface StaffDashboard {
   totalDocuments: number
   recentTaxCases: RecentTaxCase[]
 }
+
+export interface ClientRecentTaxCase {
+  id: string
+  serviceName: string
+  taxYear: number
+  status: CaseStatus
+  openedAt: string
+}
+
+export interface ClientDashboard {
+  activeTaxCases: number
+  waitingForClientCases: number
+  totalDocuments: number
+  recentTaxCases: ClientRecentTaxCase[]
+}

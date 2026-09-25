@@ -10,6 +10,8 @@ namespace TaxServices.Application.DTOs.Documents
 
         public string ClientName { get; set; } = string.Empty;
 
+        public string? ServiceName { get; set; }
+
         public Guid? TaxCaseId { get; set; }
 
         public string FileName { get; set; } = string.Empty;

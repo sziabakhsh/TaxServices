@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useClient } from '../../features/clients/useClient'
 import { useClientTaxCases } from '../../features/cases/useClientTaxCases'
 import { useCreateTaxCase } from '../../features/cases/useCreateTaxCase'
-import { useEmployeeOptions } from '../../features/employees/useEmployeeOptions'
+import { useEmployeeOptions } from '../../../employees/useEmployeeOptions'
 import { useServices } from '../../features/services/useServices'
 
 import './StaffClientCasesPage.css'

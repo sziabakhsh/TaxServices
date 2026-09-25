@@ -3,7 +3,6 @@ using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
-using TaxServices.Domain.Cases;
 using TaxServices.Domain.Documents;
 
 namespace TaxServices.Application.Services
@@ -88,40 +87,9 @@ namespace TaxServices.Application.Services
 
         public async Task<IEnumerable<DocumentResponse>> GetByClientAsync(Guid clientId, CancellationToken cancellationToken = default)
         {
-            return await _context.Documents
-                .AsNoTracking()
-                .Where(d =>
-                    d.ClientId == clientId &&
-                    d.TenantId == _tenantContext.TenantId)
+            return await GetDocumentResponseQuery()
+                .Where(d => d.ClientId == clientId)
                 .OrderByDescending(d => d.UploadedAt)
-                .Select(d => new DocumentResponse
-                {
-                    Id = d.Id,
-                    ClientId = d.ClientId,
-                    TaxCaseId = d.TaxCaseId,
-                    FileName = d.OriginalFileName,
-                    ContentType = d.ContentType,
-                    FileSize = d.FileSize,
-                    UploadedAt = d.UploadedAt,
-
-                    TaxYear = d.TaxCaseId.HasValue
-                        ? _context.TaxCases
-                            .Where(tc =>
-                                tc.Id == d.TaxCaseId.Value &&
-                                tc.TenantId == _tenantContext.TenantId)
-                            .Select(tc => (int?)tc.TaxYear)
-                            .FirstOrDefault()
-                        : null,
-
-                    CaseStatus = d.TaxCaseId.HasValue
-                        ? _context.TaxCases
-                            .Where(tc =>
-                                tc.Id == d.TaxCaseId.Value &&
-                                tc.TenantId == _tenantContext.TenantId)
-                            .Select(tc => (CaseStatus?)tc.Status)
-                            .FirstOrDefault()
-                        : null
-                })
                 .ToListAsync(cancellationToken);
         }
 
@@ -137,37 +105,16 @@ namespace TaxServices.Application.Services
             if (!taxCaseExists)
                 throw new ArgumentException("Tax case does not exist.");
 
-            return await _context.Documents
-                .AsNoTracking()
-                .Where(d =>
-                    d.TaxCaseId == taxCaseId &&
-                    d.TenantId == _tenantContext.TenantId)
+            return await GetDocumentResponseQuery()
+                .Where(d => d.TaxCaseId == taxCaseId)
                 .OrderByDescending(d => d.UploadedAt)
-                .Select(d => new DocumentResponse
-                {
-                    Id = d.Id,
-                    ClientId = d.ClientId,
-                    TaxCaseId = d.TaxCaseId,
-                    FileName = d.OriginalFileName,
-                    ContentType = d.ContentType,
-                    FileSize = d.FileSize,
-                    UploadedAt = d.UploadedAt
-                })
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<DocumentResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var document = await _context.Documents
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    d => d.Id == id &&
-                         d.TenantId == _tenantContext.TenantId,
-                    cancellationToken);
-
-            return document == null
-                ? null
-                : MapToResponse(document);
+            return await GetDocumentResponseQuery()
+                .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
         }
 
         public async Task<Stream?> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
@@ -207,21 +154,7 @@ namespace TaxServices.Application.Services
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        private static DocumentResponse MapToResponse(Document document)
-        {
-            return new DocumentResponse
-            {
-                Id = document.Id,
-                ClientId = document.ClientId,
-                TaxCaseId = document.TaxCaseId,
-                FileName = document.OriginalFileName,
-                ContentType = document.ContentType,
-                FileSize = document.FileSize,
-                UploadedAt = document.UploadedAt
-            };
-        }
-
-        public async Task<IEnumerable<DocumentResponse>> GetByClientkdIdAsync(Guid clientId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default)
         {
             var clientExists = await _context.Clients
                 .AsNoTracking()
@@ -233,39 +166,25 @@ namespace TaxServices.Application.Services
             if (!clientExists)
                 throw new ArgumentException("Client does not exist.");
 
-            return await _context.Documents
-                .AsNoTracking()
-                .Where(d =>
-                    d.ClientId == clientId &&
-                    d.TenantId == _tenantContext.TenantId)
+            return await GetDocumentResponseQuery()
+                .Where(d => d.ClientId == clientId)
                 .OrderByDescending(d => d.UploadedAt)
-                .Select(d => new DocumentResponse
-                {
-                    Id = d.Id,
-                    ClientId = d.ClientId,
-                    TaxCaseId = d.TaxCaseId,
-                    FileName = d.OriginalFileName,
-                    ContentType = d.ContentType,
-                    FileSize = d.FileSize,
-                    UploadedAt = d.UploadedAt
-                })
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<DocumentResponse>> GetByClientIdAsync(Guid clientId, CancellationToken cancellationToken = default) { var clientExists = await _context.Clients.AsNoTracking().AnyAsync(c => c.Id == clientId && c.TenantId == _tenantContext.TenantId, cancellationToken); if (!clientExists) throw new ArgumentException("Client does not exist."); return await _context.Documents.AsNoTracking().Where(d => d.ClientId == clientId && d.TenantId == _tenantContext.TenantId).OrderByDescending(d => d.UploadedAt).Select(d => new DocumentResponse { Id = d.Id, ClientId = d.ClientId, TaxCaseId = d.TaxCaseId, FileName = d.OriginalFileName, ContentType = d.ContentType, FileSize = d.FileSize, UploadedAt = d.UploadedAt }).ToListAsync(cancellationToken); }
-
         public async Task<PagedResult<DocumentResponse>> GetAllAsync(DocumentQueryParameters parameters, CancellationToken cancellationToken = default)
         {
-            var query = _context.Documents
-                .AsNoTracking()
-                .Where(d => d.TenantId == _tenantContext.TenantId);
+            var query = GetDocumentResponseQuery();
 
             if (!string.IsNullOrWhiteSpace(parameters.Search))
             {
                 var search = parameters.Search.Trim();
 
                 query = query.Where(d =>
-                    d.OriginalFileName.Contains(search));
+                    d.FileName.Contains(search) ||
+                    d.ClientName.Contains(search) ||
+                    (d.ServiceName != null &&
+                     d.ServiceName.Contains(search)));
             }
 
             if (parameters.ClientId.HasValue)
@@ -283,54 +202,16 @@ namespace TaxServices.Application.Services
             if (parameters.TaxYear.HasValue)
             {
                 query = query.Where(d =>
-                    d.TaxCaseId.HasValue &&
-                    _context.TaxCases.Any(tc =>
-                        tc.Id == d.TaxCaseId.Value &&
-                        tc.TenantId == _tenantContext.TenantId &&
-                        tc.TaxYear == parameters.TaxYear.Value));
+                    d.TaxYear == parameters.TaxYear.Value);
             }
 
-            var totalCount = await query.CountAsync(cancellationToken);
+            var totalCount =
+                await query.CountAsync(cancellationToken);
 
             var items = await query
                 .OrderByDescending(d => d.UploadedAt)
                 .Skip((parameters.PageNumber - 1) * parameters.PageSize)
                 .Take(parameters.PageSize)
-                .Select(d => new DocumentResponse
-                {
-                    Id = d.Id,
-                    ClientId = d.ClientId,
-                    ClientName = _context.Clients
-                        .Where(c =>
-                            c.Id == d.ClientId &&
-                            c.TenantId == _tenantContext.TenantId)
-                        .Select(c => c.FirstName + " " + c.LastName)
-                        .FirstOrDefault() ?? string.Empty,
-
-                    TaxCaseId = d.TaxCaseId,
-                    FileName = d.OriginalFileName,
-                    ContentType = d.ContentType,
-                    FileSize = d.FileSize,
-                    UploadedAt = d.UploadedAt,
-
-                    TaxYear = d.TaxCaseId.HasValue
-                        ? _context.TaxCases
-                            .Where(tc =>
-                                tc.Id == d.TaxCaseId.Value &&
-                                tc.TenantId == _tenantContext.TenantId)
-                            .Select(tc => (int?)tc.TaxYear)
-                            .FirstOrDefault()
-                        : null,
-
-                    CaseStatus = d.TaxCaseId.HasValue
-                        ? _context.TaxCases
-                            .Where(tc =>
-                                tc.Id == d.TaxCaseId.Value &&
-                                tc.TenantId == _tenantContext.TenantId)
-                            .Select(tc => (CaseStatus?)tc.Status)
-                            .FirstOrDefault()
-                        : null
-                })
                 .ToListAsync(cancellationToken);
 
             return new PagedResult<DocumentResponse>
@@ -344,9 +225,12 @@ namespace TaxServices.Application.Services
 
         public async Task AssignToCaseAsync(Guid documentId, Guid? taxCaseId, CancellationToken cancellationToken = default)
         {
+            var tenantId = _tenantContext.TenantId;
+
             var document = await _context.Documents
                 .FirstOrDefaultAsync(
-                    d => d.Id == documentId,
+                    d => d.Id == documentId &&
+                         d.TenantId == tenantId,
                     cancellationToken);
 
             if (document is null)
@@ -358,13 +242,16 @@ namespace TaxServices.Application.Services
             if (taxCaseId is null)
             {
                 document.TaxCaseId = null;
+
                 await _context.SaveChangesAsync(cancellationToken);
                 return;
             }
 
             var taxCase = await _context.TaxCases
+                .AsNoTracking()
                 .FirstOrDefaultAsync(
-                    c => c.Id == taxCaseId.Value,
+                    c => c.Id == taxCaseId.Value &&
+                         c.TenantId == tenantId,
                     cancellationToken);
 
             if (taxCase is null)
@@ -381,6 +268,90 @@ namespace TaxServices.Application.Services
             document.TaxCaseId = taxCase.Id;
 
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static DocumentResponse MapToResponse(Document document)
+        {
+            return new DocumentResponse
+            {
+                Id = document.Id,
+                ClientId = document.ClientId,
+                TaxCaseId = document.TaxCaseId,
+                FileName = document.OriginalFileName,
+                ContentType = document.ContentType,
+                FileSize = document.FileSize,
+                UploadedAt = document.UploadedAt
+            };
+        }
+
+        private IQueryable<DocumentResponse> GetDocumentResponseQuery()
+        {
+            var tenantId = _tenantContext.TenantId;
+
+            return
+                from d in _context.Documents.AsNoTracking()
+
+                join c in _context.Clients.AsNoTracking()
+                    on new { d.ClientId, d.TenantId }
+                    equals new { ClientId = c.Id, c.TenantId }
+
+                join tc in _context.TaxCases.AsNoTracking()
+                    on new
+                    {
+                        TaxCaseId = d.TaxCaseId,
+                        d.TenantId
+                    }
+                    equals new
+                    {
+                        TaxCaseId = (Guid?)tc.Id,
+                        tc.TenantId
+                    }
+                    into taxCaseGroup
+
+                from tc in taxCaseGroup.DefaultIfEmpty()
+
+                join s in _context.Services.AsNoTracking()
+                    on new
+                    {
+                        ServiceId = (Guid?)tc.ServiceId,
+                        tc.TenantId
+                    }
+                    equals new
+                    {
+                        ServiceId = (Guid?)s.Id,
+                        s.TenantId
+                    }
+                    into serviceGroup
+
+                from s in serviceGroup.DefaultIfEmpty()
+
+                where d.TenantId == tenantId
+
+                select new DocumentResponse
+                {
+                    Id = d.Id,
+                    ClientId = d.ClientId,
+                    ClientName = c.FirstName + " " + c.LastName,
+
+                    TaxCaseId = d.TaxCaseId,
+
+                    FileName = d.OriginalFileName,
+                    ContentType = d.ContentType,
+                    FileSize = d.FileSize,
+                    UploadedAt = d.UploadedAt,
+
+                    TaxYear = tc != null
+                        ? tc.TaxYear
+                        : null,
+
+                    CaseStatus = tc != null
+                        ? tc.Status
+                        : null,
+
+                    ServiceName = s != null
+                        ? s.Name
+                        : null
+                };
         }
     }
 }

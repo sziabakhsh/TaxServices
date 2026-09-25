@@ -1,4 +1,4 @@
-import { api } from '../../services/http/api'
+import { api } from '../src/services/http/api'
 
 import type {
   CreateEmployeeRequest,

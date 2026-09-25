@@ -7,7 +7,7 @@ import { useUploadDocument } from '../../features/documents/useUploadDocument'
 import { useDownloadDocument } from '../../features/documents/useDownloadDocument'
 import './DocumentsPage.css'
 
-function getCaseStatusLabel(status: CaseStatus) {
+function getCaseStatusLabel(status: CaseStatus | number) {
   switch (status) {
     case CaseStatus.Draft:
       return 'Draft'
@@ -29,6 +29,31 @@ function getCaseStatusLabel(status: CaseStatus) {
 
     default:
       return 'Unknown'
+  }
+}
+
+function getCaseStatusClassName(status: CaseStatus | number) {
+  switch (status) {
+    case CaseStatus.Draft:
+      return 'documents-page__status documents-page__status--draft'
+
+    case CaseStatus.Open:
+      return 'documents-page__status documents-page__status--open'
+
+    case CaseStatus.InProgress:
+      return 'documents-page__status documents-page__status--progress'
+
+    case CaseStatus.WaitingForClient:
+      return 'documents-page__status documents-page__status--waiting'
+
+    case CaseStatus.Completed:
+      return 'documents-page__status documents-page__status--completed'
+
+    case CaseStatus.Cancelled:
+      return 'documents-page__status documents-page__status--cancelled'
+
+    default:
+      return 'documents-page__status'
   }
 }
 
@@ -212,7 +237,7 @@ export default function DocumentsPage() {
                       key={taxCase.id}
                       value={taxCase.id}
                     >
-                      {taxCase.taxYear} Tax Return —{' '}
+                      {taxCase.serviceName} — {taxCase.taxYear} —{' '}
                       {getCaseStatusLabel(taxCase.status)}
                     </option>
                   ))}
@@ -310,7 +335,41 @@ export default function DocumentsPage() {
                         {document.fileName}
                       </div>
 
+                      {document.taxCaseId ? (
+                        <>
+                          <div className="documents-page__document-service">
+                            {document.serviceName ||
+                              'Tax Service'}
+                          </div>
+
+                          <div className="documents-page__document-details">
+                            {document.taxYear && (
+                              <span>
+                                Tax Year {document.taxYear}
+                              </span>
+                            )}
+
+                            {document.caseStatus != null && (
+                              <span
+                                className={getCaseStatusClassName(
+                                  document.caseStatus
+                                )}
+                              >
+                                {getCaseStatusLabel(
+                                  document.caseStatus
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="documents-page__document-service">
+                          General Document
+                        </div>
+                      )}
+
                       <div className="documents-page__document-meta">
+                        Uploaded{' '}
                         {new Date(
                           document.uploadedAt
                         ).toLocaleDateString()}
@@ -318,9 +377,9 @@ export default function DocumentsPage() {
                     </div>
 
                     <div className="documents-page__document-actions">
-                        <div className="documents-page__document-size">
-                            {formatFileSize(document.fileSize)}
-                        </div>
+                      <div className="documents-page__document-size">
+                        {formatFileSize(document.fileSize)}
+                      </div>
 
                       <button
                         className="documents-page__download"
