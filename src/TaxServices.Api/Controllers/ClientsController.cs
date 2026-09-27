@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaxServices.Application.Common.Pagination;
+using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Clients;
 using TaxServices.Application.Interfaces;
 
@@ -12,9 +13,14 @@ namespace TaxServices.Api.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly IClientService _clientService;
-        public ClientsController(IClientService clientService)
+        private readonly IAuthService _authService;
+
+        public ClientsController(
+            IClientService clientService,
+            IAuthService authService)
         {
             _clientService = clientService;
+            _authService = authService;
         }
 
         [HttpGet]
@@ -41,11 +47,47 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ClientCreatedResponse>> Create([FromBody] CreateClientRequest request, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<ClientCreatedResponse>> Create(
+            [FromBody] CreateClientRequest request,
+            CancellationToken cancellationToken)
         {
-            var response = await _clientService.CreateAsync(request, cancellationToken);
+            var response = await _clientService.CreateAsync(
+                request,
+                cancellationToken);
 
-            return CreatedAtAction(nameof(GetById), new { id = response.Client.Id }, response);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = response.Client.Id },
+                response);
+        }
+
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<ActionResult<ClientDto>> Update(
+    Guid id,
+    [FromBody] UpdateClientRequest request,
+    CancellationToken cancellationToken)
+        {
+            var client = await _clientService.UpdateAsync(
+                id,
+                request,
+                cancellationToken);
+
+            if (client is null)
+                return NotFound();
+
+            return Ok(client);
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+        {
+            var response =
+                await _authService.RegisterAsync(request);
+
+            return Ok(response);
         }
 
         [HttpPatch("{id:guid}/activate")]

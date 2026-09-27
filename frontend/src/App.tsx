@@ -10,6 +10,7 @@ import ContactPage from './pages/public/ContactPage'
 import FaqPage from './pages/public/FaqPage'
 import StaffDashboardPage from './pages/staff/StaffDashboardPage'
 import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
+import CreateClientPage from './pages/staff/CreateClientPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -124,6 +125,11 @@ export default function App() {
             <Route
               path="clients"
               element={<ClientsPage />}
+            />
+
+            <Route
+              path="clients/new"
+              element={<CreateClientPage />}
             />
 
             <Route

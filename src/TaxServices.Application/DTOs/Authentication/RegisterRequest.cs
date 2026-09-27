@@ -6,6 +6,7 @@ namespace TaxServices.Application.DTOs.Authentication
     {
         [Required]
         [EmailAddress]
+        [MaxLength(255)]
         public string Email { get; set; } = string.Empty;
 
         [Required]
@@ -19,5 +20,7 @@ namespace TaxServices.Application.DTOs.Authentication
         [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
 
+        [MaxLength(30)]
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

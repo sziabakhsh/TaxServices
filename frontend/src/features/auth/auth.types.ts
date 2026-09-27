@@ -8,6 +8,7 @@ export interface RegisterRequest {
   lastName: string
   email: string
   phoneNumber: string
+  password: string
 }
 
 export interface CreateClientResponse {
@@ -19,7 +20,6 @@ export interface CreateClientResponse {
     phoneNumber: string
     isActive: boolean
   }
-  temporaryPassword: string
 }
 
 export interface AuthResponse {

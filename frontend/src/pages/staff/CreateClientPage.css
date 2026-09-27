@@ -1,0 +1,226 @@
+.create-client-page {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.create-client-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.create-client-page__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #267346;
+}
+
+.create-client-page__header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #1d2a24;
+}
+
+.create-client-page__header p {
+  margin: 0;
+  color: #68756e;
+}
+
+.create-client-page__back {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #267346;
+  text-decoration: none;
+}
+
+.create-client-page__back:hover {
+  text-decoration: underline;
+}
+
+.create-client-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-client-page__section {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e3e8e5;
+  border-radius: 12px;
+}
+
+.create-client-page__section h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  color: #1d2a24;
+}
+
+.create-client-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.create-client-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: #334139;
+}
+
+.create-client-page__field--full {
+  grid-column: 1 / -1;
+}
+
+.create-client-page__field input,
+.create-client-page__field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1d2a24;
+  font: inherit;
+}
+
+.create-client-page__field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.create-client-page__field input:focus,
+.create-client-page__field textarea:focus {
+  outline: none;
+  border-color: #267346;
+}
+
+.create-client-page__field input:disabled,
+.create-client-page__field textarea:disabled {
+  background: #f4f6f5;
+  cursor: not-allowed;
+}
+
+.create-client-page__hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: #68756e;
+}
+
+.create-client-page__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #334139;
+  cursor: pointer;
+}
+
+.create-client-page__checkbox input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.create-client-page__error {
+  padding: 14px 16px;
+  border: 1px solid #ecd7d5;
+  border-radius: 8px;
+  background: #fbf5f4;
+  color: #8a4743;
+}
+
+.create-client-page__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.create-client-page__cancel,
+.create-client-page__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.create-client-page__cancel {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334139;
+}
+
+.create-client-page__cancel:hover {
+  background: #f8faf9;
+}
+
+.create-client-page__submit {
+  border: 1px solid #267346;
+  background: #267346;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.create-client-page__submit:hover:not(:disabled) {
+  background: #1f603a;
+}
+
+.create-client-page__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .create-client-page__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .create-client-page__header h1 {
+    font-size: 28px;
+  }
+
+  .create-client-page__back {
+    align-self: flex-start;
+  }
+
+  .create-client-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-client-page__field--full {
+    grid-column: auto;
+  }
+
+  .create-client-page__section {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .create-client-page__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .create-client-page__cancel,
+  .create-client-page__submit {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

@@ -6,7 +6,6 @@ using TaxServices.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -18,7 +17,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddApplication();
@@ -27,55 +25,86 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Controllers
 builder.Services.AddControllers();
 
-
-// Add services to the container.
+// Exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter your JWT token."
-    });
-
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
+    options.AddSecurityDefinition(
+        "Bearer",
+        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            Name = "Authorization",
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Description = "Enter your JWT token."
+        });
+
+    options.AddSecurityRequirement(
+        new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+                    Reference =
+                        new Microsoft.OpenApi.Models.OpenApiReference
+                        {
+                            Type =
+                                Microsoft.OpenApi.Models.ReferenceType
+                                    .SecurityScheme,
+
+                            Id = "Bearer"
+                        }
+                },
+                Array.Empty<string>()
+            }
+        });
 });
 
 var app = builder.Build();
 
+// ---------------------------------------------------------
+// Identity Seed
+// ---------------------------------------------------------
+
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider
-        .GetRequiredService<RoleManager<IdentityRole>>();
+    var roleManager =
+        scope.ServiceProvider
+            .GetRequiredService<RoleManager<IdentityRole>>();
 
+    // Roles are required in all environments
     await IdentitySeeder.SeedRolesAsync(roleManager);
+
+    // Development admin only
+    if (app.Environment.IsDevelopment())
+    {
+        var userManager =
+            scope.ServiceProvider
+                .GetRequiredService<UserManager<AppUser>>();
+
+        var dbContext =
+            scope.ServiceProvider
+                .GetRequiredService<TaxServicesDbContext>();
+
+        await IdentitySeeder.SeedDevelopmentAdminAsync(
+            userManager,
+            dbContext);
+    }
 }
 
 app.UseExceptionHandler();
 
-// Configure the HTTP request pipeline.
+// ---------------------------------------------------------
+// HTTP Pipeline
+// ---------------------------------------------------------
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

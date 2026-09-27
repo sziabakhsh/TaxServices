@@ -5,6 +5,7 @@ import type {
   ClientQueryParameters,
   PagedClients,
   UpdateClientProfileRequest,
+  CreateClientRequest,
 } from './client.types'
 
 export async function getMyClientProfile(): Promise<ClientProfile> {
@@ -47,4 +48,17 @@ export async function getClientById(
   )
 
   return response.data
+}
+
+export async function createClient(
+  request: CreateClientRequest
+): Promise<ClientProfile> {
+  const response = await api.post<{
+    client: ClientProfile
+  }>(
+    '/clients',
+    request
+  )
+
+  return response.data.client
 }

@@ -11,16 +11,16 @@ export default function ClientsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [pageNumber, setPageNumber] = useState(1)
 
-useEffect(() => {
-  const timeout = window.setTimeout(() => {
-    setDebouncedSearch(searchTerm)
-    setPageNumber(1)
-  }, 400)
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setPageNumber(1)
+    }, 400)
 
-  return () => {
-    window.clearTimeout(timeout)
-  }
-}, [searchTerm])
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [searchTerm])
 
   const {
     data,
@@ -68,6 +68,13 @@ useEffect(() => {
             View clients and manage their tax documents.
           </p>
         </div>
+
+        <Link
+          to="/staff/clients/new"
+          className="staff-clients-page__create"
+        >
+          New Client
+        </Link>
       </div>
 
       <div className="staff-clients-page__search">
@@ -167,14 +174,13 @@ useEffect(() => {
         </div>
       )}
 
-{data && (
-  <Pagination
-    pageNumber={data.pageNumber}
-    totalPages={data.totalPages}
-    onPageChange={setPageNumber}
-  />
-)}
-
+      {data && (
+        <Pagination
+          pageNumber={data.pageNumber}
+          totalPages={data.totalPages}
+          onPageChange={setPageNumber}
+        />
+      )}
     </section>
   )
 }

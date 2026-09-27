@@ -17,11 +17,16 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [sin, setSin] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [address, setAddress] = useState('')
 
   useEffect(() => {
     if (!client) {
+      return
+    }
+
+    if (sin && !/^\d{9}$/.test(sin)) {
       return
     }
 
@@ -51,6 +56,7 @@ export default function ProfilePage() {
     )
     setAddress(client.individualProfile?.address ?? '')
 
+    setSin('')
     updateProfile.reset()
     setIsEditing(false)
   }
@@ -69,6 +75,7 @@ export default function ProfilePage() {
         email: client.email,
         phoneNumber,
         individualProfile: {
+          sin,
           dateOfBirth: dateOfBirth || null,
           address,
         },
@@ -242,6 +249,37 @@ export default function ProfilePage() {
                 />
               </div>
 
+              <div className="profile-page__form-field">
+                <label
+                  className="profile-page__form-label"
+                  htmlFor="sin"
+                >
+                  New SIN
+                </label>
+
+                <input
+                id="sin"
+                className="profile-page__input"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={sin}
+                onChange={(event) =>
+                  setSin(
+                    event.target.value
+                      .replace(/\D/g, '')
+                      .slice(0, 9)
+                  )
+                }
+                maxLength={9}
+                pattern="\d{9}"
+                title="SIN must contain exactly 9 digits."
+              />
+
+                <span className="profile-page__field-hint">
+                  Leave blank to keep your current SIN.
+                </span>
+              </div>
               <div className="profile-page__form-field profile-page__form-field--wide">
                 <label
                   className="profile-page__form-label"
@@ -265,7 +303,8 @@ export default function ProfilePage() {
 
             {updateProfile.isError && (
               <div className="profile-page__message profile-page__message--error">
-                We couldn't update your profile. Please try again.
+                {(updateProfile.error as any)?.response?.data?.detail ??
+                  'We couldn\'t update your profile. Please try again.'}
               </div>
             )}
 
@@ -343,6 +382,16 @@ export default function ProfilePage() {
                       client.individualProfile.dateOfBirth,
                     ).toLocaleDateString()
                   : 'Not provided'}
+              </strong>
+            </div>
+
+            <div className="profile-page__field">
+              <span className="profile-page__label">
+                SIN
+              </span>
+
+              <strong className="profile-page__value">
+                Protected for security
               </strong>
             </div>
 

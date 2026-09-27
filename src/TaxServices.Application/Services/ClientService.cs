@@ -2,7 +2,7 @@
 using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.DTOs.Clients;
-using TaxServices.Application.DTOs.Employees;
+using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Validation;
 using TaxServices.Domain.Clients;
@@ -14,32 +14,39 @@ namespace TaxServices.Application.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
+        private readonly ISensitiveDataProtector _sensitiveDataProtector;
 
         public ClientService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
-            IAuthService authService)
+            IAuthService authService,
+            ISensitiveDataProtector sensitiveDataProtector)
         {
             _context = context;
             _tenantContext = tenantContext;
             _authService = authService;
+            _sensitiveDataProtector = sensitiveDataProtector;
         }
 
-        public async Task<ClientDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ClientDto?> GetByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients
                 .Include(c => c.IndividualProfile)
                 .FirstOrDefaultAsync(
-                c => c.Id == id &&
-                c.TenantId == _tenantContext.TenantId,
-                cancellationToken);
+                    c => c.Id == id &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             return client == null
                 ? null
                 : MapToDto(client);
         }
 
-        public async Task<PagedResult<ClientDto>> GetAllAsync(PaginationQueryParameters parameters, CancellationToken cancellationToken = default)
+        public async Task<PagedResult<ClientDto>> GetAllAsync(
+            PaginationQueryParameters parameters,
+            CancellationToken cancellationToken = default)
         {
             var query = _context.Clients
                 .AsNoTracking()
@@ -56,7 +63,8 @@ namespace TaxServices.Application.Services
                     c.Email.Contains(search));
             }
 
-            var totalCount = await query.CountAsync(cancellationToken);
+            var totalCount =
+                await query.CountAsync(cancellationToken);
 
             var clients = await query
                 .OrderBy(c => c.LastName)
@@ -78,32 +86,71 @@ namespace TaxServices.Application.Services
             };
         }
 
-        public async Task<ClientCreatedResponse> CreateAsync(CreateClientRequest request, CancellationToken cancellationToken = default)
+        public async Task<ClientCreatedResponse> CreateAsync(
+            CreateClientRequest request,
+            CancellationToken cancellationToken = default)
         {
             ClientValidator.Validate(request);
 
-            var emailExists = await _context.Clients.AnyAsync(c => c.Email == request.Email && c.TenantId == _tenantContext.TenantId, cancellationToken);
+            var email = request.Email.Trim();
+
+            var emailExists =
+                await _context.Clients.AnyAsync(
+                    c =>
+                        c.Email == email &&
+                        c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             if (emailExists)
             {
-                throw new InvalidOperationException(
+                throw new DuplicateUserException(
                     "A client with this email already exists.");
             }
 
-            NewUserRequestInApp newUser = new NewUserRequestInApp
+            string? sin = null;
+            string? sinHash = null;
+
+            if (request.IndividualProfile != null)
             {
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
+                sin = NormalizeSIN(
+                    request.IndividualProfile.SIN);
+
+                sinHash =
+                    _sensitiveDataProtector.ComputeHash(sin);
+
+                var sinExists =
+                    await _context.IndividualProfiles.AnyAsync(
+                        p =>
+                            p.TenantId ==
+                                _tenantContext.TenantId &&
+                            p.SINHash == sinHash,
+                        cancellationToken);
+
+                if (sinExists)
+                {
+                    throw new DuplicateUserException(
+                        "A client with this SIN already exists.");
+                }
+            }
+
+            var newUser = new NewUserRequestInApp
+            {
+                Email = email,
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
                 Role = "Client"
             };
 
-
-            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            await using var transaction =
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
-                var userCreatedResponse = await _authService.CreateUserAsync(newUser, cancellationToken);
+                var userCreatedResponse =
+                    await _authService.CreateUserAsync(
+                        newUser,
+                        cancellationToken);
 
                 var client = new Client
                 {
@@ -111,7 +158,7 @@ namespace TaxServices.Application.Services
                     TenantId = _tenantContext.TenantId,
                     FirstName = request.FirstName.Trim(),
                     LastName = request.LastName.Trim(),
-                    Email = request.Email.Trim(),
+                    Email = email,
                     PhoneNumber = request.PhoneNumber.Trim(),
                     IsActive = request.IsActive,
                     UserId = userCreatedResponse.UserId
@@ -119,118 +166,217 @@ namespace TaxServices.Application.Services
 
                 if (request.IndividualProfile != null)
                 {
-                    client.IndividualProfile = new IndividualProfile
-                    {
-                        Id = Guid.NewGuid(),
-                        TenantId = _tenantContext.TenantId,
-                        ClientId = client.Id,
-                        SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
-                        DateOfBirth = request.IndividualProfile.DateOfBirth,
-                        Address = request.IndividualProfile.Address.Trim()
-                    };
+                    client.IndividualProfile =
+                        new IndividualProfile
+                        {
+                            Id = Guid.NewGuid(),
+                            TenantId =
+                                _tenantContext.TenantId,
+                            ClientId = client.Id,
+
+                            EncryptedSIN =
+                                _sensitiveDataProtector
+                                    .Protect(sin!),
+
+                            SINHash = sinHash!,
+
+                            DateOfBirth =
+                                request.IndividualProfile
+                                    .DateOfBirth,
+
+                            Address =
+                                request.IndividualProfile
+                                    .Address.Trim()
+                        };
                 }
 
-                await _context.Clients.AddAsync(client, cancellationToken);
+                await _context.Clients.AddAsync(
+                    client,
+                    cancellationToken);
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(
+                    cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(
+                    cancellationToken);
 
                 return new ClientCreatedResponse
                 {
-                    Client = MapToDto(client),
-                    //TemporaryPassword = userCreatedResponse.TemporaryPassword
+                    Client = MapToDto(client)
                 };
-
-                //return MapToDto(client);
             }
             catch
             {
+                await transaction.RollbackAsync(
+                    cancellationToken);
 
-                await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
         }
 
         public async Task<ClientDto?> UpdateAsync(Guid id, UpdateClientRequest request, CancellationToken cancellationToken = default)
         {
+            ClientValidator.Validate(request);
+
             var client = await _context.Clients
                 .Include(c => c.IndividualProfile)
-                .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == _tenantContext.TenantId, cancellationToken);
+                .FirstOrDefaultAsync(
+                    c => c.Id == id &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             if (client is null)
                 return null;
 
             await using var transaction =
-                await _context.BeginTransactionAsync(cancellationToken);
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
-                // Update Client
-                client.FirstName = request.FirstName.Trim();
-                client.LastName = request.LastName.Trim();
-                client.PhoneNumber = request.PhoneNumber.Trim();
+                client.FirstName =
+                    request.FirstName.Trim();
 
-                // Update IndividualProfile
+                client.LastName =
+                    request.LastName.Trim();
+
+                client.PhoneNumber =
+                    request.PhoneNumber.Trim();
+
                 if (request.IndividualProfile != null)
                 {
                     if (client.IndividualProfile is null)
                     {
-                        client.IndividualProfile = new IndividualProfile
+                        var sin = NormalizeSIN(
+                            request.IndividualProfile.SIN);
+
+                        var sinHash =
+                            _sensitiveDataProtector
+                                .ComputeHash(sin);
+
+                        var sinExists =
+                            await _context.IndividualProfiles
+                                .AnyAsync(
+                                    p =>
+                                        p.TenantId ==
+                                            _tenantContext.TenantId &&
+                                        p.SINHash == sinHash,
+                                    cancellationToken);
+
+                        if (sinExists)
                         {
-                            Id = Guid.NewGuid(),
-                            TenantId = _tenantContext.TenantId,
-                            ClientId = client.Id,
-                            SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
-                            DateOfBirth = request.IndividualProfile.DateOfBirth,
-                            Address = request.IndividualProfile.Address.Trim()
-                        };
+                            throw new DuplicateUserException("A client with this SIN already exists.");
+                        }
+
+                        client.IndividualProfile =
+                            new IndividualProfile
+                            {
+                                Id = Guid.NewGuid(),
+                                TenantId =
+                                    _tenantContext.TenantId,
+                                ClientId = client.Id,
+
+                                EncryptedSIN =
+                                    _sensitiveDataProtector
+                                        .Protect(sin),
+
+                                SINHash = sinHash,
+
+                                DateOfBirth =
+                                    request.IndividualProfile
+                                        .DateOfBirth,
+
+                                Address =
+                                    request.IndividualProfile
+                                        .Address.Trim()
+                            };
                     }
                     else
                     {
-                        if (!string.IsNullOrWhiteSpace(request.IndividualProfile.SIN))
+                        if (!string.IsNullOrWhiteSpace(
+                                request.IndividualProfile.SIN))
                         {
-                            client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
+                            var sin = NormalizeSIN(
+                                request.IndividualProfile.SIN);
+
+                            var sinHash =
+                                _sensitiveDataProtector
+                                    .ComputeHash(sin);
+
+                            var sinExists =
+                                await _context.IndividualProfiles
+                                    .AnyAsync(
+                                        p =>
+                                            p.TenantId ==
+                                                _tenantContext.TenantId &&
+                                            p.SINHash == sinHash &&
+                                            p.Id !=
+                                                client.IndividualProfile.Id,
+                                        cancellationToken);
+
+                            if (sinExists)
+                            {
+                                throw new DuplicateUserException("A client with this SIN already exists.");
+                            }
+
+                            client.IndividualProfile.EncryptedSIN =
+                                _sensitiveDataProtector
+                                    .Protect(sin);
+
+                            client.IndividualProfile.SINHash =
+                                sinHash;
                         }
-                        client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
-                        client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+
+                        client.IndividualProfile.DateOfBirth =
+                            request.IndividualProfile.DateOfBirth;
+
+                        client.IndividualProfile.Address =
+                            request.IndividualProfile.Address.Trim();
                     }
                 }
 
-                // Sync FirstName / LastName with Identity user
                 if (!string.IsNullOrWhiteSpace(client.UserId))
                 {
-                    var updatedUser = new UpdatedUserRequestInApp
-                    {
-                        UserId = client.UserId,
-                        Email = client.Email,
-                        FirstName = client.FirstName,
-                        LastName = client.LastName
-                    };
+                    var updatedUser =
+                        new UpdatedUserRequestInApp
+                        {
+                            UserId = client.UserId,
+                            Email = client.Email,
+                            FirstName = client.FirstName,
+                            LastName = client.LastName
+                        };
 
                     await _authService.UpdateUserAsync(
                         updatedUser,
                         cancellationToken);
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(
+                    cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(
+                    cancellationToken);
 
                 return MapToDto(client);
             }
             catch
             {
-                await transaction.RollbackAsync(cancellationToken);
+                await transaction.RollbackAsync(
+                    cancellationToken);
+
                 throw;
             }
         }
 
-        public async Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeactivateAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
-            var client = await _context.Clients.FirstOrDefaultAsync(
-                c => c.Id == id && c.TenantId == _tenantContext.TenantId,
-                cancellationToken);
+            var client =
+                await _context.Clients.FirstOrDefaultAsync(
+                    c => c.Id == id &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             if (client == null)
             {
@@ -239,16 +385,21 @@ namespace TaxServices.Application.Services
 
             client.IsActive = false;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
             return true;
         }
 
-        public async Task<bool> ActivateAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<bool> ActivateAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
-            var client = await _context.Clients.FirstOrDefaultAsync(
-                c => c.Id == id && c.TenantId == _tenantContext.TenantId,
-                cancellationToken);
+            var client =
+                await _context.Clients.FirstOrDefaultAsync(
+                    c => c.Id == id &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             if (client == null)
             {
@@ -257,7 +408,8 @@ namespace TaxServices.Application.Services
 
             client.IsActive = true;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
             return true;
         }
@@ -278,16 +430,23 @@ namespace TaxServices.Application.Services
                         ? null
                         : new IndividualProfileDto
                         {
-                            Id = client.IndividualProfile.Id,
+                            Id =
+                                client.IndividualProfile.Id,
+
                             DateOfBirth =
-                                client.IndividualProfile.DateOfBirth,
+                                client.IndividualProfile
+                                    .DateOfBirth,
+
                             Address =
-                                client.IndividualProfile.Address
+                                client.IndividualProfile
+                                    .Address
                         }
             };
         }
 
-        public async Task<ClientDto?> GetCurrentAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<ClientDto?> GetCurrentAsync(
+            string userId,
+            CancellationToken cancellationToken = default)
         {
             var client = await _context.Clients
                 .Include(c => c.IndividualProfile)
@@ -301,72 +460,167 @@ namespace TaxServices.Application.Services
                 : MapToDto(client);
         }
 
-        public async Task<ClientDto?> UpdateCurrentAsync(string userId, UpdateClientRequest request, CancellationToken cancellationToken = default)
+        public async Task<ClientDto?> UpdateCurrentAsync(
+    string userId,
+    UpdateClientRequest request,
+    CancellationToken cancellationToken = default)
         {
+            ClientValidator.Validate(request);
+
             var client = await _context.Clients
                 .Include(c => c.IndividualProfile)
-                .FirstOrDefaultAsync(c => c.UserId == userId && c.TenantId == _tenantContext.TenantId, cancellationToken);
+                .FirstOrDefaultAsync(
+                    c => c.UserId == userId &&
+                         c.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
 
             if (client is null)
                 return null;
 
-            await using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            await using var transaction =
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
-                client.FirstName = request.FirstName.Trim();
-                client.LastName = request.LastName.Trim();
-                client.PhoneNumber = request.PhoneNumber.Trim();
+                client.FirstName =
+                    request.FirstName.Trim();
+
+                client.LastName =
+                    request.LastName.Trim();
+
+                client.PhoneNumber =
+                    request.PhoneNumber.Trim();
 
                 if (request.IndividualProfile != null)
                 {
                     if (client.IndividualProfile is null)
                     {
-                        client.IndividualProfile = new IndividualProfile
+                        var sin = NormalizeSIN(
+                            request.IndividualProfile.SIN);
+
+                        var sinHash =
+                            _sensitiveDataProtector
+                                .ComputeHash(sin);
+
+                        var sinExists =
+                            await _context.IndividualProfiles
+                                .AnyAsync(
+                                    p =>
+                                        p.TenantId ==
+                                            _tenantContext.TenantId &&
+                                        p.SINHash == sinHash,
+                                    cancellationToken);
+
+                        if (sinExists)
                         {
-                            Id = Guid.NewGuid(),
-                            TenantId = _tenantContext.TenantId,
-                            ClientId = client.Id,
-                            SIN = request.IndividualProfile.SIN?.Trim() ?? string.Empty,
-                            DateOfBirth = request.IndividualProfile.DateOfBirth,
-                            Address = request.IndividualProfile.Address.Trim()
-                        };
+                            throw new DuplicateUserException("A client with this SIN already exists.");
+                        }
+
+                        client.IndividualProfile =
+                            new IndividualProfile
+                            {
+                                Id = Guid.NewGuid(),
+                                TenantId =
+                                    _tenantContext.TenantId,
+                                ClientId = client.Id,
+
+                                EncryptedSIN =
+                                    _sensitiveDataProtector
+                                        .Protect(sin),
+
+                                SINHash = sinHash,
+
+                                DateOfBirth =
+                                    request.IndividualProfile
+                                        .DateOfBirth,
+
+                                Address =
+                                    request.IndividualProfile
+                                        .Address.Trim()
+                            };
                     }
                     else
                     {
-                        if (!string.IsNullOrWhiteSpace(request.IndividualProfile.SIN))
+                        if (!string.IsNullOrWhiteSpace(
+                                request.IndividualProfile.SIN))
                         {
-                            client.IndividualProfile.SIN = request.IndividualProfile.SIN.Trim();
+                            var sin = NormalizeSIN(
+                                request.IndividualProfile.SIN);
+
+                            var sinHash =
+                                _sensitiveDataProtector
+                                    .ComputeHash(sin);
+
+                            var sinExists =
+                                await _context.IndividualProfiles
+                                    .AnyAsync(
+                                        p =>
+                                            p.TenantId ==
+                                                _tenantContext.TenantId &&
+                                            p.SINHash == sinHash &&
+                                            p.Id !=
+                                                client.IndividualProfile.Id,
+                                        cancellationToken);
+
+                            if (sinExists)
+                            {
+                                throw new DuplicateUserException("A client with this SIN already exists.");
+                            }
+
+                            client.IndividualProfile.EncryptedSIN =
+                                _sensitiveDataProtector
+                                    .Protect(sin);
+
+                            client.IndividualProfile.SINHash =
+                                sinHash;
                         }
-                        client.IndividualProfile.DateOfBirth = request.IndividualProfile.DateOfBirth;
-                        client.IndividualProfile.Address = request.IndividualProfile.Address.Trim();
+
+                        client.IndividualProfile.DateOfBirth =
+                            request.IndividualProfile.DateOfBirth;
+
+                        client.IndividualProfile.Address =
+                            request.IndividualProfile.Address.Trim();
                     }
                 }
 
                 if (!string.IsNullOrWhiteSpace(client.UserId))
                 {
-                    var updatedUser = new UpdatedUserRequestInApp
-                    {
-                        UserId = client.UserId,
-                        Email = client.Email,
-                        FirstName = client.FirstName,
-                        LastName = client.LastName
-                    };
+                    var updatedUser =
+                        new UpdatedUserRequestInApp
+                        {
+                            UserId = client.UserId,
+                            Email = client.Email,
+                            FirstName = client.FirstName,
+                            LastName = client.LastName
+                        };
 
-                    await _authService.UpdateUserAsync(updatedUser, cancellationToken);
+                    await _authService.UpdateUserAsync(
+                        updatedUser,
+                        cancellationToken);
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(
+                    cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(
+                    cancellationToken);
 
                 return MapToDto(client);
             }
             catch
             {
-                await transaction.RollbackAsync(cancellationToken);
+                await transaction.RollbackAsync(
+                    cancellationToken);
+
                 throw;
             }
+        }
+
+        private static string NormalizeSIN(string sin)
+        {
+            return new string(
+                sin.Where(char.IsDigit).ToArray());
         }
     }
 }

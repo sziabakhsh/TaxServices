@@ -1,9 +1,18 @@
-import {  keepPreviousData,  useQuery} from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 
-import { getClients } from './client.api'
+import {
+  createClient,
+  getClients,
+} from './client.api'
 
 import type {
   ClientQueryParameters,
+  CreateClientRequest,
   PagedClients,
 } from './client.types'
 
@@ -25,5 +34,21 @@ export function useClients(
     staleTime: 30_000,
 
     refetchOnWindowFocus: false,
+  })
+}
+
+export function useCreateClient() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (
+      request: CreateClientRequest
+    ) => createClient(request),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['clients'],
+      })
+    },
   })
 }

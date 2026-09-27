@@ -40,67 +40,103 @@ namespace TaxServices.Infrastructure.Identity.Services
             _tenantContext = tenantContext;
         }
 
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
+        public async Task<AuthResponse> RegisterAsync(
+            RegisterRequest request)
         {
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            var email = request.Email.Trim();
+
+            var existingUser =
+                await _userManager.FindByEmailAsync(email);
 
             if (existingUser is not null)
+            {
                 throw new DuplicateUserException(
                     "User already exists.");
-
-            var user = new AppUser
-            {
-                UserName = request.Email.Trim(),
-                Email = request.Email.Trim(),
-                FirstName = request.FirstName.Trim(),
-                LastName = request.LastName.Trim(),
-                TenantId = _tenantContext.TenantId
-            };
-
-            var result = await _userManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-
-                throw new ValidationException(errors);
             }
 
-            var roleResult = await _userManager.AddToRoleAsync(user, "Client");
+            await using var transaction =
+                await _context.BeginTransactionAsync();
 
-            if (!roleResult.Succeeded)
+            try
             {
-                var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                var user = new AppUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FirstName = request.FirstName.Trim(),
+                    LastName = request.LastName.Trim(),
+                    TenantId = _tenantContext.TenantId
+                };
 
-                throw new InvalidOperationException(errors);
+                var result =
+                    await _userManager.CreateAsync(
+                        user,
+                        request.Password);
+
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(
+                        ", ",
+                        result.Errors.Select(
+                            e => e.Description));
+
+                    throw new ValidationException(errors);
+                }
+
+                var roleResult =
+                    await _userManager.AddToRoleAsync(
+                        user,
+                        "Client");
+
+                if (!roleResult.Succeeded)
+                {
+                    var errors = string.Join(
+                        ", ",
+                        roleResult.Errors.Select(
+                            e => e.Description));
+
+                    throw new InvalidOperationException(
+                        errors);
+                }
+
+                var client = new Client
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = _tenantContext.TenantId,
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email ?? string.Empty,
+                    PhoneNumber =
+                        request.PhoneNumber.Trim(),
+                    IsActive = true
+                };
+
+                await _context.Clients.AddAsync(client);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                var token =
+                    await _jwtTokenService
+                        .GenerateTokenAsync(user.Id);
+
+                return new AuthResponse
+                {
+                    AccessToken = token,
+                    ExpiresAt =
+                        DateTime.UtcNow.AddMinutes(
+                            _jwtOptions.Value
+                                .ExpirationInMinutes)
+                };
             }
-
-            var client = new Client
+            catch
             {
-                Id = Guid.NewGuid(),
-                TenantId = _tenantContext.TenantId,
-                UserId = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email ?? string.Empty,
-                PhoneNumber = string.Empty,
-                IsActive = true
-            };
-
-            await _context.Clients.AddAsync(client);
-
-            await _context.SaveChangesAsync();
-
-            var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
-
-            return new AuthResponse
-            {
-                AccessToken = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(
-                    _jwtOptions.Value.ExpirationInMinutes)
-            };
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
-
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);

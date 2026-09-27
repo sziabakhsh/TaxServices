@@ -57,3 +57,18 @@ export interface PagedClients {
   totalCount: number
   totalPages: number
 }
+
+export interface CreateIndividualProfileRequest {
+  sin: string
+  dateOfBirth?: string | null
+  address: string
+}
+
+export interface CreateClientRequest {
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  isActive: boolean
+  individualProfile?: CreateIndividualProfileRequest | null
+}

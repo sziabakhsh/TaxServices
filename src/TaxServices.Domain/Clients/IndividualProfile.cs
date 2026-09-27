@@ -8,8 +8,12 @@ namespace TaxServices.Domain.Clients
         public Guid ClientId { get; set; }
 
         [Required]
-        [MaxLength(9)]
-        public string SIN { get; set; } = string.Empty;
+        [MaxLength(500)]
+        public string EncryptedSIN { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(64)]
+        public string SINHash { get; set; } = string.Empty;
 
         public DateTime? DateOfBirth { get; set; }
 

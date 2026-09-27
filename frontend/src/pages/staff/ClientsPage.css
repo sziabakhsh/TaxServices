@@ -4,7 +4,43 @@
 
 .staff-clients-page__header {
   margin-bottom: 28px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
 }
+
+.staff-clients-page__create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 11px 18px;
+
+  border-radius: 8px;
+
+  background: #267346;
+  color: #ffffff;
+
+  font-weight: 600;
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.staff-clients-page__create:hover {
+  background: #1f603a;
+}
+
+.staff-clients-page__create:active {
+  transform: translateY(1px);
+}
+
 
 .staff-clients-page__eyebrow {
   display: block;
@@ -136,8 +172,15 @@
 
 @media (max-width: 700px) {
   .staff-clients-page__header {
-    margin-bottom: 22px;
-  }
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.staff-clients-page__create {
+  align-self: flex-start;
+}
 
   .staff-clients-page__header h1 {
     font-size: 28px;

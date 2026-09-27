@@ -26,7 +26,7 @@ namespace TaxServices.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => new
             {
                 x.TenantId,
-                x.SIN
+                x.SINHash
             })
             .IsUnique();
 
