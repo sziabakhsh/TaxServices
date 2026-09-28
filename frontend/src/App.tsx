@@ -11,6 +11,7 @@ import FaqPage from './pages/public/FaqPage'
 import StaffDashboardPage from './pages/staff/StaffDashboardPage'
 import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
 import CreateClientPage from './pages/staff/CreateClientPage'
+import EditClientPage from './pages/staff/EditClientPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -131,7 +132,10 @@ export default function App() {
               path="clients/new"
               element={<CreateClientPage />}
             />
-
+            <Route
+              path="clients/:clientId/edit"
+              element={<EditClientPage />}
+            />
             <Route
               path="employees"
               element={<EmployeesPage />}

@@ -1,5 +1,6 @@
 export interface IndividualProfile {
   id: string
+  maskedSIN?: string | null
   dateOfBirth?: string | null
   address?: string | null
 }
@@ -30,6 +31,7 @@ export interface UpdateClientProfileRequest {
 
 export interface StaffClientIndividualProfile {
   id: string
+  maskedSIN?: string | null
   dateOfBirth: string | null
   address: string | null
 }

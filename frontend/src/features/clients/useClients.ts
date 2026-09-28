@@ -7,7 +7,9 @@ import {
 
 import {
   createClient,
+  getClientById,
   getClients,
+  updateClient,
 } from './client.api'
 
 import type {

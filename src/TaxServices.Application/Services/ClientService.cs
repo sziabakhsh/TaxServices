@@ -414,7 +414,7 @@ namespace TaxServices.Application.Services
             return true;
         }
 
-        private static ClientDto MapToDto(Client client)
+        private ClientDto MapToDto(Client client)
         {
             return new ClientDto
             {
@@ -430,18 +430,26 @@ namespace TaxServices.Application.Services
                         ? null
                         : new IndividualProfileDto
                         {
-                            Id =
-                                client.IndividualProfile.Id,
+                            Id = client.IndividualProfile.Id,
 
-                            DateOfBirth =
-                                client.IndividualProfile
-                                    .DateOfBirth,
+                            MaskedSIN = MaskSIN(_sensitiveDataProtector.Unprotect(client.IndividualProfile.EncryptedSIN)),
 
-                            Address =
-                                client.IndividualProfile
-                                    .Address
+                            DateOfBirth = client.IndividualProfile.DateOfBirth,
+
+                            Address = client.IndividualProfile.Address
                         }
             };
+        }
+
+        private static string MaskSIN(string sin)
+        {
+            if (string.IsNullOrWhiteSpace(sin) ||
+                sin.Length != 9)
+            {
+                return string.Empty;
+            }
+
+            return $"*** *** {sin[^3..]}";
         }
 
         public async Task<ClientDto?> GetCurrentAsync(

@@ -88,9 +88,10 @@ namespace TaxServices.Infrastructure
                         };
                 });
 
-            services.Configure<SensitiveDataOptions>(
-                configuration.GetSection(SensitiveDataOptions.SectionName));
-            
+            services.Configure<SensitiveDataOptions>(configuration.GetSection(SensitiveDataOptions.SectionName));
+
+            services.Configure<PublicSiteOptions>(configuration.GetSection(PublicSiteOptions.SectionName));
+
             services.AddDataProtection();
 
             services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
@@ -106,7 +107,7 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IEmployeeAccountStatusService, EmployeeAccountStatusService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
             services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
-            
+
             services.AddScoped<ISensitiveDataProtector, SensitiveDataProtector>();
 
             return services;

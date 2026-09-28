@@ -6,6 +6,7 @@ import type {
   PagedClients,
   UpdateClientProfileRequest,
   CreateClientRequest,
+  StaffClient,
 } from './client.types'
 
 export async function getMyClientProfile(): Promise<ClientProfile> {
@@ -61,4 +62,16 @@ export async function createClient(
   )
 
   return response.data.client
+}
+
+export async function updateClient(
+  clientId: string,
+  request: UpdateClientProfileRequest
+): Promise<StaffClient> {
+  const response = await api.put<StaffClient>(
+    `/clients/${clientId}`,
+    request
+  )
+
+  return response.data
 }

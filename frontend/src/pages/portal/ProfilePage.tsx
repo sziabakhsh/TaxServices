@@ -82,6 +82,7 @@ export default function ProfilePage() {
       },
       {
         onSuccess: () => {
+          setSin('')
           setIsEditing(false)
         },
       },
@@ -391,7 +392,8 @@ export default function ProfilePage() {
               </span>
 
               <strong className="profile-page__value">
-                Protected for security
+                {client.individualProfile?.maskedSIN ||
+                  'Not provided'}
               </strong>
             </div>
 

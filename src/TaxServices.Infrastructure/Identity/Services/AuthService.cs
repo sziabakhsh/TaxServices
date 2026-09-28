@@ -7,6 +7,7 @@ using TaxServices.Application.DTOs.Authentication;
 using TaxServices.Application.Exceptions;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Clients;
+using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Services;
 
 namespace TaxServices.Infrastructure.Identity.Services
@@ -19,6 +20,7 @@ namespace TaxServices.Infrastructure.Identity.Services
         private readonly IOptions<JwtOptions> _jwtOptions;
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
+        private readonly IOptions<PublicSiteOptions> _publicSiteOptions;
 
         // We are using Guid.Empty as the Default Tenant.
         // In the future, when we have a real Tenant, we will use the actual TenantId.
@@ -30,7 +32,8 @@ namespace TaxServices.Infrastructure.Identity.Services
             IJwtTokenService jwtTokenService,
             IOptions<JwtOptions> jwtOptions,
             ITaxServicesDbContext context,
-            ITenantContext tenantContext)
+            ITenantContext tenantContext,
+            IOptions<PublicSiteOptions> publicSiteOptions)
         {
             _userManager = userManager;
             _employeeAccountStatusService = employeeAccountStatusService;
@@ -38,6 +41,7 @@ namespace TaxServices.Infrastructure.Identity.Services
             _jwtOptions = jwtOptions;
             _context = context;
             _tenantContext = tenantContext;
+            _publicSiteOptions = publicSiteOptions;
         }
 
         public async Task<AuthResponse> RegisterAsync(
@@ -45,17 +49,22 @@ namespace TaxServices.Infrastructure.Identity.Services
         {
             var email = request.Email.Trim();
 
+            var tenantId = _publicSiteOptions.Value.TenantId;
+
+            if (tenantId == Guid.Empty)
+            {
+                throw new InvalidOperationException("Public site TenantId is not configured.");
+            }
+
             var existingUser =
                 await _userManager.FindByEmailAsync(email);
 
             if (existingUser is not null)
             {
-                throw new DuplicateUserException(
-                    "User already exists.");
+                throw new DuplicateUserException("User already exists.");
             }
 
-            await using var transaction =
-                await _context.BeginTransactionAsync();
+            await using var transaction = await _context.BeginTransactionAsync();
 
             try
             {
@@ -65,7 +74,7 @@ namespace TaxServices.Infrastructure.Identity.Services
                     Email = email,
                     FirstName = request.FirstName.Trim(),
                     LastName = request.LastName.Trim(),
-                    TenantId = _tenantContext.TenantId
+                    TenantId = tenantId
                 };
 
                 var result =
@@ -102,7 +111,7 @@ namespace TaxServices.Infrastructure.Identity.Services
                 var client = new Client
                 {
                     Id = Guid.NewGuid(),
-                    TenantId = _tenantContext.TenantId,
+                    TenantId = tenantId,
                     UserId = user.Id,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
