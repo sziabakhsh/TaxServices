@@ -15,6 +15,7 @@ namespace TaxServices.Infrastructure.Identity.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEmailService _emailService;
         private readonly IEmployeeAccountStatusService _employeeAccountStatusService;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IOptions<JwtOptions> _jwtOptions;
@@ -28,6 +29,7 @@ namespace TaxServices.Infrastructure.Identity.Services
 
         public AuthService(
             UserManager<AppUser> userManager,
+            IEmailService emailService,
             IEmployeeAccountStatusService employeeAccountStatusService,
             IJwtTokenService jwtTokenService,
             IOptions<JwtOptions> jwtOptions,
@@ -36,6 +38,7 @@ namespace TaxServices.Infrastructure.Identity.Services
             IOptions<PublicSiteOptions> publicSiteOptions)
         {
             _userManager = userManager;
+            _emailService = emailService;
             _employeeAccountStatusService = employeeAccountStatusService;
             _jwtTokenService = jwtTokenService;
             _jwtOptions = jwtOptions;
@@ -148,28 +151,96 @@ namespace TaxServices.Infrastructure.Identity.Services
         }
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _userManager.FindByEmailAsync(
+                request.Email.Trim());
 
             if (user is null)
                 throw new InvalidCredentialsException();
 
-            var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+            var passwordValid = await _userManager.CheckPasswordAsync(
+                user,
+                request.Password);
 
             if (!passwordValid)
                 throw new InvalidCredentialsException();
 
-            var employeeIsActive = await _employeeAccountStatusService.GetActiveStatusAsync(user.Id);
+            var employeeIsActive =
+                await _employeeAccountStatusService
+                    .GetActiveStatusAsync(user.Id);
 
             if (employeeIsActive == false)
                 throw new InactiveAccountException();
 
+            if (user.TwoFactorEnabled)
+            {
+                var code = await _userManager.GenerateTwoFactorTokenAsync(
+                    user,
+                    TokenOptions.DefaultEmailProvider);
 
-            var token = await _jwtTokenService.GenerateTokenAsync(user.Id);
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Your verification code",
+                    $"""
+                    <h2>Two-Factor Authentication</h2>
+                    <p>Your verification code is:</p>
+                    <h1>{code}</h1>
+                    <p>If you did not try to sign in, you can ignore this email.</p>
+                    """);
+
+                return new AuthResponse
+                {
+                    RequiresTwoFactor = true
+                };
+            }
+
+            var token = await _jwtTokenService
+                .GenerateTokenAsync(user.Id);
 
             return new AuthResponse
             {
                 AccessToken = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.Value.ExpirationInMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(
+                    _jwtOptions.Value.ExpirationInMinutes),
+                RequiresTwoFactor = false
+            };
+        }
+
+        public async Task<AuthResponse> VerifyTwoFactorAsync(
+            VerifyTwoFactorRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(
+                request.Email.Trim());
+
+            if (user is null)
+                throw new InvalidCredentialsException();
+
+            if (!user.TwoFactorEnabled)
+                throw new InvalidCredentialsException();
+
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user,
+                TokenOptions.DefaultEmailProvider,
+                request.Code.Trim());
+
+            if (!isValid)
+                throw new InvalidTwoFactorCodeException();
+
+            var employeeIsActive =
+                await _employeeAccountStatusService
+                    .GetActiveStatusAsync(user.Id);
+
+            if (employeeIsActive == false)
+                throw new InactiveAccountException();
+
+            var token = await _jwtTokenService
+                .GenerateTokenAsync(user.Id);
+
+            return new AuthResponse
+            {
+                AccessToken = token,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(
+                    _jwtOptions.Value.ExpirationInMinutes),
+                RequiresTwoFactor = false
             };
         }
 
@@ -331,6 +402,137 @@ namespace TaxServices.Infrastructure.Identity.Services
 
             return await _userManager.HasPasswordAsync(user);
         }
+
+        public async Task<TwoFactorStatusResponse> GetTwoFactorStatusAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            return new TwoFactorStatusResponse
+            {
+                IsEnabled = user.TwoFactorEnabled
+            };
+        }
+
+        public async Task RequestEnableTwoFactorAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            if (user.TwoFactorEnabled)
+                return;
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+                throw new InvalidOperationException("User does not have an email address.");
+
+            var code = await _userManager.GenerateTwoFactorTokenAsync(
+                user,
+                TokenOptions.DefaultEmailProvider);
+
+            await _emailService.SendAsync(
+                user.Email,
+                "Enable two-factor authentication",
+                $"""
+                <h2>Enable Two-Factor Authentication</h2>
+                <p>Your verification code is:</p>
+                <h1>{code}</h1>
+                <p>Enter this code to enable two-factor authentication on your account.</p>
+                """);
+        }
+
+        public async Task ConfirmEnableTwoFactorAsync(string userId, TwoFactorCodeRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            if (user.TwoFactorEnabled)
+                return;
+
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider,
+                request.Code.Trim());
+
+            if (!isValid)
+                throw new InvalidTwoFactorCodeException();
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, true);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    result.Errors.Select(e => e.Description));
+
+                throw new InvalidOperationException(errors);
+            }
+        }
+
+        public async Task RequestDisableTwoFactorAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            if (!user.TwoFactorEnabled)
+                return;
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+                throw new InvalidOperationException(
+                    "User does not have an email address.");
+
+            var code = await _userManager.GenerateTwoFactorTokenAsync(
+                user,
+                TokenOptions.DefaultEmailProvider);
+
+            await _emailService.SendAsync(
+                user.Email,
+                "Disable two-factor authentication",
+                $"""
+        <h2>Disable Two-Factor Authentication</h2>
+        <p>Your verification code is:</p>
+        <h1>{code}</h1>
+        <p>Enter this code to disable two-factor authentication on your account.</p>
+        """);
+        }
+
+        public async Task ConfirmDisableTwoFactorAsync(string userId, TwoFactorCodeRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                throw new InvalidOperationException("User not found.");
+
+            if (!user.TwoFactorEnabled)
+                return;
+
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user,
+                TokenOptions.DefaultEmailProvider,
+                request.Code.Trim());
+
+            if (!isValid)
+                throw new InvalidTwoFactorCodeException();
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(
+                user,
+                false);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    result.Errors.Select(e => e.Description));
+
+                throw new InvalidOperationException(errors);
+            }
+        }
+
 
         //private static string GenerateTemporaryPassword()
         //{

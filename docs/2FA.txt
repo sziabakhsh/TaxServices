@@ -1,0 +1,4 @@
+2FA Off:
+Email + Password → Password OK → JWT
+2FA On:
+Email + Password → Password OK → Generate Email OTP → Send Email → return RequiresTwoFactor=true → Verify OTP → JWT

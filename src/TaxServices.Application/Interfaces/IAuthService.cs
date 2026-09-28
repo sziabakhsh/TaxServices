@@ -8,6 +8,7 @@ namespace TaxServices.Application.Interfaces
     {
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
+        Task<AuthResponse> VerifyTwoFactorAsync(VerifyTwoFactorRequest request);
         Task<CurrentUserResponse> GetCurrentUserAsync(string userId);
         Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
         Task<UserCreatedResponse> CreateUserAsync(NewUserRequestInApp request, CancellationToken cancellationToken = default);
@@ -15,5 +16,10 @@ namespace TaxServices.Application.Interfaces
         Task<string> GeneratePasswordSetupTokenAsync(string userId, CancellationToken cancellationToken = default);
         Task SetPasswordAsync(SetPasswordRequest request, CancellationToken cancellationToken = default);
         Task<bool> HasPasswordAsync(string userId, CancellationToken cancellationToken = default);
+        Task<TwoFactorStatusResponse> GetTwoFactorStatusAsync(string userId);
+        Task RequestEnableTwoFactorAsync(string userId);
+        Task ConfirmEnableTwoFactorAsync(string userId, TwoFactorCodeRequest request);
+        Task RequestDisableTwoFactorAsync(string userId);
+        Task ConfirmDisableTwoFactorAsync(string userId, TwoFactorCodeRequest request);
     }
 }

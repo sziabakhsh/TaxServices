@@ -54,6 +54,12 @@ public class GlobalExceptionHandler : IExceptionHandler
             title = "Authentication failed.";
             detail = exception.Message;
         }
+        else if (exception is InvalidTwoFactorCodeException)
+        {
+            statusCode = StatusCodes.Status401Unauthorized;
+            title = "Two-factor authentication failed.";
+            detail = exception.Message;
+        }
         else if (exception is InactiveAccountException)
         {
             statusCode = StatusCodes.Status403Forbidden;

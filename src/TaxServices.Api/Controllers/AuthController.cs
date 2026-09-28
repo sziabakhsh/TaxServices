@@ -49,19 +49,93 @@ namespace TaxServices.Api.Controllers
         //    });
         //}
 
-        //[HttpPost("register")]
-        //public async Task<IActionResult> Register(RegisterRequest request)
-        //{
-        //    var result = await _authService.RegisterAsync(request);
-
-        //    return Ok(result);
-        //}
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var result = await _authService.LoginAsync(request);
             return Ok(result);
+        }
+
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> VerifyTwoFactor(VerifyTwoFactorRequest request)
+        {
+            var result = await _authService.VerifyTwoFactorAsync(request);
+
+            return Ok(result);
+        }
+
+        [HttpGet("2fa/status")]
+        [Authorize]
+        public async Task<IActionResult> GetTwoFactorStatus()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            var result = await _authService.GetTwoFactorStatusAsync(userId);
+
+            return Ok(result);
+        }
+
+        [HttpPost("2fa/enable/request")]
+        [Authorize]
+        public async Task<IActionResult> RequestEnableTwoFactor()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            await _authService.RequestEnableTwoFactorAsync(userId);
+
+            return NoContent();
+        }
+
+        [HttpPost("2fa/enable/confirm")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmEnableTwoFactor(TwoFactorCodeRequest request)
+        {
+            var userId = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            await _authService.ConfirmEnableTwoFactorAsync(
+                userId,
+                request);
+
+            return NoContent();
+        }
+
+        [HttpPost("2fa/disable/request")]
+        [Authorize]
+        public async Task<IActionResult> RequestDisableTwoFactor()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            await _authService.RequestDisableTwoFactorAsync(userId);
+
+            return NoContent();
+        }
+
+        [HttpPost("2fa/disable/confirm")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmDisableTwoFactor(TwoFactorCodeRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+                return Unauthorized();
+
+            await _authService.ConfirmDisableTwoFactorAsync(userId, request);
+
+            return NoContent();
         }
 
         [HttpGet("me")]
