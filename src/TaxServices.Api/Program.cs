@@ -7,14 +7,26 @@ using TaxServices.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------------------------------------------------------
+// CORS
+// ---------------------------------------------------------
+
+var allowedOrigins =
+    builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        if (allowedOrigins.Length > 0)
+        {
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
     });
 });
 
@@ -23,14 +35,23 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// ---------------------------------------------------------
 // Controllers
+// ---------------------------------------------------------
+
 builder.Services.AddControllers();
 
-// Exception handling
+// ---------------------------------------------------------
+// Exception Handling
+// ---------------------------------------------------------
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// ---------------------------------------------------------
 // Swagger / OpenAPI
+// ---------------------------------------------------------
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -94,9 +115,10 @@ using (var scope = app.Services.CreateScope())
             scope.ServiceProvider
                 .GetRequiredService<TaxServicesDbContext>();
 
-        var publicSiteOptions = scope.ServiceProvider
-        .GetRequiredService<
-            Microsoft.Extensions.Options.IOptions<PublicSiteOptions>>();
+        var publicSiteOptions =
+            scope.ServiceProvider
+                .GetRequiredService<
+                    Microsoft.Extensions.Options.IOptions<PublicSiteOptions>>();
 
         var tenantId = publicSiteOptions.Value.TenantId;
 
@@ -104,9 +126,12 @@ using (var scope = app.Services.CreateScope())
             userManager,
             dbContext,
             tenantId);
-
     }
 }
+
+// ---------------------------------------------------------
+// Exception Handler
+// ---------------------------------------------------------
 
 app.UseExceptionHandler();
 
@@ -119,13 +144,58 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    // In production, tell browsers to use HTTPS
+    // for future requests.
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 
+// ---------------------------------------------------------
+// Security Headers
+// ---------------------------------------------------------
+
+app.Use(async (context, next) =>
+{
+    // Prevent browsers from MIME-sniffing responses.
+    context.Response.Headers["X-Content-Type-Options"] =
+        "nosniff";
+
+    // Prevent this application from being embedded
+    // inside an iframe.
+    context.Response.Headers["X-Frame-Options"] =
+        "DENY";
+
+    // Limit referrer information sent to other origins.
+    context.Response.Headers["Referrer-Policy"] =
+        "strict-origin-when-cross-origin";
+
+    // Disable browser features that this application
+    // does not currently need.
+    context.Response.Headers["Permissions-Policy"] =
+        "camera=(), microphone=(), geolocation=()";
+
+    await next();
+});
+
+// ---------------------------------------------------------
+// CORS
+// ---------------------------------------------------------
+
 app.UseCors("Frontend");
+
+// ---------------------------------------------------------
+// Authentication / Authorization
+// ---------------------------------------------------------
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ---------------------------------------------------------
+// Endpoints
+// ---------------------------------------------------------
 
 app.MapControllers();
 

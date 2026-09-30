@@ -121,8 +121,17 @@ export default function App() {
           path="/staff"
           element={<RolePlaceholder title="Staff Portal" />}
         /> */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/staff" element={<StaffPortalLayout />}>
+
+          <Route
+            element={
+              <ProtectedRoute roles={['Admin', 'Employee']} />
+            }
+          >
+            <Route
+              path="/staff"
+              element={<StaffPortalLayout />}
+            >
+              
             <Route
               index
               element={<StaffDashboardPage />}

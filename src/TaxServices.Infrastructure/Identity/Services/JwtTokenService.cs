@@ -29,6 +29,12 @@ namespace TaxServices.Infrastructure.Identity.Services
             if (user is null)
                 throw new InvalidOperationException("User not found.");
 
+            if (user.TenantId == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "User does not have a valid TenantId.");
+            }
+
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id),

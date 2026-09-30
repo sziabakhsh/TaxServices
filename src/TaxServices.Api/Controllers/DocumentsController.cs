@@ -108,8 +108,8 @@ namespace TaxServices.Api.Controllers
 
             return NoContent();
         }
-
-        [Authorize]
+        
+        [Authorize(Roles = "Client")]
         [Consumes("multipart/form-data")]
         [HttpPost("mine/upload")]
         public async Task<ActionResult<DocumentResponse>> UploadMine(Guid? taxCaseId, IFormFile file, CancellationToken cancellationToken)
@@ -146,6 +146,7 @@ namespace TaxServices.Api.Controllers
                 document);
         }
 
+        [Authorize(Roles = "Client")]
         [HttpGet("mine")]
         public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetMine(CancellationToken cancellationToken)
         {
@@ -169,6 +170,7 @@ namespace TaxServices.Api.Controllers
             return Ok(documents);
         }
 
+        [Authorize(Roles = "Client")]
         [HttpGet("mine/{id:guid}/download")]
         public async Task<IActionResult> DownloadMine(Guid id, CancellationToken cancellationToken)
         {

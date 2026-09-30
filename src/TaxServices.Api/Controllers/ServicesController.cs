@@ -37,7 +37,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Employee")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse>> Create(
             CreateServiceRequest request)
         {
@@ -50,7 +50,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin,Employee")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse>> Update(
             Guid id,
             UpdateServiceRequest request)
@@ -61,7 +61,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/activate")]
-        [Authorize(Roles = "Admin,Employee")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Activate(Guid id)
         {
             await _serviceService.ActivateAsync(id);
@@ -70,7 +70,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/deactivate")]
-        [Authorize(Roles = "Admin,Employee")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Deactivate(Guid id)
         {
             await _serviceService.DeactivateAsync(id);

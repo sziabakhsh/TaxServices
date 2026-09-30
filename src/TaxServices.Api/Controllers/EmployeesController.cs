@@ -60,7 +60,7 @@ namespace TaxServices.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin,Employee")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EmployeeDto>> Update(Guid id, [FromBody] UpdateEmployeeRequest request, CancellationToken cancellationToken)
         {
             var employee = await _employeeService.UpdateAsync(id, request, cancellationToken);

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import Pagination from '../../components/common/Pagination'
 
+import Pagination from '../../components/common/Pagination'
 import ConfirmModal from '../../components/common/ConfirmModal'
+
+import { useAuth } from '../../features/auth/useAuth'
 
 import { useEmployees } from '../../../employees/useEmployees'
 import { useCreateEmployee } from '../../../employees/useCreateEmployee'
@@ -16,13 +18,19 @@ import type { Employee } from '../../../employees/employee.types'
 import './EmployeesPage.css'
 
 export default function EmployeesPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { user } = useAuth()
+
+  const isAdmin =
+    user?.roles.includes('Admin') ?? false
+
+  const [searchParams, setSearchParams] =
+    useSearchParams()
 
   const statusFilter = searchParams.get('status')
 
   const [searchTerm, setSearchTerm] = useState('')
-
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] =
+    useState('')
   const [pageNumber, setPageNumber] = useState(1)
 
   useEffect(() => {
@@ -63,28 +71,30 @@ export default function EmployeesPage() {
   const [invitationError, setInvitationError] =
     useState('')
 
-const {
-  data,
-  isLoading,
-  isError,
-} = useEmployees({
-  pageNumber,
-  pageSize: 20,
-  search: debouncedSearch || undefined,
-  isActive:
-    statusFilter === 'active'
-      ? true
-      : statusFilter === 'inactive'
-        ? false
-        : undefined,
-})
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useEmployees({
+    pageNumber,
+    pageSize: 20,
+    search: debouncedSearch || undefined,
+    isActive:
+      statusFilter === 'active'
+        ? true
+        : statusFilter === 'inactive'
+          ? false
+          : undefined,
+  })
 
-const employees = data?.items ?? []
+  const employees = data?.items ?? []
 
   const createEmployee = useCreateEmployee()
   const updateEmployee = useUpdateEmployee()
-  const changeEmployeeStatus = useChangeEmployeeStatus()
-  const resendInvitation = useResendEmployeeInvitation()
+  const changeEmployeeStatus =
+    useChangeEmployeeStatus()
+  const resendInvitation =
+    useResendEmployeeInvitation()
 
   const isFormOpen =
     isCreateFormOpen || editingEmployee !== null
@@ -93,23 +103,30 @@ const employees = data?.items ?? []
     createEmployee.isPending ||
     updateEmployee.isPending
 
-    function handleStatusFilterChange(value: string) {
-      setPageNumber(1)
+  function handleStatusFilterChange(value: string) {
+    setPageNumber(1)
 
-      if (value === 'all') {
-        setSearchParams({})
-        return
-      }
-
-      setSearchParams({
-        status: value,
-      })
+    if (value === 'all') {
+      setSearchParams({})
+      return
     }
+
+    setSearchParams({
+      status: value,
+    })
+  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
+
+    // Frontend protection.
+    // Backend authorization remains the real
+    // security boundary.
+    if (!isAdmin) {
+      return
+    }
 
     const form = event.currentTarget
     const formData = new FormData(form)
@@ -154,6 +171,10 @@ const employees = data?.items ?? []
   }
 
   function openCreateForm() {
+    if (!isAdmin) {
+      return
+    }
+
     createEmployee.reset()
     updateEmployee.reset()
 
@@ -162,6 +183,10 @@ const employees = data?.items ?? []
   }
 
   function openEditForm(employee: Employee) {
+    if (!isAdmin) {
+      return
+    }
+
     createEmployee.reset()
     updateEmployee.reset()
 
@@ -183,13 +208,17 @@ const employees = data?.items ?? []
   }
 
   function handleChangeStatus(employee: Employee) {
+    if (!isAdmin) {
+      return
+    }
+
     setStatusMessage('')
     setStatusError('')
     setStatusEmployee(employee)
   }
 
   async function confirmChangeStatus() {
-    if (!statusEmployee) {
+    if (!isAdmin || !statusEmployee) {
       return
     }
 
@@ -238,13 +267,17 @@ const employees = data?.items ?? []
   function handleResendInvitation(
     employee: Employee
   ) {
+    if (!isAdmin) {
+      return
+    }
+
     setInvitationMessage('')
     setInvitationError('')
     setInvitationEmployee(employee)
   }
 
   async function confirmResendInvitation() {
-    if (!invitationEmployee) {
+    if (!isAdmin || !invitationEmployee) {
       return
     }
 
@@ -313,21 +346,25 @@ const employees = data?.items ?? []
           <h1>Employees</h1>
 
           <p>
-            View and manage staff members.
+            {isAdmin
+              ? 'View and manage staff members.'
+              : 'View staff members.'}
           </p>
         </div>
 
-        <button
-          type="button"
-          className="staff-employees-page__add-button"
-          onClick={openCreateForm}
-          disabled={isFormOpen}
-        >
-          Add Employee
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="staff-employees-page__add-button"
+            onClick={openCreateForm}
+            disabled={isFormOpen}
+          >
+            Add Employee
+          </button>
+        )}
       </div>
 
-      {isFormOpen && (
+      {isAdmin && isFormOpen && (
         <div className="staff-employees-page__form-card">
           <div className="staff-employees-page__form-header">
             <div>
@@ -553,13 +590,13 @@ const employees = data?.items ?? []
         </div>
       </div>
 
-     {!employees.length ? (
-      <div className="staff-employees-page__state">
-        {debouncedSearch || statusFilter
-          ? 'No employees match the selected filters.'
-          : 'No employees found.'}
-      </div>
-    ) : (    
+      {!employees.length ? (
+        <div className="staff-employees-page__state">
+          {debouncedSearch || statusFilter
+            ? 'No employees match the selected filters.'
+            : 'No employees found.'}
+        </div>
+      ) : (
         <div className="staff-employees-page__table-wrapper">
           <table className="staff-employees-page__table">
             <thead>
@@ -569,7 +606,10 @@ const employees = data?.items ?? []
                 <th>Phone</th>
                 <th>Job Title</th>
                 <th>Status</th>
-                <th>Actions</th>
+
+                {isAdmin && (
+                  <th>Actions</th>
+                )}
               </tr>
             </thead>
 
@@ -607,61 +647,63 @@ const employees = data?.items ?? []
                     </span>
                   </td>
 
-                  <td>
-                    <div className="staff-employees-page__actions">
-                      <button
-                        type="button"
-                        className="staff-employees-page__edit-button"
-                        onClick={() =>
-                          openEditForm(employee)
-                        }
-                        disabled={
-                          changeEmployeeStatus.isPending ||
-                          resendInvitation.isPending
-                        }
-                      >
-                        Edit
-                      </button>
+                  {isAdmin && (
+                    <td>
+                      <div className="staff-employees-page__actions">
+                        <button
+                          type="button"
+                          className="staff-employees-page__edit-button"
+                          onClick={() =>
+                            openEditForm(employee)
+                          }
+                          disabled={
+                            changeEmployeeStatus.isPending ||
+                            resendInvitation.isPending
+                          }
+                        >
+                          Edit
+                        </button>
 
-                      <button
-                        type="button"
-                        className="staff-employees-page__invitation-button"
-                        onClick={() =>
-                          handleResendInvitation(
-                            employee
-                          )
-                        }
-                        disabled={
-                          resendInvitation.isPending
-                        }
-                      >
-                        {resendingEmployeeId ===
-                        employee.id
-                          ? 'Sending...'
-                          : 'Resend Invitation'}
-                      </button>
+                        <button
+                          type="button"
+                          className="staff-employees-page__invitation-button"
+                          onClick={() =>
+                            handleResendInvitation(
+                              employee
+                            )
+                          }
+                          disabled={
+                            resendInvitation.isPending
+                          }
+                        >
+                          {resendingEmployeeId ===
+                          employee.id
+                            ? 'Sending...'
+                            : 'Resend Invitation'}
+                        </button>
 
-                      <button
-                        type="button"
-                        className={
-                          employee.isActive
-                            ? 'staff-employees-page__status-button staff-employees-page__status-button--deactivate'
-                            : 'staff-employees-page__status-button staff-employees-page__status-button--activate'
-                        }
-                        onClick={() =>
-                          handleChangeStatus(employee)
-                        }
-                        disabled={
-                          changeEmployeeStatus.isPending ||
-                          resendInvitation.isPending
-                        }
-                      >
-                        {employee.isActive
-                          ? 'Deactivate'
-                          : 'Activate'}
-                      </button>
-                    </div>
-                  </td>
+                        <button
+                          type="button"
+                          className={
+                            employee.isActive
+                              ? 'staff-employees-page__status-button staff-employees-page__status-button--deactivate'
+                              : 'staff-employees-page__status-button staff-employees-page__status-button--activate'
+                          }
+                          onClick={() =>
+                            handleChangeStatus(employee)
+                          }
+                          disabled={
+                            changeEmployeeStatus.isPending ||
+                            resendInvitation.isPending
+                          }
+                        >
+                          {employee.isActive
+                            ? 'Deactivate'
+                            : 'Activate'}
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -677,47 +719,51 @@ const employees = data?.items ?? []
         />
       )}
 
-      <ConfirmModal
-        isOpen={invitationEmployee !== null}
-        title="Resend Invitation"
-        message={
-          invitationEmployee
-            ? `Send a new password setup invitation to ${invitationEmployee.email}?`
-            : ''
-        }
-        confirmText="Send Invitation"
-        isPending={resendInvitation.isPending}
-        onConfirm={confirmResendInvitation}
-        onCancel={cancelResendInvitation}
-      />
+      {isAdmin && (
+        <>
+          <ConfirmModal
+            isOpen={invitationEmployee !== null}
+            title="Resend Invitation"
+            message={
+              invitationEmployee
+                ? `Send a new password setup invitation to ${invitationEmployee.email}?`
+                : ''
+            }
+            confirmText="Send Invitation"
+            isPending={resendInvitation.isPending}
+            onConfirm={confirmResendInvitation}
+            onCancel={cancelResendInvitation}
+          />
 
-      <ConfirmModal
-        isOpen={statusEmployee !== null}
-        title={
-          statusEmployee?.isActive
-            ? 'Deactivate Employee'
-            : 'Activate Employee'
-        }
-        message={
-          statusEmployee
-            ? `Are you sure you want to ${
-                statusEmployee.isActive
-                  ? 'deactivate'
-                  : 'activate'
-              } ${statusEmployee.firstName} ${statusEmployee.lastName}?`
-            : ''
-        }
-        confirmText={
-          statusEmployee?.isActive
-            ? 'Deactivate'
-            : 'Activate'
-        }
-        isPending={
-          changeEmployeeStatus.isPending
-        }
-        onConfirm={confirmChangeStatus}
-        onCancel={cancelChangeStatus}
-      />
+          <ConfirmModal
+            isOpen={statusEmployee !== null}
+            title={
+              statusEmployee?.isActive
+                ? 'Deactivate Employee'
+                : 'Activate Employee'
+            }
+            message={
+              statusEmployee
+                ? `Are you sure you want to ${
+                    statusEmployee.isActive
+                      ? 'deactivate'
+                      : 'activate'
+                  } ${statusEmployee.firstName} ${statusEmployee.lastName}?`
+                : ''
+            }
+            confirmText={
+              statusEmployee?.isActive
+                ? 'Deactivate'
+                : 'Activate'
+            }
+            isPending={
+              changeEmployeeStatus.isPending
+            }
+            onConfirm={confirmChangeStatus}
+            onCancel={cancelChangeStatus}
+          />
+        </>
+      )}
     </section>
   )
 }
