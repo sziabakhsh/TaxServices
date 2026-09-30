@@ -1,0 +1,9 @@
+1. Two-Factor Authentication (2FA) — ✅ Done
+2. SIN Security / Masking — بخش Encryption + Hashing انجام شده؛ Masking در UI/API را باید وضعیتش را بررسی کنیم.
+3. File Encryption — برای اسناد ذخیره‌شده در Blob Storage.
+4. Digital Signature — برای اسناد/فرم‌هایی که نیاز به امضا دارند.
+5. Invoice + Online Payment — صدور invoice و اتصال به payment.
+6. Notifications — ایمیل/notification برای اتفاقاتی مثل تغییر وضعیت Tax Case، درخواست مدرک و غیره.
+7. Automated Tests — تکمیل تست‌های Backend و flowهای مهم.
+8. Frontend Refactor — شکستن componentهای بزرگ‌تر به componentهای کوچک‌تر؛ قبلاً تصمیم گرفتیم به‌خاطر ثبات Demo عقب بیفتد.
+ضمن اینکه الان یک مورد امنیتی جدید هم بهتر است به backlog اضافه کنیم: Backend Rate Limiting برای OTP/2FA. cooldown سمت Frontend را انجام دادیم، ولی rate limiting واقعی باید API-side باشد.

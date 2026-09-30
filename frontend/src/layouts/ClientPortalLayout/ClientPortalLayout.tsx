@@ -4,6 +4,7 @@ import {
   Outlet,
   useNavigate,
 } from 'react-router-dom'
+
 import {
   FileText,
   FolderOpen,
@@ -11,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  ShieldCheck,
   UserRound,
   X,
 } from 'lucide-react'
@@ -137,6 +139,15 @@ export default function ClientPortalLayout() {
             <KeyRound size={19} />
             <span>Change Password</span>
           </NavLink>
+
+<NavLink
+  to="/portal/security"
+  className={getNavLinkClass}
+  onClick={handleNavigation}
+>
+  <ShieldCheck size={19} />
+  <span>Security</span>
+</NavLink>
 
           <NavLink
             to="/portal/cases"

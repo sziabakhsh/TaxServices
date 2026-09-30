@@ -12,21 +12,27 @@ namespace TaxServices.Application.Services
         private readonly ITaxServicesDbContext _context;
         private readonly IFileStorageService _fileStorageService;
         private readonly ITenantContext _tenantContext;
+        private readonly IFileEncryptionService _fileEncryptionService;
+        private readonly FileUploadValidator _fileUploadValidator;
 
         public DocumentService(
             ITaxServicesDbContext context,
             IFileStorageService fileStorageService,
-            ITenantContext tenantContext)
+            ITenantContext tenantContext,
+            IFileEncryptionService fileEncryptionService,
+            FileUploadValidator fileUploadValidator)
         {
             _context = context;
             _fileStorageService = fileStorageService;
             _tenantContext = tenantContext;
+            _fileEncryptionService = fileEncryptionService;
+            _fileUploadValidator = fileUploadValidator;
         }
 
         public async Task<DocumentResponse> UploadAsync(UploadDocumentRequest request, CancellationToken cancellationToken = default)
         {
-            UploadFileException.CheckFileValidation(request);
-
+            //UploadFileException.CheckFileValidation(request);
+            _fileUploadValidator.Validate(request);
             var clientExists = await _context.Clients
                 .AsNoTracking()
                 .AnyAsync(
@@ -59,10 +65,12 @@ namespace TaxServices.Application.Services
             var storagePath =
                 $"{_tenantContext.TenantId}/{request.ClientId}/{storedFileName}";
 
+            await using var encryptedStream = await _fileEncryptionService.EncryptAsync(request.Content, cancellationToken);
+
             await _fileStorageService.UploadAsync(
-                request.Content,
+                encryptedStream,
                 storagePath,
-                request.ContentType,
+                "application/octet-stream",
                 cancellationToken);
 
             var document = new Document
@@ -122,7 +130,9 @@ namespace TaxServices.Application.Services
                 .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
         }
 
-        public async Task<Stream?> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Stream?> DownloadAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents
                 .AsNoTracking()
@@ -134,11 +144,15 @@ namespace TaxServices.Application.Services
             if (document == null)
                 return null;
 
-            return await _fileStorageService.DownloadAsync(
-                document.StoragePath,
+            await using var encryptedStream =
+                await _fileStorageService.DownloadAsync(
+                    document.StoragePath,
+                    cancellationToken);
+
+            return await _fileEncryptionService.DecryptAsync(
+                encryptedStream,
                 cancellationToken);
         }
-
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var document = await _context.Documents

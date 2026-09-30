@@ -13,13 +13,13 @@ namespace TaxServices.Infrastructure.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
-        private readonly IEmployeeInvitationService _employeeInvitationService;
+        private readonly IUserInvitationService _employeeInvitationService;
 
         public EmployeeService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
             IAuthService authService,
-            IEmployeeInvitationService employeeInvitationService)
+            IUserInvitationService employeeInvitationService)
         {
             _context = context;
             _tenantContext = tenantContext;

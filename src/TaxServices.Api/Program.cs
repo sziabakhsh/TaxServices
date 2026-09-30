@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using TaxServices.Api.Exceptions;
 using TaxServices.Application;
 using TaxServices.Infrastructure;
+using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,9 +94,17 @@ using (var scope = app.Services.CreateScope())
             scope.ServiceProvider
                 .GetRequiredService<TaxServicesDbContext>();
 
+        var publicSiteOptions = scope.ServiceProvider
+        .GetRequiredService<
+            Microsoft.Extensions.Options.IOptions<PublicSiteOptions>>();
+
+        var tenantId = publicSiteOptions.Value.TenantId;
+
         await IdentitySeeder.SeedDevelopmentAdminAsync(
             userManager,
-            dbContext);
+            dbContext,
+            tenantId);
+
     }
 }
 

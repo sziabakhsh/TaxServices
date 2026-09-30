@@ -7,13 +7,13 @@ using TaxServices.Infrastructure.Configuration;
 
 namespace TaxServices.Infrastructure.Services
 {
-    public class EmployeeInvitationService : IEmployeeInvitationService
+    public class UserInvitationService : IUserInvitationService
     {
         private readonly IAuthService _authService;
         private readonly IEmailService _emailService;
         private readonly FrontendOptions _frontendOptions;
 
-        public EmployeeInvitationService(
+        public UserInvitationService(
             IAuthService authService,
             IEmailService emailService,
             IOptions<FrontendOptions> frontendOptions)

@@ -31,6 +31,8 @@ namespace TaxServices.Domain.Documents
 
         public DateTime UploadedAt { get; set; }
 
+        public int EncryptionVersion { get; set; } = 1;
+
         [ForeignKey(nameof(ClientId))]
         public Client Client { get; set; } = null!;
     }

@@ -23,8 +23,14 @@ export interface CreateClientResponse {
 }
 
 export interface AuthResponse {
-  accessToken: string
-  expiresAt: string
+  accessToken: string | null
+  expiresAt: string | null
+  requiresTwoFactor: boolean
+}
+
+export interface TwoFactorCodeRequest {
+  email: string
+  code: string
 }
 
 export interface CurrentUser {
@@ -33,6 +39,11 @@ export interface CurrentUser {
   firstName: string
   lastName: string
   roles: string[]
+}
+
+export interface LoginResult {
+  requiresTwoFactor: boolean
+  user?: CurrentUser
 }
 
 export interface ChangePasswordRequest {
@@ -45,4 +56,12 @@ export type SetPasswordRequest = {
   token: string
   password: string
   confirmPassword: string
+}
+
+export interface TwoFactorStatusResponse {
+  isEnabled: boolean
+}
+
+export interface ConfirmTwoFactorRequest {
+  code: string
 }

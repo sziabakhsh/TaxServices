@@ -12,6 +12,7 @@ import StaffDashboardPage from './pages/staff/StaffDashboardPage'
 import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
 import CreateClientPage from './pages/staff/CreateClientPage'
 import EditClientPage from './pages/staff/EditClientPage'
+import SecurityPage from './pages/portal/SecurityPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -107,6 +108,10 @@ export default function App() {
           <Route path="cases" element={<CasesPage />} />
           <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route
+  path="security"
+  element={<SecurityPage />}
+/>
           <Route path="documents" element={<DocumentsPage />} />
           
         </Route>

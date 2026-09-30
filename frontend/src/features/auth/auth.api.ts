@@ -8,6 +8,9 @@ import type {
   LoginRequest,
   RegisterRequest,
   SetPasswordRequest,
+  TwoFactorCodeRequest,
+  ConfirmTwoFactorRequest,
+  TwoFactorStatusResponse,
 } from './auth.types'
 
 export async function login(
@@ -15,6 +18,17 @@ export async function login(
 ): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>(
     '/auth/login',
+    request
+  )
+
+  return data
+}
+
+export async function verifyTwoFactor(
+  request: TwoFactorCodeRequest
+): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>(
+    '/auth/verify-2fa',
     request
   )
 
@@ -54,6 +68,44 @@ export async function setPassword(
 ): Promise<void> {
   await api.post(
     '/auth/set-password',
+    request
+  )
+}
+
+export async function getTwoFactorStatus():
+  Promise<TwoFactorStatusResponse> {
+  const { data } =
+    await api.get<TwoFactorStatusResponse>(
+      '/auth/2fa/status'
+    )
+
+  return data
+}
+
+export async function requestEnableTwoFactor():
+  Promise<void> {
+  await api.post('/auth/2fa/enable/request')
+}
+
+export async function confirmEnableTwoFactor(
+  request: ConfirmTwoFactorRequest
+): Promise<void> {
+  await api.post(
+    '/auth/2fa/enable/confirm',
+    request
+  )
+}
+
+export async function requestDisableTwoFactor():
+  Promise<void> {
+  await api.post('/auth/2fa/disable/request')
+}
+
+export async function confirmDisableTwoFactor(
+  request: ConfirmTwoFactorRequest
+): Promise<void> {
+  await api.post(
+    '/auth/2fa/disable/confirm',
     request
   )
 }

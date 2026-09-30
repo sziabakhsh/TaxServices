@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TaxServices.Api.Services;
+using TaxServices.Application.Configuration;
 using TaxServices.Application.Interfaces;
 using TaxServices.Application.Services;
 namespace TaxServices.Application;
@@ -10,6 +11,9 @@ public static class DependencyInjection
         this IServiceCollection services)
     {
 
+        
+
+        services.AddScoped<FileUploadValidator>();
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IServiceService, ServiceService>();

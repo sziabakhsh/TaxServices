@@ -15,17 +15,19 @@ namespace TaxServices.Application.Services
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
         private readonly ISensitiveDataProtector _sensitiveDataProtector;
-
+        private readonly IUserInvitationService _userInvitationService;
         public ClientService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
             IAuthService authService,
-            ISensitiveDataProtector sensitiveDataProtector)
+            ISensitiveDataProtector sensitiveDataProtector,
+            IUserInvitationService userInvitationService)
         {
             _context = context;
             _tenantContext = tenantContext;
             _authService = authService;
             _sensitiveDataProtector = sensitiveDataProtector;
+            _userInvitationService = userInvitationService;
         }
 
         public async Task<ClientDto?> GetByIdAsync(
@@ -87,8 +89,8 @@ namespace TaxServices.Application.Services
         }
 
         public async Task<ClientCreatedResponse> CreateAsync(
-            CreateClientRequest request,
-            CancellationToken cancellationToken = default)
+    CreateClientRequest request,
+    CancellationToken cancellationToken = default)
         {
             ClientValidator.Validate(request);
 
@@ -141,18 +143,21 @@ namespace TaxServices.Application.Services
                 Role = "Client"
             };
 
+            UserCreatedResponse userCreatedResponse;
+            Client client;
+
             await using var transaction =
                 await _context.BeginTransactionAsync(
                     cancellationToken);
 
             try
             {
-                var userCreatedResponse =
+                userCreatedResponse =
                     await _authService.CreateUserAsync(
                         newUser,
                         cancellationToken);
 
-                var client = new Client
+                client = new Client
                 {
                     Id = Guid.NewGuid(),
                     TenantId = _tenantContext.TenantId,
@@ -199,11 +204,6 @@ namespace TaxServices.Application.Services
 
                 await transaction.CommitAsync(
                     cancellationToken);
-
-                return new ClientCreatedResponse
-                {
-                    Client = MapToDto(client)
-                };
             }
             catch
             {
@@ -212,8 +212,20 @@ namespace TaxServices.Application.Services
 
                 throw;
             }
-        }
 
+            // Send password setup invitation only after
+            // the database transaction has committed successfully.
+            await _userInvitationService.SendInvitationAsync(
+                userCreatedResponse.UserId,
+                client.FirstName,
+                client.Email,
+                cancellationToken);
+
+            return new ClientCreatedResponse
+            {
+                Client = MapToDto(client)
+            };
+        }
         public async Task<ClientDto?> UpdateAsync(Guid id, UpdateClientRequest request, CancellationToken cancellationToken = default)
         {
             ClientValidator.Validate(request);

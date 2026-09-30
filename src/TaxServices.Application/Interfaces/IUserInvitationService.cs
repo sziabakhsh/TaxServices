@@ -1,6 +1,6 @@
 ﻿namespace TaxServices.Application.Interfaces
 {
-    public interface IEmployeeInvitationService
+    public interface IUserInvitationService
     {
         Task SendInvitationAsync(
             string userId,

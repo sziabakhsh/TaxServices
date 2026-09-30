@@ -11,6 +11,7 @@ import {
   getCurrentUser,
   login,
   register,
+  verifyTwoFactor,
 } from './auth.api'
 
 import { authStorage } from './auth.storage'
@@ -18,7 +19,9 @@ import { authStorage } from './auth.storage'
 import type {
   CurrentUser,
   LoginRequest,
+  LoginResult,
   RegisterRequest,
+  TwoFactorCodeRequest,
 } from './auth.types'
 
 interface AuthContextValue {
@@ -28,6 +31,10 @@ interface AuthContextValue {
 
   login: (
     request: LoginRequest
+  ) => Promise<LoginResult>
+
+  verifyTwoFactor: (
+    request: TwoFactorCodeRequest
   ) => Promise<CurrentUser>
 
   register: (
@@ -81,8 +88,57 @@ export function AuthProvider({
   const signIn = useCallback(
     async (
       request: LoginRequest
-    ): Promise<CurrentUser> => {
+    ): Promise<LoginResult> => {
       const response = await login(request)
+
+      if (response.requiresTwoFactor) {
+        return {
+          requiresTwoFactor: true,
+        }
+      }
+
+      if (
+        !response.accessToken ||
+        !response.expiresAt
+      ) {
+        throw new Error(
+          'Authentication response did not contain an access token.'
+        )
+      }
+
+      authStorage.setToken(
+        response.accessToken,
+        response.expiresAt
+      )
+
+      const currentUser =
+        await getCurrentUser()
+
+      setUser(currentUser)
+
+      return {
+        requiresTwoFactor: false,
+        user: currentUser,
+      }
+    },
+    []
+  )
+
+  const confirmTwoFactor = useCallback(
+    async (
+      request: TwoFactorCodeRequest
+    ): Promise<CurrentUser> => {
+      const response =
+        await verifyTwoFactor(request)
+
+      if (
+        !response.accessToken ||
+        !response.expiresAt
+      ) {
+        throw new Error(
+          'Two-factor authentication did not return an access token.'
+        )
+      }
 
       authStorage.setToken(
         response.accessToken,
@@ -104,6 +160,15 @@ export function AuthProvider({
       request: RegisterRequest
     ): Promise<CurrentUser> => {
       const response = await register(request)
+
+      if (
+        !response.accessToken ||
+        !response.expiresAt
+      ) {
+        throw new Error(
+          'Registration did not return an access token.'
+        )
+      }
 
       authStorage.setToken(
         response.accessToken,
@@ -131,6 +196,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated: Boolean(user),
       login: signIn,
+      verifyTwoFactor: confirmTwoFactor,
       register: signUp,
       logout: signOut,
     }),
@@ -138,6 +204,7 @@ export function AuthProvider({
       user,
       isLoading,
       signIn,
+      confirmTwoFactor,
       signUp,
       signOut,
     ]

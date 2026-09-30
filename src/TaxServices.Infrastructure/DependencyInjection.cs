@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TaxServices.Application.Configuration;
 using TaxServices.Application.Interfaces;
 using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Email;
@@ -90,6 +91,8 @@ namespace TaxServices.Infrastructure
 
             services.Configure<SensitiveDataOptions>(configuration.GetSection(SensitiveDataOptions.SectionName));
 
+            services.Configure<FileEncryptionOptions>(configuration.GetSection(FileEncryptionOptions.SectionName));
+
             services.Configure<PublicSiteOptions>(configuration.GetSection(PublicSiteOptions.SectionName));
 
             services.AddDataProtection();
@@ -97,6 +100,8 @@ namespace TaxServices.Infrastructure
             services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
 
             services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
+
+            services.Configure<FileUploadOptions>(configuration.GetSection(FileUploadOptions.SectionName));
 
             // Services
             services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
@@ -106,8 +111,8 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmployeeAccountStatusService, EmployeeAccountStatusService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
-            services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
-
+            services.AddScoped<IUserInvitationService, UserInvitationService>();
+            services.AddScoped<IFileEncryptionService, FileEncryptionService>();
             services.AddScoped<ISensitiveDataProtector, SensitiveDataProtector>();
 
             return services;

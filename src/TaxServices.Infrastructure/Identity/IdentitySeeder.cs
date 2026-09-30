@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaxServices.Domain.Employees;
-using TaxServices.Infrastructure.Persistence;
 
 namespace TaxServices.Infrastructure.Identity
 {
@@ -28,8 +27,15 @@ namespace TaxServices.Infrastructure.Identity
 
         public static async Task SeedDevelopmentAdminAsync(
             UserManager<AppUser> userManager,
-            TaxServicesDbContext dbContext)
+            TaxServicesDbContext dbContext,
+            Guid tenantId)
         {
+            if (tenantId == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Development admin TenantId is not configured.");
+            }
+
             const string email = "h.ziabakhsh@gmail.com";
             const string password = "Aa@12345";
 
@@ -39,8 +45,6 @@ namespace TaxServices.Infrastructure.Identity
             {
                 return;
             }
-
-            var tenantId = Guid.NewGuid();
 
             var user = new AppUser
             {
