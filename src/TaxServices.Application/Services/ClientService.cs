@@ -15,19 +15,19 @@ namespace TaxServices.Application.Services
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
         private readonly ISensitiveDataProtector _sensitiveDataProtector;
-        private readonly IUserInvitationService _userInvitationService;
+        private readonly IAccountEmailService _accountEmailService;
         public ClientService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
             IAuthService authService,
             ISensitiveDataProtector sensitiveDataProtector,
-            IUserInvitationService userInvitationService)
+            IAccountEmailService accountEmailService)
         {
             _context = context;
             _tenantContext = tenantContext;
             _authService = authService;
             _sensitiveDataProtector = sensitiveDataProtector;
-            _userInvitationService = userInvitationService;
+            _accountEmailService = accountEmailService;
         }
 
         public async Task<ClientDto?> GetByIdAsync(
@@ -212,13 +212,18 @@ namespace TaxServices.Application.Services
 
                 throw;
             }
-
-            // Send password setup invitation only after
+            // Generate the password setup token only after
             // the database transaction has committed successfully.
-            await _userInvitationService.SendInvitationAsync(
-                userCreatedResponse.UserId,
+            var passwordSetupToken =
+                await _authService.GeneratePasswordSetupTokenAsync(
+                    userCreatedResponse.UserId,
+                    cancellationToken);
+
+            // Send password setup invitation.
+            await _accountEmailService.SendInvitationAsync(
                 client.FirstName,
                 client.Email,
+                passwordSetupToken,
                 cancellationToken);
 
             return new ClientCreatedResponse

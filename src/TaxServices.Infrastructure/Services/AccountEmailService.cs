@@ -7,36 +7,31 @@ using TaxServices.Infrastructure.Configuration;
 
 namespace TaxServices.Infrastructure.Services
 {
-    public class UserInvitationService : IUserInvitationService
+    public class AccountEmailService : IAccountEmailService
     {
-        private readonly IAuthService _authService;
         private readonly IEmailService _emailService;
         private readonly FrontendOptions _frontendOptions;
 
-        public UserInvitationService(
-            IAuthService authService,
+        public AccountEmailService(
             IEmailService emailService,
             IOptions<FrontendOptions> frontendOptions)
         {
-            _authService = authService;
             _emailService = emailService;
             _frontendOptions = frontendOptions.Value;
         }
 
         public async Task SendInvitationAsync(
-            string userId,
             string firstName,
             string email,
+            string token,
             CancellationToken cancellationToken = default)
         {
-            var passwordSetupToken =
-                await _authService.GeneratePasswordSetupTokenAsync(
-                    userId,
-                    cancellationToken);
+            var encodedEmail =
+                WebUtility.UrlEncode(email);
 
-
-            var encodedEmail = WebUtility.UrlEncode(email);
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(passwordSetupToken));
+            var encodedToken =
+                WebEncoders.Base64UrlEncode(
+                    Encoding.UTF8.GetBytes(token));
 
             var setupUrl =
                 $"{_frontendOptions.BaseUrl.TrimEnd('/')}/set-password" +
@@ -61,6 +56,44 @@ namespace TaxServices.Infrastructure.Services
             await _emailService.SendAsync(
                 email,
                 "Set up your password",
+                emailBody,
+                cancellationToken);
+        }
+
+        public async Task SendPasswordResetAsync(
+            string email,
+            string token,
+            CancellationToken cancellationToken = default)
+        {
+            var encodedEmail =
+                WebUtility.UrlEncode(email);
+
+            var encodedToken =
+                WebEncoders.Base64UrlEncode(
+                    Encoding.UTF8.GetBytes(token));
+
+            var resetUrl =
+                $"{_frontendOptions.BaseUrl.TrimEnd('/')}/reset-password" +
+                $"?email={encodedEmail}&token={encodedToken}";
+
+            var emailBody = $"""
+                <h2>Reset Your Password</h2>
+
+                <p>We received a request to reset your password.</p>
+
+                <p>
+                    <a href="{resetUrl}">Reset your password</a>
+                </p>
+
+                <p>
+                    If you did not request a password reset,
+                    you can ignore this email.
+                </p>
+                """;
+
+            await _emailService.SendAsync(
+                email,
+                "Reset your password",
                 emailBody,
                 cancellationToken);
         }

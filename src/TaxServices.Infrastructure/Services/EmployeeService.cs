@@ -13,19 +13,18 @@ namespace TaxServices.Infrastructure.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
         private readonly IAuthService _authService;
-        private readonly IUserInvitationService _employeeInvitationService;
+        private readonly IAccountEmailService _accountEmailService;
 
         public EmployeeService(
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
             IAuthService authService,
-            IUserInvitationService employeeInvitationService)
+            IAccountEmailService accountEmailService)
         {
             _context = context;
             _tenantContext = tenantContext;
             _authService = authService;
-            _employeeInvitationService = employeeInvitationService;
-
+            _accountEmailService = accountEmailService;
         }
 
         public async Task<PagedResult<EmployeeDto>> GetAllAsync(EmployeeQueryParameters parameters, CancellationToken cancellationToken = default)
@@ -165,10 +164,12 @@ namespace TaxServices.Infrastructure.Services
                 throw;
             }
 
-            await _employeeInvitationService.SendInvitationAsync(
-                userCreatedResponse.UserId,
+            var passwordSetupToken = await _authService.GeneratePasswordSetupTokenAsync(userCreatedResponse.UserId, cancellationToken);
+
+            await _accountEmailService.SendInvitationAsync(
                 employee.FirstName,
                 employee.Email,
+                passwordSetupToken,
                 cancellationToken);
 
             return new EmployeeCreatedResponse
@@ -288,10 +289,12 @@ namespace TaxServices.Infrastructure.Services
             if (hasPassword)
                 throw new InvitationNotAllowedException("This employee has already set a password.");
 
-            await _employeeInvitationService.SendInvitationAsync(
-                employee.UserId,
+            var passwordSetupToken = await _authService.GeneratePasswordSetupTokenAsync(employee.UserId, cancellationToken);
+
+            await _accountEmailService.SendInvitationAsync(
                 employee.FirstName,
                 employee.Email,
+                passwordSetupToken,
                 cancellationToken);
 
             return true;

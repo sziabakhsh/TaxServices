@@ -16,6 +16,7 @@ namespace TaxServices.Application.Interfaces
         Task<string> GeneratePasswordSetupTokenAsync(string userId, CancellationToken cancellationToken = default);
         Task SetPasswordAsync(SetPasswordRequest request, CancellationToken cancellationToken = default);
         Task<bool> HasPasswordAsync(string userId, CancellationToken cancellationToken = default);
+        Task RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default);
         Task<TwoFactorStatusResponse> GetTwoFactorStatusAsync(string userId);
         Task RequestEnableTwoFactorAsync(string userId);
         Task ConfirmEnableTwoFactorAsync(string userId, TwoFactorCodeRequest request);

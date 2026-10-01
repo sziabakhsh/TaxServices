@@ -111,7 +111,7 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmployeeAccountStatusService, EmployeeAccountStatusService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
-            services.AddScoped<IUserInvitationService, UserInvitationService>();
+            services.AddScoped<IAccountEmailService, AccountEmailService>();
             services.AddScoped<IFileEncryptionService, FileEncryptionService>();
             services.AddScoped<ISensitiveDataProtector, SensitiveDataProtector>();
 

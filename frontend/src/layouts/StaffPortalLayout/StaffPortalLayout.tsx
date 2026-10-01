@@ -9,13 +9,16 @@ import {
 import {
   BriefcaseBusiness,
   FileText,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
+  ShieldCheck,
   UserRoundCog,
   Users,
   X,
 } from 'lucide-react'
+
 
 import { useAuth } from '../../features/auth/useAuth'
 import './StaffPortalLayout.css'
@@ -162,6 +165,24 @@ export default function StaffPortalLayout() {
           </NavLink>
         </nav>
 
+       <NavLink
+            to="/portal/change-password"
+            className={getNavLinkClass}
+            onClick={handleNavigation}
+          >
+            <KeyRound size={19} />
+            <span>Change Password</span>
+          </NavLink>
+
+        <NavLink
+          to="/staff/security"
+          className={getNavLinkClass}
+          onClick={handleNavigation}
+        >
+          <ShieldCheck size={19} />
+          <span>Security</span>
+        </NavLink>
+        
         <button
           type="button"
           className="staff-layout__logout"

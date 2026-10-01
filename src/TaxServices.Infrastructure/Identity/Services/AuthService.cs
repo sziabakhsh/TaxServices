@@ -22,6 +22,7 @@ namespace TaxServices.Infrastructure.Identity.Services
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
         private readonly IOptions<PublicSiteOptions> _publicSiteOptions;
+        private readonly IAccountEmailService _accountEmailService;
 
         // We are using Guid.Empty as the Default Tenant.
         // In the future, when we have a real Tenant, we will use the actual TenantId.
@@ -35,7 +36,8 @@ namespace TaxServices.Infrastructure.Identity.Services
             IOptions<JwtOptions> jwtOptions,
             ITaxServicesDbContext context,
             ITenantContext tenantContext,
-            IOptions<PublicSiteOptions> publicSiteOptions)
+            IOptions<PublicSiteOptions> publicSiteOptions,
+            IAccountEmailService accountEmailService)
         {
             _userManager = userManager;
             _emailService = emailService;
@@ -45,6 +47,7 @@ namespace TaxServices.Infrastructure.Identity.Services
             _context = context;
             _tenantContext = tenantContext;
             _publicSiteOptions = publicSiteOptions;
+            _accountEmailService = accountEmailService;
         }
 
         public async Task<AuthResponse> RegisterAsync(
@@ -365,12 +368,10 @@ namespace TaxServices.Infrastructure.Identity.Services
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var user = await _userManager.FindByEmailAsync(
-                request.Email.Trim());
+            var user = await _userManager.FindByEmailAsync(request.Email.Trim());
 
             if (user is null)
-                throw new InvalidOperationException(
-                    "Invalid password setup request.");
+                throw new InvalidOperationException("Invalid password setup request.");
 
             var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
 
@@ -401,6 +402,34 @@ namespace TaxServices.Infrastructure.Identity.Services
                 throw new InvalidOperationException("User not found.");
 
             return await _userManager.HasPasswordAsync(user);
+        }
+
+        public async Task RequestPasswordResetAsync(
+    string email,
+    CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var normalizedEmail = email.Trim();
+
+            var user = await _userManager.FindByEmailAsync(
+                normalizedEmail);
+
+            // Do not reveal whether the account exists.
+            if (user is null ||
+                string.IsNullOrWhiteSpace(user.Email))
+            {
+                return;
+            }
+
+            var passwordResetToken =
+                await _userManager.GeneratePasswordResetTokenAsync(
+                    user);
+
+            await _accountEmailService.SendPasswordResetAsync(
+                user.Email,
+                passwordResetToken,
+                cancellationToken);
         }
 
         public async Task<TwoFactorStatusResponse> GetTwoFactorStatusAsync(string userId)

@@ -57,6 +57,23 @@ namespace TaxServices.Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword(
+    [FromBody] ForgotPasswordRequest request,
+    CancellationToken cancellationToken)
+        {
+            await _authService.RequestPasswordResetAsync(
+                request.Email,
+                cancellationToken);
+
+            return Ok(new
+            {
+                message =
+                    "If an account exists for this email, a password reset link has been sent."
+            });
+        }
+
         [HttpPost("verify-2fa")]
         public async Task<IActionResult> VerifyTwoFactor(VerifyTwoFactorRequest request)
         {

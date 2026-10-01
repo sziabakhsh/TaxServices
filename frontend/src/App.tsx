@@ -12,7 +12,7 @@ import StaffDashboardPage from './pages/staff/StaffDashboardPage'
 import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
 import CreateClientPage from './pages/staff/CreateClientPage'
 import EditClientPage from './pages/staff/EditClientPage'
-import SecurityPage from './pages/portal/SecurityPage'
+import SecurityPage from './pages/auth/SecurityPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -24,7 +24,7 @@ import ClientPortalLayout from './layouts/ClientPortalLayout/ClientPortalLayout'
 import ProfilePage from './pages/portal/ProfilePage'
 import CasesPage from './pages/portal/CasesPage'
 import CaseDetailsPage from './pages/portal/CaseDetailsPage'
-import ChangePasswordPage from './pages/portal/ChangePasswordPage'
+import ChangePasswordPage from './pages/auth/ChangePasswordPage'
 import DocumentsPage from './pages/portal/DocumentsPage'
 import SetPasswordPage from './pages/auth/SetPasswordPage'
 import StaffTaxCasesPage from './pages/staff/StaffTaxCasesPage'
@@ -36,6 +36,8 @@ import StaffClientCasesPage from './pages/staff/StaffClientCasesPage'
 import StaffTaxCaseDetailsPage from './pages/staff/StaffTaxCaseDetailsPage'
 import EmployeesPage from './pages/staff/EmployeesPage'
 import StaffServicesPage from './pages/staff/StaffServicesPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
 function SimplePage({ title }: { title: string }) {
   return (
@@ -92,6 +94,8 @@ export default function App() {
       {/* Authentication */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route
         path="/set-password"
         element={<SetPasswordPage />}
@@ -108,10 +112,7 @@ export default function App() {
           <Route path="cases" element={<CasesPage />} />
           <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
-          <Route
-  path="security"
-  element={<SecurityPage />}
-/>
+          <Route   path="security"   element={<SecurityPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           
         </Route>
@@ -182,6 +183,12 @@ export default function App() {
             <Route
               path="services"
               element={<StaffServicesPage />}
+            />
+          
+          <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route
+              path="security"
+              element={<SecurityPage />}
             />
           </Route>
         </Route>

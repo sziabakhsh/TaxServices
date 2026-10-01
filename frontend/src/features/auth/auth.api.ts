@@ -11,6 +11,7 @@ import type {
   TwoFactorCodeRequest,
   ConfirmTwoFactorRequest,
   TwoFactorStatusResponse,
+  ForgotPasswordRequest,
 } from './auth.types'
 
 export async function login(
@@ -68,6 +69,15 @@ export async function setPassword(
 ): Promise<void> {
   await api.post(
     '/auth/set-password',
+    request
+  )
+}
+
+export async function forgotPassword(
+  request: ForgotPasswordRequest
+): Promise<void> {
+  await api.post(
+    '/auth/forgot-password',
     request
   )
 }

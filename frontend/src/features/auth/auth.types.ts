@@ -65,3 +65,7 @@ export interface TwoFactorStatusResponse {
 export interface ConfirmTwoFactorRequest {
   code: string
 }
+
+export interface ForgotPasswordRequest {
+  email: string
+}
