@@ -36,6 +36,18 @@ public class GlobalExceptionHandler : IExceptionHandler
             title = "Validation error.";
             detail = exception.Message;
         }
+        else if (exception is KeyNotFoundException)
+        {
+            statusCode = StatusCodes.Status404NotFound;
+            title = "Resource not found.";
+            detail = exception.Message;
+        }
+        else if (exception is InvalidOperationException)
+        {
+            statusCode = StatusCodes.Status409Conflict;
+            title = "Operation conflict.";
+            detail = exception.Message;
+        }
         else if (exception is DuplicateUserException)
         {
             statusCode = StatusCodes.Status409Conflict;

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Clients;
@@ -18,6 +18,8 @@ namespace TaxServices.Application.Interfaces
         DbSet<Service> Services { get; }
         DbSet<TaxCase> TaxCases { get; }
         DbSet<Document> Documents { get; }
+        DbSet<DocumentSignature> DocumentSignatures { get; }
+        DbSet<DocumentSignatureEvent> DocumentSignatureEvents { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

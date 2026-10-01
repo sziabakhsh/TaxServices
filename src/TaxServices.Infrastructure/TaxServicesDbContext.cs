@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TaxServices.Application.Interfaces;
@@ -28,6 +28,8 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbCo
     public DbSet<Service> Services => Set<Service>();
     public DbSet<TaxCase> TaxCases => Set<TaxCase>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentSignature> DocumentSignatures => Set<DocumentSignature>();
+    public DbSet<DocumentSignatureEvent> DocumentSignatureEvents => Set<DocumentSignatureEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

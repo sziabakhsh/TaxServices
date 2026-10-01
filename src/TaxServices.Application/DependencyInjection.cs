@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using TaxServices.Api.Services;
 using TaxServices.Application.Configuration;
 using TaxServices.Application.Interfaces;
@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IServiceService, ServiceService>();
         services.AddScoped<ITaxCaseService, TaxCaseService>();
         services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<IDocumentSignatureService, DocumentSignatureService>();
         services.AddScoped<IDashboardService, DashboardService>();
 
         return services;

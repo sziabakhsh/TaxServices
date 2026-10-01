@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TaxServices.Application.Common.Pagination;
 using TaxServices.Application.DTOs.Documents;
 using TaxServices.Application.Exceptions;
@@ -164,6 +164,17 @@ namespace TaxServices.Application.Services
             if (document == null)
                 return;
 
+            var hasSignatureHistory = await _context.DocumentSignatures
+                .AsNoTracking()
+                .AnyAsync(
+                    s => s.DocumentId == id &&
+                         s.TenantId == _tenantContext.TenantId,
+                    cancellationToken);
+
+            if (hasSignatureHistory)
+                throw new InvalidOperationException(
+                    "A document with signature history cannot be deleted.");
+
             await _fileStorageService.DeleteAsync(
                 document.StoragePath,
                 cancellationToken);
@@ -256,6 +267,17 @@ namespace TaxServices.Application.Services
             {
                 throw new KeyNotFoundException("Document not found.");
             }
+
+            var hasSignatureHistory = await _context.DocumentSignatures
+                .AsNoTracking()
+                .AnyAsync(
+                    s => s.DocumentId == documentId &&
+                         s.TenantId == tenantId,
+                    cancellationToken);
+
+            if (hasSignatureHistory)
+                throw new InvalidOperationException(
+                    "A document with signature history cannot be moved to another tax case.");
 
             // null means remove the document from its current case
             if (taxCaseId is null)
