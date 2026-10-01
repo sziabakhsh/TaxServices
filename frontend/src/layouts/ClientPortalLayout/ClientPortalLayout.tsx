@@ -14,6 +14,7 @@ import {
   Menu,
   ShieldCheck,
   UserRound,
+  PenLine,
   X,
 } from 'lucide-react'
 
@@ -166,8 +167,16 @@ export default function ClientPortalLayout() {
             <FileText size={19} />
             <span>Documents</span>
           </NavLink>
-        </nav>
-
+          <NavLink
+          to="/portal/signatures"
+          className={getNavLinkClass}
+          onClick={handleNavigation}
+        >
+          <PenLine size={19} />
+          <span>Signatures</span>
+        </NavLink>
+      </nav>
+        
         <button
           type="button"
           className="client-portal__logout"

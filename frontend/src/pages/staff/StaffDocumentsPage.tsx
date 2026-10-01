@@ -16,6 +16,7 @@ import type { DocumentItem } from '../../features/documents/documents.types'
 import { useDocuments } from '../../features/documents/useDocuments'
 import { useDeleteDocument } from '../../features/documents/useDeleteDocument'
 import { useAssignDocumentToCase } from '../../features/documents/useAssignDocumentToCase'
+import StaffDocumentSignature from '../../features/signatures/StaffDocumentSignature'
 
 import './StaffDocumentsPage.css'
 
@@ -306,6 +307,7 @@ export default function StaffDocumentsPage() {
                 <th>Status</th>
                 <th>Uploaded</th>
                 <th>Size</th>
+                <th>Signature</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -357,6 +359,11 @@ export default function StaffDocumentsPage() {
                     )}
                   </td>
 
+                  <td className="staff-documents__signature-cell">
+                    <StaffDocumentSignature
+                      documentId={document.id}
+                    />
+                  </td>
                   <td>
                     <div className="staff-documents__actions">
                       {document.taxCaseId && (

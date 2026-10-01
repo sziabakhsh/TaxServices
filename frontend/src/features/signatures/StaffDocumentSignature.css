@@ -1,0 +1,133 @@
+.staff-signature {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+
+  min-width: 150px;
+}
+
+.staff-signature__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.staff-signature__status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.staff-signature__status--pending {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.staff-signature__status--signed {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.staff-signature__status--declined {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.staff-signature__status--cancelled {
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.staff-signature__date,
+.staff-signature__none,
+.staff-signature__loading {
+  font-size: 12px;
+  color: #667085;
+}
+
+.staff-signature__details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  max-width: 220px;
+
+  font-size: 12px;
+  line-height: 1.4;
+  color: #475467;
+}
+
+.staff-signature__details strong {
+  color: #344054;
+}
+
+.staff-signature__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-signature__button,
+.staff-signature__cancel-button {
+  padding: 6px 10px;
+
+  border-radius: 6px;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.staff-signature__button {
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  color: #344054;
+}
+
+.staff-signature__button:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.staff-signature__cancel-button {
+  border: 1px solid #fda29b;
+  background: #ffffff;
+  color: #b42318;
+}
+
+.staff-signature__cancel-button:hover:not(:disabled) {
+  background: #fef3f2;
+}
+
+.staff-signature__button:disabled,
+.staff-signature__cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.staff-signature__error {
+  display: block;
+
+  max-width: 200px;
+
+  font-size: 12px;
+  line-height: 1.4;
+  color: #b42318;
+}

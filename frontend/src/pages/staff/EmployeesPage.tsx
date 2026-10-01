@@ -7,13 +7,13 @@ import ConfirmModal from '../../components/common/ConfirmModal'
 
 import { useAuth } from '../../features/auth/useAuth'
 
-import { useEmployees } from '../../../employees/useEmployees'
-import { useCreateEmployee } from '../../../employees/useCreateEmployee'
-import { useUpdateEmployee } from '../../../employees/useUpdateEmployee'
-import { useChangeEmployeeStatus } from '../../../employees/useChangeEmployeeStatus'
-import { useResendEmployeeInvitation } from '../../../employees/useResendEmployeeInvitation'
+import { useEmployees } from '../../features/employees/useEmployees'
+import { useCreateEmployee } from '../../features/employees/useCreateEmployee'
+import { useUpdateEmployee } from '../../features/employees/useUpdateEmployee'
+import { useChangeEmployeeStatus } from '../../features/employees/useChangeEmployeeStatus'
+import { useResendEmployeeInvitation } from '../../features/employees/useResendEmployeeInvitation'
 
-import type { Employee } from '../../../employees/employee.types'
+import type { Employee } from '../../features/employees/employee.types'
 
 import './EmployeesPage.css'
 

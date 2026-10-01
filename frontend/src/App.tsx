@@ -13,6 +13,7 @@ import StaffDocumentsPage from './pages/staff/StaffDocumentsPage'
 import CreateClientPage from './pages/staff/CreateClientPage'
 import EditClientPage from './pages/staff/EditClientPage'
 import SecurityPage from './pages/auth/SecurityPage'
+import SignatureDetailsPage from './pages/portal/SignatureDetailsPage'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -38,6 +39,7 @@ import EmployeesPage from './pages/staff/EmployeesPage'
 import StaffServicesPage from './pages/staff/StaffServicesPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import SignaturesPage from './pages/portal/SignaturesPage'
 
 function SimplePage({ title }: { title: string }) {
   return (
@@ -112,9 +114,10 @@ export default function App() {
           <Route path="cases" element={<CasesPage />} />
           <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
-          <Route   path="security"   element={<SecurityPage />} />
+          <Route path="security"   element={<SecurityPage />} />
           <Route path="documents" element={<DocumentsPage />} />
-          
+          <Route path="signatures"   element={<SignaturesPage />} /> 
+          <Route path="signatures/:id" element={<SignatureDetailsPage />} />
         </Route>
 
         {/* Staff portal */}

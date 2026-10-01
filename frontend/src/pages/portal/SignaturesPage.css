@@ -1,0 +1,173 @@
+.client-signatures {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.client-signatures__header h1 {
+  margin: 0;
+
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.client-signatures__header p {
+  margin: 8px 0 0;
+
+  color: #667085;
+}
+
+.client-signatures__state,
+.client-signatures__empty {
+  padding: 32px;
+
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  text-align: center;
+  color: #667085;
+}
+
+.client-signatures__state--error {
+  color: #b42318;
+}
+
+.client-signatures__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.client-signatures__card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 18px 20px;
+
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.client-signatures__card-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+
+  flex: 1;
+}
+
+.client-signatures__document {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+}
+
+.client-signatures__document strong {
+  color: #101828;
+
+  overflow-wrap: anywhere;
+}
+
+.client-signatures__document span,
+.client-signatures__status-date {
+  font-size: 13px;
+  color: #667085;
+}
+
+.client-signatures__status-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+
+  min-width: 150px;
+}
+
+.client-signatures__status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.client-signatures__status--pending {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.client-signatures__status--signed {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.client-signatures__status--declined {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.client-signatures__status--cancelled {
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.client-signatures__card-actions {
+  flex-shrink: 0;
+}
+
+.client-signatures__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 12px;
+
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.client-signatures__action:hover {
+  background: #f9fafb;
+}
+
+@media (max-width: 700px) {
+  .client-signatures__card,
+  .client-signatures__card-main {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .client-signatures__card-main {
+    gap: 14px;
+  }
+
+  .client-signatures__status-area {
+    min-width: 0;
+  }
+
+  .client-signatures__action {
+    width: 100%;
+  }
+}
