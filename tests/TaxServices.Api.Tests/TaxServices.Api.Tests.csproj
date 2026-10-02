@@ -34,8 +34,4 @@
     <ProjectReference Include="..\..\src\TaxServices.Infrastructure\TaxServices.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
