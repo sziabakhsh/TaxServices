@@ -8,3 +8,26 @@
 // Update is only allowed for Draft status.
 // Tenant isolation is applied on all queries.
 // Issue, Cancel, and Payment will be added to this Service later.
+
+
+
+
+{
+  "clientId": "CLIENT-GUID-HERE",
+  "issueDate": "2026-10-01T00:00:00Z",
+  "dueDate": "2026-10-31T00:00:00Z",
+  "taxRate": 5,
+  "notes": "2026 tax preparation services",
+  "items": [
+    {
+      "description": "Personal tax return preparation",
+      "quantity": 1,
+      "unitPrice": 200
+    },
+    {
+      "description": "Additional consultation",
+      "quantity": 2,
+      "unitPrice": 75
+    }
+  ]
+}

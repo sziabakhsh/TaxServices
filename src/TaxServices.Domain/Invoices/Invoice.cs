@@ -1,5 +1,6 @@
-﻿using TaxServices.Domain.Clients;
+using TaxServices.Domain.Clients;
 using TaxServices.Domain.Common;
+using TaxServices.Domain.Payments;
 
 namespace TaxServices.Domain.Invoices
 {
@@ -29,5 +30,8 @@ namespace TaxServices.Domain.Invoices
 
         public ICollection<InvoiceItem> Items { get; set; }
             = new List<InvoiceItem>();
+
+        public ICollection<Payment> Payments { get; set; }
+            = new List<Payment>();
     }
 }

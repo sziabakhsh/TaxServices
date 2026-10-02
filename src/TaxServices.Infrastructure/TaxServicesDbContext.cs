@@ -7,6 +7,7 @@ using TaxServices.Domain.Clients;
 using TaxServices.Domain.Documents;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Invoices;
+using TaxServices.Domain.Payments;
 using TaxServices.Domain.Services;
 using TaxServices.Infrastructure.Identity;
 
@@ -33,6 +34,7 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbCo
     public DbSet<DocumentSignatureEvent> DocumentSignatureEvents => Set<DocumentSignatureEvent>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

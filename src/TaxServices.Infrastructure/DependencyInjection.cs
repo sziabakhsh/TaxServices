@@ -15,6 +15,7 @@ using TaxServices.Infrastructure.Persistence;
 using TaxServices.Infrastructure.Security;
 using TaxServices.Infrastructure.Services;
 using TaxServices.Infrastructure.Storage;
+using TaxServices.Infrastructure.Payments;
 
 namespace TaxServices.Infrastructure
 {
@@ -102,6 +103,7 @@ namespace TaxServices.Infrastructure
             services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
 
             services.Configure<FileUploadOptions>(configuration.GetSection(FileUploadOptions.SectionName));
+            services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.SectionName));
 
             // Services
             services.AddScoped<ITaxServicesDbContext, TaxServicesDbContext>();
@@ -114,6 +116,7 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IAccountEmailService, AccountEmailService>();
             services.AddScoped<IFileEncryptionService, FileEncryptionService>();
             services.AddScoped<ISensitiveDataProtector, SensitiveDataProtector>();
+            services.AddScoped<IOnlinePaymentGateway, StripePaymentGateway>();
 
             return services;
         }

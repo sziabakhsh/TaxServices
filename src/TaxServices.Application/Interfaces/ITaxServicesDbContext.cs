@@ -5,6 +5,7 @@ using TaxServices.Domain.Clients;
 using TaxServices.Domain.Documents;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Invoices;
+using TaxServices.Domain.Payments;
 using TaxServices.Domain.Services;
 
 namespace TaxServices.Application.Interfaces
@@ -23,6 +24,7 @@ namespace TaxServices.Application.Interfaces
         DbSet<DocumentSignatureEvent> DocumentSignatureEvents { get; }
         DbSet<Invoice> Invoices { get; }
         DbSet<InvoiceItem> InvoiceItems { get; }
+        DbSet<Payment> Payments { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
