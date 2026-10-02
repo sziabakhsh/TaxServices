@@ -35,6 +35,10 @@ public class AuthControllerTests
             "/api/Auth/register",
             request);
 
+        var body = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"STATUS: {response.StatusCode}");
+        Console.WriteLine($"BODY: {body}");
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         using var scope = _factory.Services.CreateScope();
