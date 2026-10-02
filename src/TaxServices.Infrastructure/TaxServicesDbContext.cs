@@ -4,8 +4,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Cases;
 using TaxServices.Domain.Clients;
-using TaxServices.Domain.Employees;
 using TaxServices.Domain.Documents;
+using TaxServices.Domain.Employees;
+using TaxServices.Domain.Invoices;
 using TaxServices.Domain.Services;
 using TaxServices.Infrastructure.Identity;
 
@@ -30,6 +31,8 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbCo
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentSignature> DocumentSignatures => Set<DocumentSignature>();
     public DbSet<DocumentSignatureEvent> DocumentSignatureEvents => Set<DocumentSignatureEvent>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

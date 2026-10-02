@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IDocumentSignatureService, DocumentSignatureService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
 
         return services;
     }

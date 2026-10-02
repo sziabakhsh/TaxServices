@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaxServices.Infrastructure;
 
@@ -11,9 +12,11 @@ using TaxServices.Infrastructure;
 namespace TaxServices.Infrastructure.Migrations
 {
     [DbContext(typeof(TaxServicesDbContext))]
-    partial class TaxServicesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002050303_AddInvoices")]
+    partial class AddInvoices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -615,10 +618,6 @@ namespace TaxServices.Infrastructure.Migrations
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TaxRate")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");

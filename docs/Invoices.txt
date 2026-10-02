@@ -1,0 +1,10 @@
+// Client Must belong to the same TenantId.
+// Invoice Number should be generated on the backend.
+//Amount = Quantity × UnitPrice
+//Subtotal = Sum(Amount)
+//TaxAmount = Subtotal × TaxRate / 100
+//TotalAmount = Subtotal + TaxAmount
+// New Invoice only can be created with Draft status.
+// Update is only allowed for Draft status.
+// Tenant isolation is applied on all queries.
+// Issue, Cancel, and Payment will be added to this Service later.
