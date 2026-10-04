@@ -71,7 +71,13 @@ public class StripePaymentGateway : IOnlinePaymentGateway
     public OnlinePaymentEvent ParseWebhook(string json, string signatureHeader)
     {
         EnsureConfigured();
-        var stripeEvent = EventUtility.ConstructEvent(json, signatureHeader, _stripe.WebhookSecret);
+  
+        var stripeEvent = EventUtility.ConstructEvent(
+            json,
+            signatureHeader,
+            _stripe.WebhookSecret,
+            throwOnApiVersionMismatch: false);
+
         var session = stripeEvent.Data.Object as Session;
 
         Guid? Parse(string key)

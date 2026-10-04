@@ -7,6 +7,29 @@ using TaxServices.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var runtimeWebhookSecret =
+    builder.Configuration["Stripe:WebhookSecret"];
+
+Console.WriteLine(
+    $"Stripe WebhookSecret loaded: {!string.IsNullOrWhiteSpace(runtimeWebhookSecret)}");
+
+Console.WriteLine(
+    $"Stripe WebhookSecret ending: {(runtimeWebhookSecret?.Length >= 6
+        ? runtimeWebhookSecret[^6..]
+        : "INVALID")}");
+
+var configRoot = (IConfigurationRoot)builder.Configuration;
+
+foreach (var provider in configRoot.Providers)
+{
+    if (provider.TryGet("Stripe:WebhookSecret", out var value) &&
+        !string.IsNullOrWhiteSpace(value))
+    {
+        Console.WriteLine(
+            $"Stripe WebhookSecret provider: {provider}");
+    }
+}
+
 // ---------------------------------------------------------
 // CORS
 // ---------------------------------------------------------
