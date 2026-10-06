@@ -7,6 +7,7 @@ type ConfirmModalProps = {
   confirmText?: string
   cancelText?: string
   isPending?: boolean
+  variant?: 'primary' | 'danger'
   onConfirm: () => void
   onCancel: () => void
 }
@@ -18,6 +19,7 @@ export default function ConfirmModal({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   isPending = false,
+  variant = 'primary',
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -56,11 +58,13 @@ export default function ConfirmModal({
 
           <button
             type="button"
-            className="confirm-modal__confirm"
+            className={`confirm-modal__confirm confirm-modal__confirm--${variant}`}
             onClick={onConfirm}
             disabled={isPending}
           >
-            {isPending ? 'Please wait...' : confirmText}
+            {isPending
+              ? 'Please wait...'
+              : confirmText}
           </button>
         </div>
       </div>

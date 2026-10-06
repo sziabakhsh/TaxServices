@@ -93,3 +93,25 @@
     width: 100%;
   }
 }
+
+.confirm-modal__confirm {
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.confirm-modal__confirm--primary {
+  background: #087443;
+}
+
+.confirm-modal__confirm--primary:hover:not(:disabled) {
+  background: #05603a;
+}
+
+.confirm-modal__confirm--danger {
+  background: #d92d20;
+}
+
+.confirm-modal__confirm--danger:hover:not(:disabled) {
+  background: #b42318;
+}

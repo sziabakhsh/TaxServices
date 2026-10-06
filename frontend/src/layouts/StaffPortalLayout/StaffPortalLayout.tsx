@@ -15,6 +15,7 @@ import {
   Menu,
   ShieldCheck,
   UserRoundCog,
+  ReceiptText,
   Users,
   X,
 } from 'lucide-react'
@@ -138,6 +139,15 @@ export default function StaffPortalLayout() {
           </NavLink>
 
           <NavLink
+            to="/staff/invoices"
+            className={getNavLinkClass}
+            onClick={handleNavigation}
+          >
+            <ReceiptText size={19} />
+            <span>Invoices</span>
+          </NavLink>
+
+          <NavLink
             to="/staff/employees"
             className={getNavLinkClass}
             onClick={handleNavigation}
@@ -166,13 +176,13 @@ export default function StaffPortalLayout() {
         </nav>
 
        <NavLink
-            to="/portal/change-password"
-            className={getNavLinkClass}
-            onClick={handleNavigation}
-          >
-            <KeyRound size={19} />
-            <span>Change Password</span>
-          </NavLink>
+        to="/staff/change-password"
+        className={getNavLinkClass}
+        onClick={handleNavigation}
+      >
+        <KeyRound size={19} />
+        <span>Change Password</span>
+      </NavLink>
 
         <NavLink
           to="/staff/security"

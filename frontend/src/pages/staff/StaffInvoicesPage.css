@@ -1,0 +1,272 @@
+.staff-invoices-page {
+  width: 100%;
+}
+
+.staff-invoices-page__header {
+  margin-bottom: 28px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.staff-invoices-page__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+
+  color: #267346;
+}
+
+.staff-invoices-page__header h1 {
+  margin: 0 0 8px;
+
+  font-size: 32px;
+  color: #1d2a24;
+}
+
+.staff-invoices-page__header p {
+  margin: 0;
+  color: #68756e;
+}
+
+.staff-invoices-page__create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 11px 18px;
+
+  border-radius: 8px;
+
+  background: #267346;
+  color: #ffffff;
+
+  font-weight: 600;
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.staff-invoices-page__create:hover {
+  background: #1f603a;
+}
+
+.staff-invoices-page__create:active {
+  transform: translateY(1px);
+}
+
+.staff-invoices-page__summary {
+  margin-bottom: 14px;
+
+  font-size: 14px;
+  color: #68756e;
+}
+
+.staff-invoices-page__table-wrapper {
+  overflow-x: auto;
+
+  background: #ffffff;
+  border: 1px solid #e3e8e5;
+  border-radius: 12px;
+}
+
+.staff-invoices-page__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-invoices-page__table th,
+.staff-invoices-page__table td {
+  padding: 16px;
+  text-align: left;
+
+  border-bottom: 1px solid #edf0ee;
+}
+
+.staff-invoices-page__table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  color: #68756e;
+  background: #f8faf9;
+}
+
+.staff-invoices-page__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.staff-invoices-page__status {
+  display: inline-flex;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Draft */
+.staff-invoices-page__status--1 {
+  background: #f2f4f3;
+  color: #68756e;
+}
+
+/* Issued */
+.staff-invoices-page__status--2 {
+  background: #eef3f8;
+  color: #41627a;
+}
+
+/* Paid */
+.staff-invoices-page__status--3 {
+  background: #e7f2eb;
+  color: #267346;
+}
+
+/* Cancelled */
+.staff-invoices-page__status--4 {
+  background: #f3eeee;
+  color: #8a4743;
+}
+
+.staff-invoices-page__action {
+  font-weight: 600;
+  color: #267346;
+  text-decoration: none;
+}
+
+.staff-invoices-page__action:hover {
+  text-decoration: underline;
+}
+
+.staff-invoices-page__state {
+  padding: 24px;
+
+  border-radius: 10px;
+  border: 1px solid #e3e8e5;
+
+  background: #ffffff;
+  color: #68756e;
+}
+
+.staff-invoices-page__state--error {
+  color: #8a4743;
+  border-color: #ecd7d5;
+  background: #fbf5f4;
+}
+
+@media (max-width: 700px) {
+  .staff-invoices-page__header {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .staff-invoices-page__header h1 {
+    font-size: 28px;
+  }
+
+  .staff-invoices-page__create {
+    align-self: flex-start;
+  }
+
+  .staff-invoices-page__table-wrapper {
+    overflow: visible;
+
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .staff-invoices-page__table,
+  .staff-invoices-page__table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .staff-invoices-page__table thead {
+    display: none;
+  }
+
+  .staff-invoices-page__table tr {
+    display: block;
+
+    margin-bottom: 14px;
+    padding: 18px;
+
+    background: #ffffff;
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+  }
+
+  .staff-invoices-page__table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 16px;
+    width: 100%;
+    padding: 11px 0;
+
+    box-sizing: border-box;
+
+    border-bottom: 1px solid #edf0ee;
+
+    text-align: right;
+  }
+
+  .staff-invoices-page__table td::before {
+    flex: 0 0 90px;
+
+    text-align: left;
+
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    color: #68756e;
+  }
+
+  .staff-invoices-page__table td:nth-child(1)::before {
+    content: 'Invoice';
+  }
+
+  .staff-invoices-page__table td:nth-child(2)::before {
+    content: 'Issued';
+  }
+
+  .staff-invoices-page__table td:nth-child(3)::before {
+    content: 'Due';
+  }
+
+  .staff-invoices-page__table td:nth-child(4)::before {
+    content: 'Total';
+  }
+
+  .staff-invoices-page__table td:nth-child(5)::before {
+    content: 'Status';
+  }
+
+  .staff-invoices-page__table td:nth-child(6)::before {
+    content: 'Actions';
+  }
+
+  .staff-invoices-page__table td:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}

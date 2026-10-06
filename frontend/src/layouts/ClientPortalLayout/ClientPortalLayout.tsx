@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  ReceiptText,
   UserRound,
   PenLine,
   X,
@@ -158,7 +159,14 @@ export default function ClientPortalLayout() {
             <FolderOpen size={19} />
             <span>Tax Cases</span>
           </NavLink>
-
+<NavLink
+  to="/portal/invoices"
+  className={getNavLinkClass}
+  onClick={handleNavigation}
+>
+  <ReceiptText size={19} />
+  <span>Invoices</span>
+</NavLink>
           <NavLink
             to="/portal/documents"
             className={getNavLinkClass}

@@ -3,19 +3,12 @@ import { FormEvent, useState } from 'react'
 import { AxiosError } from 'axios'
 
 import {
-
   Check,
-
   Pencil,
-
   Plus,
-
   Power,
-
   PowerOff,
-
   X,
-
 } from 'lucide-react'
 
 import { useAuth } from '../../features/auth/useAuth'

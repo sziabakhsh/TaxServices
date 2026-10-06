@@ -31,6 +31,20 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client =>
+                        client.FirstName + " " + client.LastName)
+                    .FirstOrDefault() ?? string.Empty,
+
+                                    ClientEmail = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client => client.Email)
+                    .FirstOrDefault() ?? string.Empty,
                     InvoiceNumber = x.InvoiceNumber,
                     Status = x.Status,
                     IssueDate = x.IssueDate,
@@ -42,15 +56,17 @@ namespace TaxServices.Application.Services
                     Notes = x.Notes,
 
                     Items = x.Items
-                        .Select(item => new InvoiceItemResponse
-                        {
-                            Id = item.Id,
-                            Description = item.Description,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            Amount = item.Amount
-                        })
-                        .ToList()
+                    .Select(item => new InvoiceItemResponse
+                    {
+                        Id = item.Id,
+                        ServiceId = item.ServiceId,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        Amount = item.Amount
+                    })
+                    .ToList()
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -70,6 +86,20 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client =>
+                        client.FirstName + " " + client.LastName)
+                    .FirstOrDefault() ?? string.Empty,
+
+                                    ClientEmail = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client => client.Email)
+                    .FirstOrDefault() ?? string.Empty,
                     InvoiceNumber = x.InvoiceNumber,
                     Status = x.Status,
                     IssueDate = x.IssueDate,
@@ -81,15 +111,17 @@ namespace TaxServices.Application.Services
                     Notes = x.Notes,
 
                     Items = x.Items
-                        .Select(item => new InvoiceItemResponse
-                        {
-                            Id = item.Id,
-                            Description = item.Description,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            Amount = item.Amount
-                        })
-                        .ToList()
+                    .Select(item => new InvoiceItemResponse
+                    {
+                        Id = item.Id,
+                        ServiceId = item.ServiceId,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        Amount = item.Amount
+                    })
+    .ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -110,6 +142,20 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client =>
+                        client.FirstName + " " + client.LastName)
+                    .FirstOrDefault() ?? string.Empty,
+
+                                    ClientEmail = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client => client.Email)
+                    .FirstOrDefault() ?? string.Empty,
                     InvoiceNumber = x.InvoiceNumber,
                     Status = x.Status,
                     IssueDate = x.IssueDate,
@@ -121,15 +167,17 @@ namespace TaxServices.Application.Services
                     Notes = x.Notes,
 
                     Items = x.Items
-                        .Select(item => new InvoiceItemResponse
-                        {
-                            Id = item.Id,
-                            Description = item.Description,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            Amount = item.Amount
-                        })
-                        .ToList()
+                    .Select(item => new InvoiceItemResponse
+                    {
+                        Id = item.Id,
+                        ServiceId = item.ServiceId,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        Amount = item.Amount
+                    })
+                    .ToList()
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -166,19 +214,33 @@ namespace TaxServices.Application.Services
                 TaxRate = request.TaxRate,
                 Notes = request.Notes
             };
-
+            
             foreach (var requestItem in request.Items)
             {
-                var amount = RoundMoney(
+                await ValidateServiceAsync(
+                    requestItem.ServiceId,
+                    tenantId,
+                    cancellationToken);
+
+                var grossAmount = RoundMoney(
                     requestItem.Quantity * requestItem.UnitPrice);
+
+                ValidateDiscount(
+                    requestItem.DiscountAmount,
+                    grossAmount);
+
+                var amount = RoundMoney(
+                    grossAmount - requestItem.DiscountAmount);
 
                 invoice.Items.Add(new InvoiceItem
                 {
                     Id = Guid.NewGuid(),
                     TenantId = tenantId,
+                    ServiceId = requestItem.ServiceId,
                     Description = requestItem.Description.Trim(),
                     Quantity = requestItem.Quantity,
                     UnitPrice = requestItem.UnitPrice,
+                    DiscountAmount = requestItem.DiscountAmount,
                     Amount = amount
                 });
             }
@@ -240,18 +302,31 @@ namespace TaxServices.Application.Services
 
             foreach (var requestItem in request.Items)
             {
+                await ValidateServiceAsync(
+                    requestItem.ServiceId,
+                    tenantId,
+                    cancellationToken);
+
+                var grossAmount = RoundMoney(
+                    requestItem.Quantity * requestItem.UnitPrice);
+
+                ValidateDiscount(
+                    requestItem.DiscountAmount,
+                    grossAmount);
+
                 var amount = RoundMoney(
-                    requestItem.Quantity *
-                    requestItem.UnitPrice);
+                    grossAmount - requestItem.DiscountAmount);
 
                 var item = new InvoiceItem
                 {
                     Id = Guid.NewGuid(),
                     TenantId = tenantId,
                     InvoiceId = invoice.Id,
+                    ServiceId = requestItem.ServiceId,
                     Description = requestItem.Description.Trim(),
                     Quantity = requestItem.Quantity,
                     UnitPrice = requestItem.UnitPrice,
+                    DiscountAmount = requestItem.DiscountAmount,
                     Amount = amount
                 };
 
@@ -361,6 +436,47 @@ namespace TaxServices.Application.Services
                        "Unable to load the cancelled invoice.");
         }
 
+        private static void ValidateDiscount(
+            decimal discountAmount,
+            decimal grossAmount)
+        {
+            if (discountAmount < 0)
+            {
+                throw new ArgumentException(
+                    "Discount amount cannot be negative.");
+            }
+
+            if (discountAmount > grossAmount)
+            {
+                throw new ArgumentException(
+                    "Discount amount cannot exceed the item amount.");
+            }
+        }
+
+        private async Task ValidateServiceAsync(
+            Guid? serviceId,
+            Guid tenantId,
+            CancellationToken cancellationToken)
+        {
+            if (!serviceId.HasValue)
+                return;
+
+            var serviceExists = await _context.Services
+                .AsNoTracking()
+                .AnyAsync(
+                    x =>
+                        x.Id == serviceId.Value &&
+                        x.TenantId == tenantId &&
+                        x.IsActive,
+                    cancellationToken);
+
+            if (!serviceExists)
+            {
+                throw new ArgumentException(
+                    "The selected service is invalid or inactive.");
+            }
+        }
+
         private static void ValidateDates(
             DateTime issueDate,
             DateTime dueDate)
@@ -400,6 +516,20 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client =>
+                        client.FirstName + " " + client.LastName)
+                    .FirstOrDefault() ?? string.Empty,
+
+                     ClientEmail = _context.Clients
+                    .Where(client =>
+                        client.Id == x.ClientId &&
+                        client.TenantId == tenantId)
+                    .Select(client => client.Email)
+                    .FirstOrDefault() ?? string.Empty,
                     InvoiceNumber = x.InvoiceNumber,
                     Status = x.Status,
                     IssueDate = x.IssueDate,
@@ -411,15 +541,17 @@ namespace TaxServices.Application.Services
                     Notes = x.Notes,
 
                     Items = x.Items
-                        .Select(item => new InvoiceItemResponse
-                        {
-                            Id = item.Id,
-                            Description = item.Description,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            Amount = item.Amount
-                        })
-                        .ToList()
+                    .Select(item => new InvoiceItemResponse
+                    {
+                        Id = item.Id,
+                        ServiceId = item.ServiceId,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        Amount = item.Amount
+                    })
+                    .ToList()
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -453,6 +585,14 @@ namespace TaxServices.Application.Services
                 {
                     Id = x.Id,
                     ClientId = x.ClientId,
+                    ClientName = _context.Clients
+                        .Where(client => client.Id == x.ClientId && client.TenantId == tenantId)
+                        .Select(client => client.FirstName + " " + client.LastName)
+                        .FirstOrDefault() ?? string.Empty,
+                    ClientEmail = _context.Clients
+                        .Where(client => client.Id == x.ClientId && client.TenantId == tenantId)
+                        .Select(client => client.Email)
+                        .FirstOrDefault() ?? string.Empty,
                     InvoiceNumber = x.InvoiceNumber,
                     Status = x.Status,
                     IssueDate = x.IssueDate,
@@ -464,15 +604,17 @@ namespace TaxServices.Application.Services
                     Notes = x.Notes,
 
                     Items = x.Items
-                        .Select(item => new InvoiceItemResponse
-                        {
-                            Id = item.Id,
-                            Description = item.Description,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            Amount = item.Amount
-                        })
-                        .ToList()
+                    .Select(item => new InvoiceItemResponse
+                    {
+                        Id = item.Id,
+                        ServiceId = item.ServiceId,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        Amount = item.Amount
+                    })
+                    .ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }

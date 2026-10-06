@@ -13,21 +13,25 @@
 
 
 {
-  "clientId": "CLIENT-GUID-HERE",
-  "issueDate": "2026-10-01T00:00:00Z",
-  "dueDate": "2026-10-31T00:00:00Z",
+  "clientId": "2F357D5C-0680-4C5C-88BD-A52A261C5FE7",
+  "issueDate": "2026-10-04",
+  "dueDate": "2026-10-18",
   "taxRate": 5,
-  "notes": "2026 tax preparation services",
+  "notes": "Testing service and discount",
   "items": [
     {
-      "description": "Personal tax return preparation",
-      "quantity": 1,
-      "unitPrice": 200
+      "serviceId": "B15E1B40-BC61-40CB-8B42-C23E91E962D4",
+      "description": "Personal Tax Return",
+      "quantity": 2,
+      "unitPrice": 200,
+      "discountAmount": 50
     },
     {
-      "description": "Additional consultation",
-      "quantity": 2,
-      "unitPrice": 75
+      "serviceId": null,
+      "description": "Custom CRA consultation",
+      "quantity": 1,
+      "unitPrice": 100,
+      "discountAmount": 10
     }
   ]
 }

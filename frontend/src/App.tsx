@@ -14,9 +14,12 @@ import CreateClientPage from './pages/staff/CreateClientPage'
 import EditClientPage from './pages/staff/EditClientPage'
 import SecurityPage from './pages/auth/SecurityPage'
 import SignatureDetailsPage from './pages/portal/SignatureDetailsPage'
-
+import InvoicesPage from './pages/portal/InvoicesPage'
+import InvoiceDetailsPage from './pages/portal/InvoiceDetailsPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import PaymentSuccessPage from './pages/portal/PaymentSuccessPage'
+import PaymentCancelledPage from './pages/portal/PaymentCancelledPage'
 
 import PortalPage from './pages/portal/PortalPage'
 
@@ -40,6 +43,9 @@ import StaffServicesPage from './pages/staff/StaffServicesPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import SignaturesPage from './pages/portal/SignaturesPage'
+import StaffInvoicesPage from './pages/staff/StaffInvoicesPage'
+import CreateInvoicePage from './pages/staff/CreateInvoicePage'
+import StaffInvoiceDetailsPage from './pages/staff/StaffInvoiceDetailsPage'
 
 function SimplePage({ title }: { title: string }) {
   return (
@@ -108,72 +114,91 @@ export default function App() {
         {/* <Route path="/portal" element={<ClientPortalLayout />}>
           <Route index element={<PortalPage />} />
         </Route> */}
-        <Route path="/portal" element={<ClientPortalLayout />}>
-          <Route index element={<PortalPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="cases" element={<CasesPage />} />
-          <Route path="/portal/cases/:id" element={<CaseDetailsPage />} />
-          <Route path="change-password" element={<ChangePasswordPage />} />
-          <Route path="security"   element={<SecurityPage />} />
-          <Route path="documents" element={<DocumentsPage />} />
-          <Route path="signatures"   element={<SignaturesPage />} /> 
-          <Route path="signatures/:id" element={<SignatureDetailsPage />} />
-        </Route>
+{/* Client portal */}
+<Route path="/portal" element={<ClientPortalLayout />}>
+  <Route index element={<PortalPage />} />
+
+  <Route
+    path="profile"
+    element={<ProfilePage />}
+  />
+
+  <Route
+    path="cases"
+    element={<CasesPage />}
+  />
+
+  <Route
+    path="cases/:id"
+    element={<CaseDetailsPage />}
+  />
+
+  <Route
+    path="change-password"
+    element={<ChangePasswordPage />}
+  />
+
+  <Route
+    path="security"
+    element={<SecurityPage />}
+  />
+
+  <Route
+    path="documents"
+    element={<DocumentsPage />}
+  />
+
+  <Route
+    path="signatures"
+    element={<SignaturesPage />}
+  />
+
+  <Route
+    path="signatures/:id"
+    element={<SignatureDetailsPage />}
+  />
+
+  <Route
+    path="invoices"
+    element={<InvoicesPage />}
+  />
+
+<Route
+  path="invoices/payment-success"
+  element={<PaymentSuccessPage />}
+/>
+
+<Route
+  path="invoices/payment-cancelled"
+  element={<PaymentCancelledPage />}
+/>
+
+  <Route
+    path="invoices/:id"
+    element={<InvoiceDetailsPage />}
+  />
+</Route>
 
         {/* Staff portal */}
-        {/* <Route
-          path="/staff"
-          element={<RolePlaceholder title="Staff Portal" />}
-        /> */}
-
-          <Route
-            element={
-              <ProtectedRoute roles={['Admin', 'Employee']} />
-            }
-          >
+          <Route element={<ProtectedRoute roles={['Admin', 'Employee']} /> }>
+            <Route path="/staff" element={<StaffPortalLayout />} >
+            <Route index element={<StaffDashboardPage />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="clients/new" element={<CreateClientPage />} />
+            <Route path="clients/:clientId/edit" element={<EditClientPage />} />
+            <Route path="employees" element={<EmployeesPage />} />
+            <Route path="documents" element={<StaffDocumentsPage />} />
+            <Route path="clients/:clientId/documents" element={<StaffClientDocumentsPage />} />
+            <Route path="clients/:clientId/cases" element={<StaffClientCasesPage />} />
+            <Route path="invoices" element={<StaffInvoicesPage />} />
             <Route
-              path="/staff"
-              element={<StaffPortalLayout />}
-            >
-              
+              path="invoices/new"
+              element={<CreateInvoicePage />}
+            />            
             <Route
-              index
-              element={<StaffDashboardPage />}
+              path="invoices/:id"
+              element={<StaffInvoiceDetailsPage />}
             />
-
-            <Route
-              path="clients"
-              element={<ClientsPage />}
-            />
-
-            <Route
-              path="clients/new"
-              element={<CreateClientPage />}
-            />
-            <Route
-              path="clients/:clientId/edit"
-              element={<EditClientPage />}
-            />
-            <Route
-              path="employees"
-              element={<EmployeesPage />}
-            />
-
-            <Route
-              path="documents"
-              element={<StaffDocumentsPage />}
-            />
-
-            <Route
-              path="clients/:clientId/documents"
-              element={<StaffClientDocumentsPage />}
-            />
-
-            <Route
-              path="clients/:clientId/cases"
-              element={<StaffClientCasesPage />}
-            />
-
             <Route
               path="cases"
               element={<StaffTaxCasesPage />}

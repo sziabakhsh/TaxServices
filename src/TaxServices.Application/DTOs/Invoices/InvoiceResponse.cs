@@ -9,6 +9,10 @@ namespace TaxServices.Application.DTOs.Invoices
 
         public Guid ClientId { get; set; }
 
+        public string ClientName { get; set; } = string.Empty;
+
+        public string ClientEmail { get; set; } = string.Empty;
+
         public string InvoiceNumber { get; set; } = string.Empty;
 
         public InvoiceStatus Status { get; set; }
