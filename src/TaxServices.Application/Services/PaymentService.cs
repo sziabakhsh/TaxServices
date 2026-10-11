@@ -170,10 +170,18 @@ public class PaymentService : IPaymentService
             x.Id == payment.InvoiceId && x.TenantId == payment.TenantId, cancellationToken)
             ?? throw new KeyNotFoundException("Invoice not found.");
 
-        var otherSucceeded = await _context.Payments.Where(x =>
-            x.TenantId == payment.TenantId && x.InvoiceId == payment.InvoiceId &&
-            x.Status == PaymentStatus.Succeeded && x.Id != payment.Id)
-            .SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0m;
+        var otherSucceededAmounts = await _context.Payments
+            .Where(x =>
+                x.TenantId == payment.TenantId &&
+                x.InvoiceId == payment.InvoiceId &&
+                x.Status == PaymentStatus.Succeeded &&
+                x.Id != payment.Id)
+            .Select(x => x.Amount)
+            .ToListAsync(cancellationToken);
+
+        var otherSucceeded = otherSucceededAmounts.Sum();
+
+
 
         if (otherSucceeded + payment.Amount >= invoice.TotalAmount)
             invoice.Status = InvoiceStatus.Paid;

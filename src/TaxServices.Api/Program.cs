@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Identity;
+using Serilog;
 using TaxServices.Api.Exceptions;
 using TaxServices.Application;
 using TaxServices.Infrastructure;
 using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Identity;
+using TaxServices.Infrastructure.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+SerilogConfiguration.Configure();
+builder.Host.UseSerilog();
 
 var runtimeWebhookSecret =
     builder.Configuration["Stripe:WebhookSecret"];
@@ -222,7 +227,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 public partial class Program
 {

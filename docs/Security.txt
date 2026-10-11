@@ -7,3 +7,46 @@
 7. Automated Tests — تکمیل تست‌های Backend و flowهای مهم.
 8. Frontend Refactor — شکستن componentهای بزرگ‌تر به componentهای کوچک‌تر؛ قبلاً تصمیم گرفتیم به‌خاطر ثبات Demo عقب بیفتد.
 ضمن اینکه الان یک مورد امنیتی جدید هم بهتر است به backlog اضافه کنیم: Backend Rate Limiting برای OTP/2FA. cooldown سمت Frontend را انجام دادیم، ولی rate limiting واقعی باید API-side باشد.
+
+
+
+
+Internet
+   │
+   ▼
+Frontend (React)
+   │
+   │ HTTPS / CORS
+   ▼
+API
+   │
+   ├── Authentication (JWT + 2FA)
+   │
+   ├── Authorization (Admin / Employee / Client)
+   │
+   ├── Tenant Isolation
+   │
+   ├── IDOR Protection
+   │
+   ├── SIN Encryption
+   │
+   ├── Document Encryption
+   │
+   └── Database / Blob Storage
+
+
+
+
+
+E:\GitProjects\__Github\TaxServices\src\TaxServices.Api>dotnet user-secrets list
+Stripe:WebhookSecret = whsec_4d
+Stripe:SecretKey = sk_test_51ULq
+SensitiveData:HashKey = VaKr
+FileEncryption:Key = CJxO
+Email:Username = b9942c
+Email:Port = 587
+Email:Password = xsmtpsib-aj
+Email:Host = smtp-relay.brevo.com
+Email:FromName = Amazing Accountant and Tax Services
+Email:FromEmail = s.ziabakhsh@gmail.com
+AzureStorage:ConnectionString = DefaultE

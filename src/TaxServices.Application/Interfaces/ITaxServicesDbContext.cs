@@ -5,6 +5,7 @@ using TaxServices.Domain.Clients;
 using TaxServices.Domain.Documents;
 using TaxServices.Domain.Employees;
 using TaxServices.Domain.Invoices;
+using TaxServices.Domain.Notification;
 using TaxServices.Domain.Payments;
 using TaxServices.Domain.Services;
 
@@ -25,6 +26,7 @@ namespace TaxServices.Application.Interfaces
         DbSet<Invoice> Invoices { get; }
         DbSet<InvoiceItem> InvoiceItems { get; }
         DbSet<Payment> Payments { get; }
+        DbSet<Notification> Notifications { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

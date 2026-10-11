@@ -11,8 +11,18 @@ namespace TaxServices.Api.Controllers;
 [Route("api/[controller]")]
 public class PaymentsController : ControllerBase
 {
+
     private readonly IPaymentService _paymentService;
-    public PaymentsController(IPaymentService paymentService) => _paymentService = paymentService;
+    private readonly ILogger<PaymentsController> _logger;
+
+    public PaymentsController(
+        IPaymentService paymentService,
+        ILogger<PaymentsController> logger)
+    {
+        _paymentService = paymentService;
+        _logger = logger;
+    }
+
 
     [HttpGet]
     [Authorize(Roles = "Admin,Employee")]
@@ -40,22 +50,54 @@ public class PaymentsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
         return Ok(await _paymentService.CreateCheckoutSessionAsync(request.InvoiceId, request.Amount, userId, cancellationToken));
+    
     }
 
     [AllowAnonymous]
     [HttpPost("stripe/webhook")]
     public async Task<IActionResult> StripeWebhook(
-        [FromServices] IOnlinePaymentGateway gateway, CancellationToken cancellationToken)
+        [FromServices] IOnlinePaymentGateway gateway,
+        CancellationToken cancellationToken)
     {
         using var reader = new StreamReader(Request.Body);
         var json = await reader.ReadToEndAsync(cancellationToken);
         var signature = Request.Headers["Stripe-Signature"].ToString();
-        if (string.IsNullOrWhiteSpace(signature)) return BadRequest();
 
-        var paymentEvent = gateway.ParseWebhook(json, signature);
-        await _paymentService.HandleOnlinePaymentEventAsync(paymentEvent, cancellationToken);
-        return Ok();
+        if (string.IsNullOrWhiteSpace(signature))
+        {
+            _logger.LogWarning(
+                "Stripe webhook rejected: missing signature.");
+
+            return BadRequest();
+        }
+
+        try
+        {
+            var paymentEvent = gateway.ParseWebhook(json, signature);
+
+            _logger.LogInformation(
+                "Stripe webhook received. EventType: {EventType}",
+                paymentEvent.EventType);
+
+            await _paymentService.HandleOnlinePaymentEventAsync(
+                paymentEvent, cancellationToken);
+
+            _logger.LogInformation(
+                "Stripe webhook processed successfully. EventType: {EventType}",
+                paymentEvent.EventType);
+
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Stripe webhook processing failed: {ex.Message}" , ex.Message);
+
+            throw;
+        }
     }
+
 
     [HttpGet("me")]
     [Authorize(Roles = "Client")]
