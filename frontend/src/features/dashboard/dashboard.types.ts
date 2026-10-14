@@ -1,3 +1,14 @@
+export interface RecentInvoiceDashboard {
+  id: string
+  invoiceNumber: string
+  clientName: string
+  totalAmount: number
+  paidAmount: number
+  issueDate: string
+  dueDate: string
+  status: number
+}
+
 import { CaseStatus } from '../cases/case.types'
 
 export interface RecentTaxCase {
@@ -9,6 +20,13 @@ export interface RecentTaxCase {
 }
 
 export interface StaffDashboard {
+  totalInvoiced: number
+  totalCollected: number
+  outstandingBalance: number
+  unpaidInvoices: number
+  overdueInvoices: number
+  recentInvoices: RecentInvoiceDashboard[]
+
   totalClients: number
   activeEmployees: number
   openTaxCases: number
@@ -26,6 +44,13 @@ export interface ClientRecentTaxCase {
 }
 
 export interface ClientDashboard {
+  totalInvoiced: number
+  totalCollected: number
+  outstandingBalance: number
+  unpaidInvoices: number
+  overdueInvoices: number
+  recentInvoices: RecentInvoiceDashboard[]
+
   activeTaxCases: number
   waitingForClientCases: number
   totalDocuments: number

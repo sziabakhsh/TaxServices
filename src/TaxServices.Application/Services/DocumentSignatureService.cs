@@ -11,12 +11,14 @@ public class DocumentSignatureService : IDocumentSignatureService
     private readonly ITaxServicesDbContext _context;
     private readonly IDocumentService _documentService;
     private readonly ITenantContext _tenantContext;
+    private readonly INotificationService _notificationService;
 
-    public DocumentSignatureService(ITaxServicesDbContext context, IDocumentService documentService, ITenantContext tenantContext)
+    public DocumentSignatureService(ITaxServicesDbContext context, IDocumentService documentService, ITenantContext tenantContext, INotificationService notificationService)
     {
         _context = context;
         _documentService = documentService;
         _tenantContext = tenantContext;
+        _notificationService = notificationService;
     }
 
     public async Task<DocumentSignatureResponse> RequestAsync(Guid documentId, CancellationToken cancellationToken = default)
@@ -40,6 +42,26 @@ public class DocumentSignatureService : IDocumentSignatureService
         };
         signature.Events.Add(NewEvent(tenantId, SignatureEventType.Requested, now, details: "Signature requested by staff."));
         _context.DocumentSignatures.Add(signature);
+
+        var client = await _context.Clients
+            .AsNoTracking()
+            .FirstAsync(
+                x => x.Id == document.ClientId &&
+                     x.TenantId == tenantId,
+                cancellationToken);
+
+        await _notificationService.AddEmailAsync(
+            tenantId: tenantId,
+            eventKey: $"signature-requested:{signature.Id}",
+            type: "SignatureRequested",
+            recipientEmail: client.Email,
+            subject: "Document signature requested",
+            htmlBody:
+                "<p>A document is waiting for your electronic signature.</p>" +
+                "<p>Please sign in to your client portal to review and sign it.</p>",
+            clientId: document.ClientId,
+            cancellationToken: cancellationToken);
+
         await _context.SaveChangesAsync(cancellationToken);
         return (await Query().FirstAsync(x => x.Id == signature.Id, cancellationToken));
     }

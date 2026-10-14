@@ -31,5 +31,8 @@ namespace TaxServices.Application.Interfaces
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+        Task<Payment?> GetPaymentForUpdateAsync(Guid paymentId, Guid invoiceId, Guid tenantId, CancellationToken cancellationToken = default);
+
     }
 }

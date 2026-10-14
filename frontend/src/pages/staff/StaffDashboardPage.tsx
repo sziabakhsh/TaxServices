@@ -59,6 +59,8 @@ function getStatusClassName(status: CaseStatus) {
   }
 }
 
+const formatMoney = (amount: number) => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(amount)
+
 export default function StaffDashboardPage() {
   const {
     data: dashboard,
@@ -201,6 +203,24 @@ export default function StaffDashboardPage() {
           </div>
         </article>
       </section>
+
+      {dashboard && !isLoading && (
+        <section className="finance-panel" aria-label="Financial overview">
+          <h2>Financial Overview</h2>
+          <div className="finance-grid">
+            <Link to="/staff/invoices" className="finance-tile"><span>Total Invoiced</span><strong>{formatMoney(dashboard.totalInvoiced)}</strong></Link>
+            <Link to="/staff/invoices" className="finance-tile"><span>Total Collected</span><strong>{formatMoney(dashboard.totalCollected)}</strong></Link>
+            <Link to="/staff/invoices" className="finance-tile"><span>Outstanding Balance</span><strong>{formatMoney(dashboard.outstandingBalance)}</strong></Link>
+            <Link to="/staff/invoices" className="finance-tile"><span>Overdue Invoices</span><strong>{dashboard.overdueInvoices}</strong></Link>
+          </div>
+          <h3>Recent Invoices</h3>
+          {dashboard.recentInvoices.length === 0 ? <p>No issued invoices yet.</p> : (
+            <div className="finance-table-wrap"><table className="finance-table"><thead><tr><th>Invoice</th><th>Client</th><th>Total</th><th>Collected</th><th></th></tr></thead><tbody>
+              {dashboard.recentInvoices.map(invoice => <tr key={invoice.id}><td>{invoice.invoiceNumber}</td><td>{invoice.clientName}</td><td>{formatMoney(invoice.totalAmount)}</td><td>{formatMoney(invoice.paidAmount)}</td><td><Link to={`/staff/invoices/${invoice.id}`}>Details</Link></td></tr>)}
+            </tbody></table></div>
+          )}
+        </section>
+      )}
 
       <section className="staff-dashboard__recent">
         <div className="staff-dashboard__recent-header">

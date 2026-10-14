@@ -9,13 +9,16 @@ namespace TaxServices.Application.Services
     {
         private readonly ITaxServicesDbContext _context;
         private readonly ITenantContext _tenantContext;
+        private readonly INotificationService _notificationService;
 
         public InvoiceService(
             ITaxServicesDbContext context,
-            ITenantContext tenantContext)
+            ITenantContext tenantContext,
+            INotificationService notificationService    )
         {
             _context = context;
             _tenantContext = tenantContext;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<InvoiceResponse>> GetAllAsync(
@@ -357,8 +360,8 @@ namespace TaxServices.Application.Services
         }
 
         public async Task<InvoiceResponse> IssueAsync(
-    Guid id,
-    CancellationToken cancellationToken = default)
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var tenantId = _tenantContext.TenantId;
 
@@ -393,6 +396,27 @@ namespace TaxServices.Application.Services
 
             invoice.Status = InvoiceStatus.Issued;
 
+
+            var client = await _context.Clients
+                .AsNoTracking()
+                .FirstAsync(
+                    x => x.Id == invoice.ClientId &&
+                         x.TenantId == tenantId,
+                    cancellationToken);
+
+            await _notificationService.AddEmailAsync(
+                tenantId: tenantId,
+                eventKey: $"invoice-issued:{invoice.Id}",
+                type: "InvoiceIssued",
+                recipientEmail: client.Email,
+                subject: $"Invoice {invoice.InvoiceNumber} is ready",
+                htmlBody:
+                    $"<p>Your invoice {System.Net.WebUtility.HtmlEncode(invoice.InvoiceNumber)} " +
+                    "is ready. Please sign in to your client portal to view it.</p>",
+                clientId: invoice.ClientId,
+                cancellationToken: cancellationToken);
+
+
             await _context.SaveChangesAsync(cancellationToken);
 
             return await GetByIdAsync(
@@ -403,8 +427,8 @@ namespace TaxServices.Application.Services
         }
 
         public async Task<InvoiceResponse> CancelAsync(
-    Guid id,
-    CancellationToken cancellationToken = default)
+            Guid id,
+            CancellationToken cancellationToken = default)
         {
             var tenantId = _tenantContext.TenantId;
 

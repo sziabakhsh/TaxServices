@@ -1,48 +1,114 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using TaxServices.Application.Interfaces;
 using TaxServices.Infrastructure;
 
-namespace TaxServices.Api.Tests.Infrastructure
+namespace TaxServices.Api.Tests.Infrastructure;
+
+public class PaymentWebApplicationFactory
+    : WebApplicationFactory<Program>
 {
-    public class PaymentWebApplicationFactory
-        : WebApplicationFactory<Program>
+    public bool EnablePaymentReconciliationWorker { get; set; }
+    public FakeOnlinePaymentGateway? SharedPaymentGateway { get; set; }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        private SqliteConnection? _connection;
+        var connectionString = Environment.GetEnvironmentVariable(
+            "TAXSERVICES_PAYMENT_TEST_CONNECTION");
 
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            builder.ConfigureServices(services =>
+            throw new InvalidOperationException(
+                "TAXSERVICES_PAYMENT_TEST_CONNECTION is not configured.");
+        }
+
+        var sqlBuilder = new SqlConnectionStringBuilder(connectionString);
+
+        if (!string.Equals(
+                sqlBuilder.InitialCatalog,
+                "TaxServices_PaymentTests",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Payment tests must use TaxServices_PaymentTests.");
+        }
+
+        builder.ConfigureServices(services =>
+        {
+            
+            services.RemoveAll<IOnlinePaymentGateway>();
+
+            if (SharedPaymentGateway is not null)
             {
-                services.RemoveAll<TaxServicesDbContext>();
-                services.RemoveAll<DbContextOptions<TaxServicesDbContext>>();
+                services.AddSingleton<IOnlinePaymentGateway>(
+                    SharedPaymentGateway);
+            }
+            else
+            {
+                services.AddSingleton<
+                    IOnlinePaymentGateway,
+                    FakeOnlinePaymentGateway>();
+            }
 
-                _connection = new SqliteConnection("DataSource=:memory:");
-                _connection.Open();
+            // Disable background workers during tests.
+            // Disable notification worker in all tests.
+            // Enable payment reconciliation worker only when explicitly requested.
+            var hostedServices = services
+                .Where(descriptor =>
+                    descriptor.ServiceType == typeof(IHostedService) &&
+                    (
+                        descriptor.ImplementationType?.Name ==
+                            "NotificationBackgroundWorker"
+                        ||
+                        (
+                            !EnablePaymentReconciliationWorker &&
+                            descriptor.ImplementationType?.Name ==
+                                "PaymentReconciliationBackgroundWorker"
+                        )
+                    ))
+                .ToList();
 
-                services.AddDbContext<TaxServicesDbContext>(options =>
-                    options.UseSqlite(_connection));
+            foreach (var descriptor in hostedServices)
+            {
+                services.Remove(descriptor);
+            }
 
-                using var provider = services.BuildServiceProvider();
-                using var scope = provider.CreateScope();
 
-                var db = scope.ServiceProvider
-                    .GetRequiredService<TaxServicesDbContext>();
+            // Start of temp lines
 
-                db.Database.EnsureCreated();
-            });
-        }
+            var paymentWorkerRegistered = services.Any(descriptor =>
+    descriptor.ServiceType == typeof(IHostedService) &&
+    descriptor.ImplementationType?.Name ==
+        "PaymentReconciliationBackgroundWorker");
 
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
+            if (EnablePaymentReconciliationWorker && !paymentWorkerRegistered)
+            {
+                throw new InvalidOperationException(
+                    "TEST ERROR: PaymentReconciliationBackgroundWorker is NOT registered.");
+            }
 
-            if (disposing)
-                _connection?.Dispose();
-        }
+            // End of temp lines
+            services.RemoveAll<IOnlinePaymentGateway>();
+            services.AddSingleton<IOnlinePaymentGateway, FakeOnlinePaymentGateway>();
+
+            // Use test authentication.
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme =
+                    TestAuthHandler.SchemeName;
+
+                options.DefaultChallengeScheme =
+                    TestAuthHandler.SchemeName;
+            })
+            .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                TestAuthHandler.SchemeName,
+                _ => { });
+        });
     }
-
 }

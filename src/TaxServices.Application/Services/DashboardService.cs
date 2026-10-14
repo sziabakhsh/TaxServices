@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TaxServices.Application.Dashboard;
 using TaxServices.Application.DTOs.Dashboard;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Cases;
+using TaxServices.Domain.Invoices;
+using TaxServices.Domain.Payments;
 
 namespace TaxServices.Application.Services
 {
@@ -76,8 +78,16 @@ namespace TaxServices.Application.Services
                 })
                 .ToListAsync(cancellationToken);
 
+            var finance = await GetFinanceAsync(tenantId, null, cancellationToken);
+
             return new StaffDashboardResponse
             {
+                TotalInvoiced = finance.TotalInvoiced,
+                TotalCollected = finance.TotalCollected,
+                OutstandingBalance = finance.OutstandingBalance,
+                UnpaidInvoices = finance.UnpaidInvoices,
+                OverdueInvoices = finance.OverdueInvoices,
+                RecentInvoices = finance.RecentInvoices,
                 TotalClients = totalClients,
                 ActiveEmployees = activeEmployees,
                 OpenTaxCases = openTaxCases,
@@ -155,13 +165,72 @@ namespace TaxServices.Application.Services
                 })
                 .ToListAsync(cancellationToken);
 
+            var finance = await GetFinanceAsync(tenantId, clientId.Value, cancellationToken);
+
             return new ClientDashboardResponse
             {
+                TotalInvoiced = finance.TotalInvoiced,
+                TotalCollected = finance.TotalCollected,
+                OutstandingBalance = finance.OutstandingBalance,
+                UnpaidInvoices = finance.UnpaidInvoices,
+                OverdueInvoices = finance.OverdueInvoices,
+                RecentInvoices = finance.RecentInvoices,
                 ActiveTaxCases = activeTaxCases,
                 WaitingForClientCases = waitingForClientCases,
                 TotalDocuments = totalDocuments,
                 RecentTaxCases = recentTaxCases
             };
         }
+
+        private async Task<FinanceSummary> GetFinanceAsync(Guid tenantId, Guid? clientId, CancellationToken ct)
+        {
+            // Draft/cancelled invoices are excluded. Payment totals use successful transactions only.
+            var invoices = await _context.Invoices.AsNoTracking()
+                .Where(i => i.TenantId == tenantId &&
+                    (!clientId.HasValue || i.ClientId == clientId.Value) &&
+                    i.Status != InvoiceStatus.Draft && i.Status != InvoiceStatus.Cancelled)
+                .Select(i => new { i.Id, i.InvoiceNumber, i.TotalAmount, i.IssueDate,
+                    i.DueDate, i.Status, ClientName = i.Client.FirstName + " " + i.Client.LastName })
+                .ToListAsync(ct);
+            var ids = invoices.Select(i => i.Id).ToList();
+            var payments = await _context.Payments.AsNoTracking()
+                .Where(p => p.TenantId == tenantId && ids.Contains(p.InvoiceId) &&
+                    p.Status == PaymentStatus.Succeeded)
+                .GroupBy(p => p.InvoiceId)
+                .Select(g => new { InvoiceId = g.Key, Amount = g.Sum(p => p.Amount) })
+                .ToListAsync(ct);
+            var paid = payments.ToDictionary(p => p.InvoiceId, p => p.Amount);
+            var now = DateTime.UtcNow.Date;
+            var rows = invoices.Select(i => new { Invoice = i,
+                Paid = paid.GetValueOrDefault(i.Id),
+                Due = Math.Max(0m, i.TotalAmount - paid.GetValueOrDefault(i.Id)) }).ToList();
+            return new FinanceSummary
+            {
+                TotalInvoiced = rows.Sum(x => x.Invoice.TotalAmount),
+                TotalCollected = rows.Sum(x => x.Paid),
+                OutstandingBalance = rows.Sum(x => x.Due),
+                UnpaidInvoices = rows.Count(x => x.Due > 0),
+                OverdueInvoices = rows.Count(x => x.Due > 0 && x.Invoice.DueDate.Date < now),
+                RecentInvoices = rows.OrderByDescending(x => x.Invoice.IssueDate).Take(5)
+                    .Select(x => new RecentInvoiceDashboardResponse
+                    {
+                        Id = x.Invoice.Id, InvoiceNumber = x.Invoice.InvoiceNumber,
+                        ClientName = x.Invoice.ClientName, TotalAmount = x.Invoice.TotalAmount,
+                        PaidAmount = x.Paid, IssueDate = x.Invoice.IssueDate,
+                        DueDate = x.Invoice.DueDate, Status = (int)x.Invoice.Status
+                    }).ToList()
+            };
+        }
+
+        private sealed class FinanceSummary
+        {
+            public decimal TotalInvoiced { get; set; }
+            public decimal TotalCollected { get; set; }
+            public decimal OutstandingBalance { get; set; }
+            public int UnpaidInvoices { get; set; }
+            public int OverdueInvoices { get; set; }
+            public List<RecentInvoiceDashboardResponse> RecentInvoices { get; set; } = [];
+        }
+
     }
 }

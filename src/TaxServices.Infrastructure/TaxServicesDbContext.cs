@@ -50,4 +50,22 @@ public class TaxServicesDbContext : IdentityDbContext<AppUser>, ITaxServicesDbCo
     {
         return await Database.BeginTransactionAsync(cancellationToken);
     }
+
+    public async Task<Payment?> GetPaymentForUpdateAsync(
+    Guid paymentId,
+    Guid invoiceId,
+    Guid tenantId,
+    CancellationToken cancellationToken = default)
+    {
+        return await Payments
+            .FromSqlInterpolated($@"
+            SELECT *
+            FROM dbo.Payments WITH (UPDLOCK, HOLDLOCK)
+            WHERE Id = {paymentId}
+              AND InvoiceId = {invoiceId}
+              AND TenantId = {tenantId}
+              AND Provider = {"Stripe"}")
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
 }

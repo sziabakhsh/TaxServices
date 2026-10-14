@@ -306,3 +306,17 @@ a.staff-dashboard__card:focus-visible {
     padding: 0.85rem 1rem;
   }
 }
+
+/* Financial dashboard additions */
+.finance-panel { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; background: var(--color-background); }
+.finance-panel h2 { margin: 0 0 1rem; }
+.finance-panel h3 { margin: 1.5rem 0 0.75rem; }
+.finance-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1rem; }
+.finance-tile { display: flex; flex-direction: column; gap: .65rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; color: inherit; }
+.finance-tile span { color: var(--color-text-muted); font-size: .85rem; }
+.finance-tile strong { font-size: 1.35rem; overflow-wrap: anywhere; }
+.finance-table-wrap { overflow-x: auto; }
+.finance-table { width: 100%; border-collapse: collapse; text-align: left; }
+.finance-table th, .finance-table td { padding: .8rem; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+@media (max-width: 900px) { .finance-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 480px) { .finance-grid { grid-template-columns: 1fr; } }

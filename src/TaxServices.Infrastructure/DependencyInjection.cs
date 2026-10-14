@@ -11,11 +11,12 @@ using TaxServices.Infrastructure.Configuration;
 using TaxServices.Infrastructure.Email;
 using TaxServices.Infrastructure.Identity;
 using TaxServices.Infrastructure.Identity.Services;
+using TaxServices.Infrastructure.Notifications;
+using TaxServices.Infrastructure.Payments;
 using TaxServices.Infrastructure.Persistence;
 using TaxServices.Infrastructure.Security;
 using TaxServices.Infrastructure.Services;
 using TaxServices.Infrastructure.Storage;
-using TaxServices.Infrastructure.Payments;
 
 namespace TaxServices.Infrastructure
 {
@@ -117,6 +118,9 @@ namespace TaxServices.Infrastructure
             services.AddScoped<IFileEncryptionService, FileEncryptionService>();
             services.AddScoped<ISensitiveDataProtector, SensitiveDataProtector>();
             services.AddScoped<IOnlinePaymentGateway, StripePaymentGateway>();
+
+            services.AddHostedService<NotificationBackgroundWorker>();
+            services.AddHostedService<PaymentReconciliationBackgroundWorker>();
 
             return services;
         }

@@ -99,6 +99,20 @@ public class PaymentsController : ControllerBase
     }
 
 
+    [HttpPost("{paymentId:guid}/reconcile")]
+    [Authorize(Roles = "Admin,Employee")]
+    public async Task<ActionResult<PaymentResponse>> Reconcile(
+        Guid paymentId,
+        CancellationToken cancellationToken)
+    {
+        var payment = await _paymentService.ReconcileOnlinePaymentAsync(
+            paymentId,
+            cancellationToken);
+
+        return Ok(payment);
+    }
+
+
     [HttpGet("me")]
     [Authorize(Roles = "Client")]
     public async Task<ActionResult<IEnumerable<PaymentResponse>>> GetMine(CancellationToken cancellationToken)

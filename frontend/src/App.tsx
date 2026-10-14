@@ -44,6 +44,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import SignaturesPage from './pages/portal/SignaturesPage'
 import StaffInvoicesPage from './pages/staff/StaffInvoicesPage'
+import FinancialReportsPage from './pages/staff/FinancialReportsPage'
 import CreateInvoicePage from './pages/staff/CreateInvoicePage'
 import StaffInvoiceDetailsPage from './pages/staff/StaffInvoiceDetailsPage'
 
@@ -191,6 +192,7 @@ export default function App() {
             <Route path="clients/:clientId/documents" element={<StaffClientDocumentsPage />} />
             <Route path="clients/:clientId/cases" element={<StaffClientCasesPage />} />
             <Route path="invoices" element={<StaffInvoicesPage />} />
+            <Route path="financial-reports" element={<FinancialReportsPage />} />
             <Route
               path="invoices/new"
               element={<CreateInvoicePage />}

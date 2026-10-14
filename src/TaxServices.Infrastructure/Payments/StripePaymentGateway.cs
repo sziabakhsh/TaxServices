@@ -93,6 +93,46 @@ public class StripePaymentGateway : IOnlinePaymentGateway
             Parse("tenant_id"));
     }
 
+
+    public async Task<OnlineCheckoutStatus> GetCheckoutStatusAsync(
+        string sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureConfigured();
+
+        if (string.IsNullOrWhiteSpace(sessionId))
+            throw new ArgumentException("Session ID is required.");
+
+        var client = new StripeClient(_stripe.SecretKey);
+        var service = new SessionService(client);
+
+        var session = await service.GetAsync(
+            sessionId,
+            cancellationToken: cancellationToken);
+
+        Guid? ParseMetadata(string key)
+        {
+            if (session.Metadata != null &&
+                session.Metadata.TryGetValue(key, out var value) &&
+                Guid.TryParse(value, out var id))
+            {
+                return id;
+            }
+
+            return null;
+        }
+
+        return new OnlineCheckoutStatus(
+            session.Id,
+            session.PaymentStatus ?? "",
+            session.Currency ?? "",
+            session.AmountTotal ?? 0,
+            ParseMetadata("payment_id"),
+            ParseMetadata("invoice_id"),
+            ParseMetadata("tenant_id"));
+    }
+
+
     private void EnsureConfigured()
     {
         if (string.IsNullOrWhiteSpace(_stripe.SecretKey) || string.IsNullOrWhiteSpace(_stripe.WebhookSecret))

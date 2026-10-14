@@ -5,6 +5,7 @@ namespace TaxServices.Domain.Notification
     {
         Pending = 1,
         Sent = 2,
-        Failed = 3
+        Failed = 3,
+        Processing = 4
     }
 }

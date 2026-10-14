@@ -1,9 +1,17 @@
-﻿using TaxServices.Domain.Cases;
+using TaxServices.Domain.Cases;
 
 namespace TaxServices.Application.DTOs.Dashboard
 {
     public class ClientDashboardResponse
     {
+
+    public decimal TotalInvoiced { get; set; }
+    public decimal TotalCollected { get; set; }
+    public decimal OutstandingBalance { get; set; }
+    public int UnpaidInvoices { get; set; }
+    public int OverdueInvoices { get; set; }
+    public List<RecentInvoiceDashboardResponse> RecentInvoices { get; set; } = [];
+
         public int ActiveTaxCases { get; set; }
 
         public int WaitingForClientCases { get; set; }

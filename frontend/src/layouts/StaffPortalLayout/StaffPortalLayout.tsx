@@ -147,6 +147,11 @@ export default function StaffPortalLayout() {
             <span>Invoices</span>
           </NavLink>
 
+          <NavLink to="/staff/financial-reports" className={getNavLinkClass} onClick={handleNavigation}>
+            <ReceiptText size={19} />
+            <span>Financial Reports</span>
+          </NavLink>
+
           <NavLink
             to="/staff/employees"
             className={getNavLinkClass}
