@@ -270,3 +270,53 @@
     border-bottom: 0;
   }
 }
+/* Invoice navigation filters */
+.staff-invoices-page__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 22px;
+}
+.staff-invoices-page__filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2a24;
+}
+.staff-invoices-page__filter-select {
+  min-width: 170px;
+  max-width: 100%;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid #d6e0d9;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #1d2a24;
+  font: inherit;
+  cursor: pointer;
+}
+.staff-invoices-page__filter-select:focus-visible,
+.staff-invoices-page__back:focus-visible {
+  outline: 2px solid #267346;
+  outline-offset: 2px;
+}
+.staff-invoices-page__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d6e0d9;
+  border-radius: 8px;
+  background: #f8faf9;
+  color: #267346;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.staff-invoices-page__back:hover {
+  background: #e7f2eb;
+}
+@media (max-width: 700px) {
+  .staff-invoices-page__filters { align-items: stretch; }
+  .staff-invoices-page__filter-select { flex: 1 1 180px; }
+  .staff-invoices-page__back { justify-content: center; }
+}

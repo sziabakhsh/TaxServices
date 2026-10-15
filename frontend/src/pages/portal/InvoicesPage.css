@@ -272,3 +272,69 @@
     padding: 18px;
   }
 }
+/* Dashboard navigation and invoice status filter */
+.invoices-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 24px;
+}
+
+.invoices-page__filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 190px;
+}
+
+.invoices-page__filter-label {
+  color: #687386;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.invoices-page__filter-select {
+  min-height: 42px;
+  padding: 9px 36px 9px 12px;
+  border: 1px solid #d8e1eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  cursor: pointer;
+}
+
+.invoices-page__filter-select:focus-visible,
+.invoices-page__back-link:focus-visible {
+  outline: 2px solid #087fc9;
+  outline-offset: 2px;
+}
+
+.invoices-page__back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  color: #087fc9;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.invoices-page__back-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .invoices-page__filters {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .invoices-page__filter-field,
+  .invoices-page__filter-select {
+    width: 100%;
+  }
+}

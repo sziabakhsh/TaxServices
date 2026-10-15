@@ -174,15 +174,15 @@ export default function PortalPage() {
         <section className="finance-panel" aria-label="Financial overview">
           <h2>Financial Overview</h2>
           <div className="finance-grid">
-            <Link to="/portal/invoices" className="finance-tile"><span>Outstanding Balance</span><strong>{formatMoney(dashboard.outstandingBalance)}</strong></Link>
-            <Link to="/portal/invoices" className="finance-tile"><span>Total Paid</span><strong>{formatMoney(dashboard.totalCollected)}</strong></Link>
-            <Link to="/portal/invoices" className="finance-tile"><span>Unpaid Invoices</span><strong>{dashboard.unpaidInvoices}</strong></Link>
-            <Link to="/portal/invoices" className="finance-tile"><span>Overdue Invoices</span><strong>{dashboard.overdueInvoices}</strong></Link>
+            <Link to="/portal/invoices?status=unpaid&from=dashboard" className="finance-tile"><span>Outstanding Balance</span><strong>{formatMoney(dashboard.outstandingBalance)}</strong></Link>
+            <Link to="/portal/invoices?status=paid&from=dashboard" className="finance-tile"><span>Total Paid</span><strong>{formatMoney(dashboard.totalCollected)}</strong></Link>
+            <Link to="/portal/invoices?status=unpaid&from=dashboard" className="finance-tile"><span>Unpaid Invoices</span><strong>{dashboard.unpaidInvoices}</strong></Link>
+            <Link to="/portal/invoices?status=overdue&from=dashboard" className="finance-tile"><span>Overdue Invoices</span><strong>{dashboard.overdueInvoices}</strong></Link>
           </div>
           <h3>Recent Invoices</h3>
           {dashboard.recentInvoices.length === 0 ? <p>No issued invoices yet.</p> : (
             <div className="finance-table-wrap"><table className="finance-table"><thead><tr><th>Invoice</th><th>Due Date</th><th>Amount</th><th>Balance</th><th></th></tr></thead><tbody>
-              {dashboard.recentInvoices.map(invoice => <tr key={invoice.id}><td>{invoice.invoiceNumber}</td><td>{new Date(invoice.dueDate).toLocaleDateString('en-CA')}</td><td>{formatMoney(invoice.totalAmount)}</td><td>{formatMoney(Math.max(0, invoice.totalAmount - invoice.paidAmount))}</td><td><Link to={`/portal/invoices/${invoice.id}`}>View / Pay</Link></td></tr>)}
+              {dashboard.recentInvoices.map(invoice => <tr key={invoice.id}><td>{invoice.invoiceNumber}</td><td>{new Date(invoice.dueDate).toLocaleDateString('en-CA')}</td><td>{formatMoney(invoice.totalAmount)}</td><td>{formatMoney(Math.max(0, invoice.totalAmount - invoice.paidAmount))}</td><td><Link to={`/portal/invoices/${invoice.id}?returnTo=${encodeURIComponent("/portal")}`}>View / Pay</Link></td></tr>)}
             </tbody></table></div>
           )}
         </section>

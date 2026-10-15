@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   InvoiceStatus,
@@ -48,16 +48,37 @@ function getStatusClassName(
 }
 
 export default function InvoicesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedStatus = searchParams.get('status') ?? 'all'
+  const today = new Date().toISOString().slice(0, 10)
+  const matchesStatus = (invoice: {status: InvoiceStatus; dueDate: string}) => {
+    const overdue = invoice.status === InvoiceStatus.Overdue || (invoice.status === InvoiceStatus.Issued && invoice.dueDate.slice(0, 10) < today)
+    switch (selectedStatus) {
+      case 'paid': return invoice.status === InvoiceStatus.Paid
+      case 'unpaid': return invoice.status === InvoiceStatus.Issued || overdue
+      case 'overdue': return overdue
+      case 'issued': return invoice.status === InvoiceStatus.Issued
+      case 'draft': return invoice.status === InvoiceStatus.Draft
+      case 'cancelled': return invoice.status === InvoiceStatus.Cancelled
+      default: return true
+    }
+  }
+  const returnPath = '/portal'
+  const invoiceDetailsUrl = (id: string) => `/portal/invoices/${id}?returnTo=${encodeURIComponent(windowPath)}`
+  const windowPath = `/portal/invoices${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+
   const {
     data: invoices,
     isLoading,
     isError,
   } = useMyInvoices()
 
+  const filteredInvoices = (invoices ?? []).filter(matchesStatus)
+
   if (isLoading) {
     return (
       <section className="invoices-page">
-        <div className="invoices-page__container">
+      <div className="invoices-page__container">
           <div className="invoices-page__state">
             Loading your invoices...
           </div>
@@ -78,7 +99,7 @@ export default function InvoicesPage() {
     )
   }
 
-  const sortedInvoices = [...(invoices ?? [])].sort(
+  const sortedInvoices = [...filteredInvoices].sort(
     (a, b) =>
       new Date(b.issueDate).getTime() -
       new Date(a.issueDate).getTime(),
@@ -99,6 +120,36 @@ export default function InvoicesPage() {
           Review your invoices, payment status,
           and billing details.
         </p>
+
+        <div className="invoices-page__filters" aria-label="Invoice filters">
+          <div className="invoices-page__filter-field">
+            <label htmlFor="invoice-status-filter" className="invoices-page__filter-label">
+              Status
+            </label>
+            <select
+              id="invoice-status-filter"
+              className="invoices-page__filter-select"
+              value={selectedStatus}
+              onChange={(event) => {
+                const next = new URLSearchParams(searchParams)
+                if (event.target.value === 'all') next.delete('status')
+                else next.set('status', event.target.value)
+                setSearchParams(next)
+              }}
+            >
+              <option value="all">All invoices</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="overdue">Overdue</option>
+              <option value="issued">Issued</option>
+            </select>
+          </div>
+          {searchParams.get('from') === 'dashboard' && (
+            <Link to={returnPath} className="invoices-page__back-link">
+              ← Back to Dashboard
+            </Link>
+          )}
+        </div>
 
         {sortedInvoices.length === 0 ? (
           <div className="invoices-page__empty">
@@ -177,7 +228,7 @@ export default function InvoicesPage() {
                 </div>
 
                 <Link
-                  to={`/portal/invoices/${invoice.id}`}
+                  to={invoiceDetailsUrl(invoice.id)}
                   className="invoices-page__details-link"
                 >
                   View invoice

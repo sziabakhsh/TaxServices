@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import {
   InvoiceStatus,
@@ -51,6 +51,11 @@ function getStatusClassName(status: InvoiceStatus) {
 }
 
 export default function InvoiceDetailsPage() {
+  const [navigationParams] = useSearchParams()
+  const requestedReturn = navigationParams.get('returnTo')
+  const backUrl = requestedReturn && (requestedReturn === '/portal' || requestedReturn.startsWith('/portal/')) && !requestedReturn.startsWith('//') ? requestedReturn : '/portal/invoices'
+  const backLabel = backUrl === '/portal/dashboard' || backUrl === '/portal' ? 'Back to Dashboard' : 'Back to Invoices'
+
   const { id } = useParams<{ id: string }>()
 
   const {
@@ -84,10 +89,10 @@ export default function InvoiceDetailsPage() {
       <section className="invoice-details">
         <div className="invoice-details__container">
           <Link
-            to="/portal/invoices"
+            to={backUrl}
             className="invoice-details__back"
           >
-            ← Back to invoices
+            ← {backLabel}
           </Link>
 
           <div className="invoice-details__state invoice-details__state--error">
@@ -152,10 +157,10 @@ return (
     <section className="invoice-details">
       <div className="invoice-details__container">
         <Link
-          to="/portal/invoices"
+          to={backUrl}
           className="invoice-details__back"
         >
-          ← Back to invoices
+          ← {backLabel}
         </Link>
 
         <div className="invoice-details__header">

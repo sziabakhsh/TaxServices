@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Link,
   useParams,
+  useSearchParams,
 } from 'react-router-dom'
 
 import ConfirmModal from '../../components/common/ConfirmModal'
@@ -86,6 +87,11 @@ function getErrorMessage(error: unknown) {
 }
 
 export default function StaffInvoiceDetailsPage() {
+  const [navigationParams] = useSearchParams()
+  const requestedReturn = navigationParams.get('returnTo')
+  const backUrl = requestedReturn && (requestedReturn === '/staff' || requestedReturn.startsWith('/staff/')) && !requestedReturn.startsWith('//') ? requestedReturn : '/staff/invoices'
+  const backLabel = backUrl === '/staff' || backUrl === '/portal' ? 'Back to Dashboard' : 'Back to Invoices'
+
   const { id } = useParams<{ id: string }>()
 
   const invoiceQuery = useInvoice(id)
@@ -160,10 +166,10 @@ export default function StaffInvoiceDetailsPage() {
         </div>
 
         <Link
-          to="/staff/invoices"
+          to={backUrl}
           className="staff-invoice-details__back"
         >
-          Back to Invoices
+          {backLabel}
         </Link>
       </div>
     )
@@ -321,10 +327,10 @@ export default function StaffInvoiceDetailsPage() {
       <div className="staff-invoice-details__header">
         <div>
           <Link
-            to="/staff/invoices"
+            to={backUrl}
             className="staff-invoice-details__back"
           >
-            ← Back to Invoices
+            ← {backLabel}
           </Link>
 
           <div className="staff-invoice-details__title-row">
