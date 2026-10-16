@@ -28,32 +28,12 @@ import {
   useRecordManualPayment,
 } from '../../features/payments/usePayments'
 
+import { InvoiceInformation } from './invoice-details/InvoiceInformation'
+import { InvoiceItemsTable } from './invoice-details/InvoiceItemsTable'
+import { InvoiceTotals } from './invoice-details/InvoiceTotals'
+import { formatCurrency, formatDateTime } from './invoice-details/invoiceFormatters'
+
 import './StaffInvoiceDetailsPage.css'
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-  }).format(value)
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(value))
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(value))
-}
 
 function getErrorMessage(error: unknown) {
   if (
@@ -393,190 +373,11 @@ export default function StaffInvoiceDetailsPage() {
         </div>
       )}
 
-      <section className="staff-invoice-details__card">
-        <h2>Invoice Information</h2>
+      <InvoiceInformation invoice={invoice} />
 
-        <div className="staff-invoice-details__info-grid">
-          <div>
-            <span className="staff-invoice-details__label">
-              Invoice Number
-            </span>
+      <InvoiceItemsTable items={invoice.items} />
 
-            <strong>
-              {invoice.invoiceNumber}
-            </strong>
-          </div>
-
-        <div>
-            <span className="staff-invoice-details__label">
-                Client
-            </span>
-
-            <strong>
-                {invoice.clientName}
-            </strong>
-
-            <div className="staff-invoice-details__client-email">
-                {invoice.clientEmail}
-            </div>
-        </div>
-
-          <div>
-            <span className="staff-invoice-details__label">
-              Issue Date
-            </span>
-
-            <strong>
-              {formatDate(
-                invoice.issueDate,
-              )}
-            </strong>
-          </div>
-
-          <div>
-            <span className="staff-invoice-details__label">
-              Due Date
-            </span>
-
-            <strong>
-              {formatDate(
-                invoice.dueDate,
-              )}
-            </strong>
-          </div>
-
-          <div>
-            <span className="staff-invoice-details__label">
-              Tax Rate
-            </span>
-
-            <strong>
-              {invoice.taxRate}%
-            </strong>
-          </div>
-
-          <div>
-            <span className="staff-invoice-details__label">
-              Status
-            </span>
-
-            <strong>
-              {
-                invoiceStatusLabels[
-                  invoice.status
-                ]
-              }
-            </strong>
-          </div>
-        </div>
-
-        {invoice.notes && (
-          <div className="staff-invoice-details__notes">
-            <span className="staff-invoice-details__label">
-              Notes
-            </span>
-
-            <p>{invoice.notes}</p>
-          </div>
-        )}
-      </section>
-
-      <section className="staff-invoice-details__card">
-        <h2>Invoice Items</h2>
-
-        <div className="staff-invoice-details__table-wrapper">
-          <table className="staff-invoice-details__table">
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Discount</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {invoice.items.map(
-                (item) => (
-                  <tr key={item.id}>
-                    <td>
-                      {item.description}
-                    </td>
-
-                    <td>
-                      {item.serviceId
-                        ? 'Service'
-                        : 'Custom'}
-                    </td>
-
-                    <td>
-                      {item.quantity}
-                    </td>
-
-                    <td>
-                      {formatCurrency(
-                        item.unitPrice,
-                      )}
-                    </td>
-
-                    <td>
-                      {item.discountAmount > 0
-                        ? formatCurrency(
-                            item.discountAmount,
-                          )
-                        : '—'}
-                    </td>
-
-                    <td>
-                      <strong>
-                        {formatCurrency(
-                          item.amount,
-                        )}
-                      </strong>
-                    </td>
-                  </tr>
-                ),
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="staff-invoice-details__totals">
-        <div>
-          <span>Subtotal</span>
-
-          <strong>
-            {formatCurrency(
-              invoice.subtotal,
-            )}
-          </strong>
-        </div>
-
-        <div>
-          <span>
-            Tax ({invoice.taxRate}%)
-          </span>
-
-          <strong>
-            {formatCurrency(
-              invoice.taxAmount,
-            )}
-          </strong>
-        </div>
-
-        <div className="staff-invoice-details__total">
-          <span>Total</span>
-
-          <strong>
-            {formatCurrency(
-              invoice.totalAmount,
-            )}
-          </strong>
-        </div>
-      </section>
+      <InvoiceTotals invoice={invoice} />
 
       <section className="staff-invoice-details__card">
         <div className="staff-invoice-details__section-header">

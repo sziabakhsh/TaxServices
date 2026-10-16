@@ -15,6 +15,10 @@ import { useResendEmployeeInvitation } from '../../features/employees/useResendE
 
 import type { Employee } from '../../features/employees/employee.types'
 
+import EmployeeForm from './components/EmployeeForm'
+import EmployeeFilters from './components/EmployeeFilters'
+import EmployeesTable from './components/EmployeesTable'
+
 import './EmployeesPage.css'
 
 export default function EmployeesPage() {
@@ -365,151 +369,13 @@ export default function EmployeesPage() {
       </div>
 
       {isAdmin && isFormOpen && (
-        <div className="staff-employees-page__form-card">
-          <div className="staff-employees-page__form-header">
-            <div>
-              <h2>
-                {editingEmployee
-                  ? 'Edit Employee'
-                  : 'Add Employee'}
-              </h2>
-
-              <p>
-                {editingEmployee
-                  ? 'Update the employee information.'
-                  : "Enter the new employee's information."}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className="staff-employees-page__cancel-button"
-              onClick={closeForm}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-          </div>
-
-          <form
-            key={editingEmployee?.id ?? 'create'}
-            className="staff-employees-page__form"
-            onSubmit={handleSubmit}
-          >
-            <div className="staff-employees-page__form-grid">
-              <div className="staff-employees-page__field">
-                <label htmlFor="employee-first-name">
-                  First Name
-                </label>
-
-                <input
-                  id="employee-first-name"
-                  name="firstName"
-                  type="text"
-                  maxLength={100}
-                  required
-                  disabled={isSubmitting}
-                  defaultValue={
-                    editingEmployee?.firstName ?? ''
-                  }
-                />
-              </div>
-
-              <div className="staff-employees-page__field">
-                <label htmlFor="employee-last-name">
-                  Last Name
-                </label>
-
-                <input
-                  id="employee-last-name"
-                  name="lastName"
-                  type="text"
-                  maxLength={100}
-                  required
-                  disabled={isSubmitting}
-                  defaultValue={
-                    editingEmployee?.lastName ?? ''
-                  }
-                />
-              </div>
-
-              <div className="staff-employees-page__field">
-                <label htmlFor="employee-email">
-                  Email
-                </label>
-
-                <input
-                  id="employee-email"
-                  name="email"
-                  type="email"
-                  maxLength={255}
-                  required
-                  disabled={isSubmitting}
-                  defaultValue={
-                    editingEmployee?.email ?? ''
-                  }
-                />
-              </div>
-
-              <div className="staff-employees-page__field">
-                <label htmlFor="employee-phone">
-                  Phone
-                </label>
-
-                <input
-                  id="employee-phone"
-                  name="phoneNumber"
-                  type="tel"
-                  maxLength={30}
-                  disabled={isSubmitting}
-                  defaultValue={
-                    editingEmployee?.phoneNumber ?? ''
-                  }
-                />
-              </div>
-
-              <div className="staff-employees-page__field">
-                <label htmlFor="employee-job-title">
-                  Job Title
-                </label>
-
-                <input
-                  id="employee-job-title"
-                  name="jobTitle"
-                  type="text"
-                  maxLength={100}
-                  disabled={isSubmitting}
-                  defaultValue={
-                    editingEmployee?.jobTitle ?? ''
-                  }
-                />
-              </div>
-            </div>
-
-            {(createEmployee.isError ||
-              updateEmployee.isError) && (
-              <div className="staff-employees-page__form-error">
-                {editingEmployee
-                  ? "We couldn't update the employee. Please check the information and try again."
-                  : "We couldn't create the employee. Please check the information and try again."}
-              </div>
-            )}
-
-            <div className="staff-employees-page__form-actions">
-              <button
-                type="submit"
-                className="staff-employees-page__submit-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting
-                  ? 'Saving...'
-                  : editingEmployee
-                    ? 'Save Changes'
-                    : 'Create Employee'}
-              </button>
-            </div>
-          </form>
-        </div>
+        <EmployeeForm
+          editingEmployee={editingEmployee}
+          isSubmitting={isSubmitting}
+          hasError={createEmployee.isError || updateEmployee.isError}
+          onSubmit={handleSubmit}
+          onClose={closeForm}
+        />
       )}
 
       {invitationMessage && (
@@ -536,59 +402,7 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      <div className="staff-employees-page__filters">
-        <div className="staff-employees-page__search">
-          <label
-            htmlFor="employee-search"
-            className="staff-employees-page__search-label"
-          >
-            Search Employees
-          </label>
-
-          <input
-            id="employee-search"
-            type="search"
-            value={searchTerm}
-            placeholder="Search by name, email or job title..."
-            className="staff-employees-page__search-input"
-            onChange={(event) =>
-              setSearchTerm(event.target.value)
-            }
-          />
-        </div>
-
-        <div className="staff-employees-page__filter">
-          <label
-            htmlFor="employee-status-filter"
-            className="staff-employees-page__search-label"
-          >
-            Status
-          </label>
-
-          <select
-            id="employee-status-filter"
-            className="staff-employees-page__filter-select"
-            value={statusFilter ?? 'all'}
-            onChange={(event) =>
-              handleStatusFilterChange(
-                event.target.value
-              )
-            }
-          >
-            <option value="all">
-              All Employees
-            </option>
-
-            <option value="active">
-              Active
-            </option>
-
-            <option value="inactive">
-              Inactive
-            </option>
-          </select>
-        </div>
-      </div>
+      <EmployeeFilters searchTerm={searchTerm} statusFilter={statusFilter} onSearchChange={setSearchTerm} onStatusChange={handleStatusFilterChange} />
 
       {!employees.length ? (
         <div className="staff-employees-page__state">
@@ -597,118 +411,7 @@ export default function EmployeesPage() {
             : 'No employees found.'}
         </div>
       ) : (
-        <div className="staff-employees-page__table-wrapper">
-          <table className="staff-employees-page__table">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Job Title</th>
-                <th>Status</th>
-
-                {isAdmin && (
-                  <th>Actions</th>
-                )}
-              </tr>
-            </thead>
-
-            <tbody>
-              {employees.map((employee) => (
-                <tr key={employee.id}>
-                  <td>
-                    <strong>
-                      {employee.firstName}{' '}
-                      {employee.lastName}
-                    </strong>
-                  </td>
-
-                  <td>{employee.email}</td>
-
-                  <td>
-                    {employee.phoneNumber || '—'}
-                  </td>
-
-                  <td>
-                    {employee.jobTitle || '—'}
-                  </td>
-
-                  <td>
-                    <span
-                      className={
-                        employee.isActive
-                          ? 'staff-employees-page__status staff-employees-page__status--active'
-                          : 'staff-employees-page__status staff-employees-page__status--inactive'
-                      }
-                    >
-                      {employee.isActive
-                        ? 'Active'
-                        : 'Inactive'}
-                    </span>
-                  </td>
-
-                  {isAdmin && (
-                    <td>
-                      <div className="staff-employees-page__actions">
-                        <button
-                          type="button"
-                          className="staff-employees-page__edit-button"
-                          onClick={() =>
-                            openEditForm(employee)
-                          }
-                          disabled={
-                            changeEmployeeStatus.isPending ||
-                            resendInvitation.isPending
-                          }
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          className="staff-employees-page__invitation-button"
-                          onClick={() =>
-                            handleResendInvitation(
-                              employee
-                            )
-                          }
-                          disabled={
-                            resendInvitation.isPending
-                          }
-                        >
-                          {resendingEmployeeId ===
-                          employee.id
-                            ? 'Sending...'
-                            : 'Resend Invitation'}
-                        </button>
-
-                        <button
-                          type="button"
-                          className={
-                            employee.isActive
-                              ? 'staff-employees-page__status-button staff-employees-page__status-button--deactivate'
-                              : 'staff-employees-page__status-button staff-employees-page__status-button--activate'
-                          }
-                          onClick={() =>
-                            handleChangeStatus(employee)
-                          }
-                          disabled={
-                            changeEmployeeStatus.isPending ||
-                            resendInvitation.isPending
-                          }
-                        >
-                          {employee.isActive
-                            ? 'Deactivate'
-                            : 'Activate'}
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <EmployeesTable employees={employees} isAdmin={isAdmin} isChangingStatus={changeEmployeeStatus.isPending} isResendingInvitation={resendInvitation.isPending} resendingEmployeeId={resendingEmployeeId} onEdit={openEditForm} onResendInvitation={handleResendInvitation} onChangeStatus={handleChangeStatus} />
       )}
 
       {data && (

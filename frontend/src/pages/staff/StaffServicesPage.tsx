@@ -2,14 +2,7 @@ import { FormEvent, useState } from 'react'
 
 import { AxiosError } from 'axios'
 
-import {
-  Check,
-  Pencil,
-  Plus,
-  Power,
-  PowerOff,
-  X,
-} from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 import { useAuth } from '../../features/auth/useAuth'
 import { useServices } from '../../features/services/useServices'
@@ -29,18 +22,10 @@ import {
 import type { Service } from '../../features/services/service.types'
 
 import './StaffServicesPage.css'
+import ServiceForm, { type ServiceFormState } from './services/ServiceForm'
+import ServicesTable from './services/ServicesTable'
 
-interface FormState {
-
-  name: string
-
-  description: string
-
-  basePrice: string
-
-}
-
-const emptyForm: FormState = {
+const emptyForm: ServiceFormState = {
 
   name: '',
 
@@ -112,7 +97,7 @@ export default function StaffServicesPage() {
 
   const [form, setForm] =
 
-    useState<FormState>(emptyForm)
+    useState<ServiceFormState>(emptyForm)
 
   const [formError, setFormError] =
 
@@ -394,245 +379,15 @@ export default function StaffServicesPage() {
       </header>
 
       {isAdmin && isFormOpen && (
-
-        <div className="staff-services__form-card">
-
-          <div className="staff-services__form-header">
-
-            <div>
-
-              <h2>
-
-                {editingService
-
-                  ? 'Edit Service'
-
-                  : 'Add Service'}
-
-              </h2>
-
-              <p>
-
-                {editingService
-
-                  ? 'Update the service information.'
-
-                  : 'Add a new service to your catalog.'}
-
-              </p>
-
-            </div>
-
-            <button
-
-              type="button"
-
-              className="staff-services__close-button"
-
-              onClick={closeForm}
-
-              disabled={isSaving}
-
-              aria-label="Close form"
-
-            >
-
-              <X size={20} />
-
-            </button>
-
-          </div>
-
-          <form
-
-            className="staff-services__form"
-
-            onSubmit={handleSubmit}
-
-          >
-
-            <div className="staff-services__field">
-
-              <label htmlFor="service-name">
-
-                Service Name
-
-              </label>
-
-              <input
-
-                id="service-name"
-
-                type="text"
-
-                maxLength={150}
-
-                value={form.name}
-
-                onChange={(event) =>
-
-                  setForm((current) => ({
-
-                    ...current,
-
-                    name: event.target.value,
-
-                  }))
-
-                }
-
-                placeholder="e.g. Personal Tax Return"
-
-                disabled={isSaving}
-
-              />
-
-            </div>
-
-            <div className="staff-services__field">
-
-              <label htmlFor="service-price">
-
-                Base Price
-
-              </label>
-
-              <div className="staff-services__price-input">
-
-                <span>$</span>
-
-                <input
-
-                  id="service-price"
-
-                  type="number"
-
-                  min="0"
-
-                  step="0.01"
-
-                  value={form.basePrice}
-
-                  onChange={(event) =>
-
-                    setForm((current) => ({
-
-                      ...current,
-
-                      basePrice: event.target.value,
-
-                    }))
-
-                  }
-
-                  placeholder="0.00"
-
-                  disabled={isSaving}
-
-                />
-
-              </div>
-
-            </div>
-
-            <div className="staff-services__field staff-services__field--full">
-
-              <label htmlFor="service-description">
-
-                Description
-
-              </label>
-
-              <textarea
-
-                id="service-description"
-
-                maxLength={1000}
-
-                rows={4}
-
-                value={form.description}
-
-                onChange={(event) =>
-
-                  setForm((current) => ({
-
-                    ...current,
-
-                    description:
-
-                      event.target.value,
-
-                  }))
-
-                }
-
-                placeholder="Short description of the service"
-
-                disabled={isSaving}
-
-              />
-
-            </div>
-
-            {formError && (
-
-              <div className="staff-services__form-error">
-
-                {formError}
-
-              </div>
-
-            )}
-
-            <div className="staff-services__form-actions">
-
-              <button
-
-                type="button"
-
-                className="staff-services__button staff-services__button--secondary"
-
-                onClick={closeForm}
-
-                disabled={isSaving}
-
-              >
-
-                Cancel
-
-              </button>
-
-              <button
-
-                type="submit"
-
-                className="staff-services__button staff-services__button--primary"
-
-                disabled={isSaving}
-
-              >
-
-                <Check size={17} />
-
-                {isSaving
-
-                  ? 'Saving...'
-
-                  : editingService
-
-                    ? 'Save Changes'
-
-                    : 'Create Service'}
-
-              </button>
-
-            </div>
-
-          </form>
-
-        </div>
-
+        <ServiceForm
+          editingService={editingService}
+          form={form}
+          setForm={setForm}
+          formError={formError}
+          isSaving={isSaving}
+          closeForm={closeForm}
+          handleSubmit={handleSubmit}
+        />
       )}
 
       {statusError && (
@@ -645,221 +400,14 @@ export default function StaffServicesPage() {
 
       )}
 
-      {!services?.length ? (
-
-        <div className="staff-services__empty">
-
-          No services have been added yet.
-
-        </div>
-
-      ) : (
-
-        <div className="staff-services__table-wrapper">
-
-          <table className="staff-services__table">
-
-            <thead>
-
-              <tr>
-
-                <th>Service</th>
-
-                <th>Description</th>
-
-                <th>Base Price</th>
-
-                <th>Status</th>
-
-                {isAdmin && (
-                  <th className="staff-services__actions">
-
-                  Actions
-
-                </th>
-                )}
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {services.map((service) => {
-
-                const isChangingStatus =
-
-                  (activateService.isPending &&
-
-                    activateService.variables ===
-
-                      service.id) ||
-
-                  (deactivateService.isPending &&
-
-                    deactivateService.variables ===
-
-                      service.id)
-
-                return (
-
-                  <tr key={service.id}>
-
-                    <td>
-
-                      <strong>{service.name}</strong>
-
-                    </td>
-
-                    <td className="staff-services__description">
-
-                      {service.description || '—'}
-
-                    </td>
-
-                    <td>
-
-                      {service.basePrice != null
-
-                        ? `$${service.basePrice.toFixed(2)}`
-
-                        : '—'}
-
-                    </td>
-
-                    <td>
-
-                      <span
-
-                        className={
-
-                          service.isActive
-
-                            ? 'staff-services__status staff-services__status--active'
-
-                            : 'staff-services__status staff-services__status--inactive'
-
-                        }
-
-                      >
-
-                        {service.isActive
-
-                          ? 'Active'
-
-                          : 'Inactive'}
-
-                      </span>
-
-                    </td>
-
-                                        {isAdmin && (
-                      <td className="staff-services__actions">
-                      
-                                            <div className="staff-services__action-buttons">
-                      
-                                              <button
-                      
-                                                type="button"
-                      
-                                                className="staff-services__action-button"
-                      
-                                                onClick={() =>
-                      
-                                                  openEditForm(service)
-                      
-                                                }
-                      
-                                                aria-label={`Edit ${service.name}`}
-                      
-                                                title="Edit service"
-                      
-                                              >
-                      
-                                                <Pencil size={17} />
-                      
-                                                <span>Edit</span>
-                      
-                                              </button>
-                      
-                                              <button
-                      
-                                                type="button"
-                      
-                                                className={
-                      
-                                                  service.isActive
-                      
-                                                    ? 'staff-services__action-button staff-services__action-button--danger'
-                      
-                                                    : 'staff-services__action-button staff-services__action-button--activate'
-                      
-                                                }
-                      
-                                                onClick={() =>
-                      
-                                                  handleToggleStatus(service)
-                      
-                                                }
-                      
-                                                disabled={isChangingStatus}
-                      
-                                                aria-label={
-                      
-                                                  service.isActive
-                      
-                                                    ? `Deactivate ${service.name}`
-                      
-                                                    : `Activate ${service.name}`
-                      
-                                                }
-                      
-                                              >
-                      
-                                                {service.isActive ? (
-                      
-                                                  <PowerOff size={17} />
-                      
-                                                ) : (
-                      
-                                                  <Power size={17} />
-                      
-                                                )}
-                      
-                                                <span>
-                      
-                                                  {isChangingStatus
-                      
-                                                    ? 'Updating...'
-                      
-                                                    : service.isActive
-                      
-                                                      ? 'Deactivate'
-                      
-                                                      : 'Activate'}
-                      
-                                                </span>
-                      
-                                              </button>
-                      
-                                            </div>
-                      
-                                          </td>
-                    )}
-
-                  </tr>
-
-                )
-
-              })}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      )}
+      <ServicesTable
+        services={services ?? []}
+        isAdmin={isAdmin}
+        openEditForm={openEditForm}
+        handleToggleStatus={handleToggleStatus}
+        activatingId={activateService.isPending ? activateService.variables : undefined}
+        deactivatingId={deactivateService.isPending ? deactivateService.variables : undefined}
+      />
 
     </section>
 

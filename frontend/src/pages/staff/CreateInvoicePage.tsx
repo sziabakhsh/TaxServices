@@ -1,3 +1,4 @@
+import InvoiceNumberInput from './create-invoice/InvoiceNumberInput'
 import {
   useEffect,
   useState,
@@ -13,26 +14,17 @@ import { useCreateInvoice } from '../../features/invoices/useInvoices'
 import { useClients } from '../../features/clients/useClients'
 import { useServices } from '../../features/services/useServices'
 
+import InvoiceItems from './create-invoice/InvoiceItems'
+import InvoiceSummary from './create-invoice/InvoiceSummary'
+import type { InvoiceItemForm } from './create-invoice/invoiceFormTypes'
+
 import './CreateInvoicePage.css'
 
-interface InvoiceItemForm {
-  serviceId: string | null
-  description: string
-  quantity: number
-  unitPrice: number
-  discountAmount: number
-}
 
 function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-  }).format(value)
-}
 
 export default function CreateInvoicePage() {
   const navigate = useNavigate()
@@ -585,24 +577,7 @@ export default function CreateInvoicePage() {
             <label className="create-invoice-page__field">
               Tax Rate (%)
 
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={taxRate}
-                onChange={event =>
-                  setTaxRate(
-                    Number(
-                      event.target.value
-                    )
-                  )
-                }
-                disabled={
-                  createInvoice.isPending
-                }
-                required
-              />
+              <InvoiceNumberInput min={0} max={100} step={0.01} value={taxRate} onChange={setTaxRate} disabled={createInvoice.isPending} required />
             </label>
 
             <label className="create-invoice-page__field create-invoice-page__field--full">
@@ -643,289 +618,18 @@ export default function CreateInvoicePage() {
             </button>
           </div>
 
-          <div className="create-invoice-page__items">
-            {items.map(
-              (item, index) => {
-                const grossAmount =
-                  Number(
-                    item.quantity ||
-                      0
-                  ) *
-                  Number(
-                    item.unitPrice ||
-                      0
-                  )
-
-                const discountAmount =
-                  Number(
-                    item.discountAmount ||
-                      0
-                  )
-
-                const amount =
-                  Math.max(
-                    grossAmount -
-                      discountAmount,
-                    0
-                  )
-
-                return (
-                  <div
-                    key={index}
-                    className="create-invoice-page__item"
-                  >
-                    <label className="create-invoice-page__field create-invoice-page__item-service">
-                      Service
-
-                      <select
-                        value={
-                          item.serviceId ??
-                          ''
-                        }
-                        onChange={
-                          event =>
-                            selectService(
-                              index,
-                              event
-                                .target
-                                .value
-                            )
-                        }
-                        disabled={
-                          servicesLoading ||
-                          createInvoice.isPending
-                        }
-                      >
-                        <option value="">
-                          Custom Item
-                        </option>
-
-                        {services.map(
-                          service => (
-                            <option
-                              key={
-                                service.id
-                              }
-                              value={
-                                service.id
-                              }
-                            >
-                              {
-                                service.name
-                              }
-                              {service.basePrice !=
-                              null
-                                ? ` — ${formatCurrency(
-                                    service.basePrice
-                                  )}`
-                                : ''}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </label>
-
-                    <label className="create-invoice-page__field create-invoice-page__item-description">
-                      Description
-
-                      <input
-                        type="text"
-                        value={
-                          item.description
-                        }
-                        onChange={
-                          event =>
-                            updateItem(
-                              index,
-                              'description',
-                              event
-                                .target
-                                .value
-                            )
-                        }
-                        maxLength={
-                          500
-                        }
-                        placeholder={
-                          item.serviceId
-                            ? undefined
-                            : 'Enter custom item description'
-                        }
-                        disabled={
-                          createInvoice.isPending
-                        }
-                        required
-                      />
-                    </label>
-
-                    <label className="create-invoice-page__field">
-                      Quantity
-
-                      <input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={
-                          item.quantity
-                        }
-                        onChange={
-                          event =>
-                            updateItem(
-                              index,
-                              'quantity',
-                              Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            )
-                        }
-                        disabled={
-                          createInvoice.isPending
-                        }
-                        required
-                      />
-                    </label>
-
-                    <label className="create-invoice-page__field">
-                      Unit Price
-
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={
-                          item.unitPrice
-                        }
-                        onChange={
-                          event =>
-                            updateItem(
-                              index,
-                              'unitPrice',
-                              Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            )
-                        }
-                        disabled={
-                          createInvoice.isPending
-                        }
-                        required
-                      />
-                    </label>
-
-                    <label className="create-invoice-page__field">
-                      Discount
-
-                      <input
-                        type="number"
-                        min="0"
-                        max={
-                          grossAmount
-                        }
-                        step="0.01"
-                        value={
-                          item.discountAmount
-                        }
-                        onChange={
-                          event =>
-                            updateItem(
-                              index,
-                              'discountAmount',
-                              Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            )
-                        }
-                        disabled={
-                          createInvoice.isPending
-                        }
-                      />
-                    </label>
-
-                    <div className="create-invoice-page__amount">
-                      <span>
-                        Amount
-                      </span>
-
-                      <strong>
-                        {formatCurrency(
-                          amount
-                        )}
-                      </strong>
-
-                      {discountAmount >
-                        0 && (
-                        <small>
-                          Before
-                          discount:{' '}
-                          {formatCurrency(
-                            grossAmount
-                          )}
-                        </small>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="create-invoice-page__remove"
-                      onClick={() =>
-                        removeItem(
-                          index
-                        )
-                      }
-                      disabled={
-                        items.length ===
-                          1 ||
-                        createInvoice.isPending
-                      }
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )
-              }
-            )}
-          </div>
+          <InvoiceItems
+            items={items}
+            services={services}
+            servicesLoading={servicesLoading}
+            isPending={createInvoice.isPending}
+            selectService={selectService}
+            updateItem={updateItem}
+            removeItem={removeItem}
+          />
         </div>
 
-        <div className="create-invoice-page__summary">
-          <div>
-            <span>Subtotal</span>
-
-            <strong>
-              {formatCurrency(
-                subtotal
-              )}
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              Tax ({taxRate || 0}%)
-            </span>
-
-            <strong>
-              {formatCurrency(
-                taxAmount
-              )}
-            </strong>
-          </div>
-
-          <div className="create-invoice-page__summary-total">
-            <span>Total</span>
-
-            <strong>
-              {formatCurrency(
-                total
-              )}
-            </strong>
-          </div>
-        </div>
+        <InvoiceSummary subtotal={subtotal} taxRate={taxRate} taxAmount={taxAmount} total={total} />
 
         <div className="create-invoice-page__footer">
           <Link
