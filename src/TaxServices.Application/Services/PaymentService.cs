@@ -245,6 +245,28 @@ public class PaymentService : IPaymentService
     }
 
 
+    // Called only by the authenticated owner of the invoice after returning from Stripe.
+    public async Task<PaymentResponse> ConfirmClientCheckoutAsync(
+        string sessionId, string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId) || sessionId.Length > 255 ||
+            !sessionId.StartsWith("cs_", StringComparison.Ordinal))
+            throw new ArgumentException("Invalid Stripe checkout session.");
+
+        var tenantId = _tenantContext.TenantId;
+        var payment = await _context.Payments.AsNoTracking().FirstOrDefaultAsync(
+            x => x.TenantId == tenantId && x.Provider == "Stripe" &&
+                 x.ProviderPaymentId == sessionId && x.Invoice.Client.UserId == userId,
+            cancellationToken) ?? throw new KeyNotFoundException("Checkout session not found.");
+
+        if (payment.Status != PaymentStatus.Pending)
+            return ToResponse(payment);
+
+        // Uses the same metadata/amount/currency verification and idempotent
+        // finalization as the background reconciliation and Stripe webhook.
+        return await ReconcilePendingPaymentAsync(payment.Id, cancellationToken);
+    }
+
     public async Task<PaymentResponse> ReconcileOnlinePaymentAsync(
         Guid paymentId,
         CancellationToken cancellationToken = default)

@@ -48,7 +48,7 @@ namespace TaxServices.Infrastructure.Payments
                 {
                     if (!await timer.WaitForNextTickAsync(stoppingToken))
                         break;
-                }
+                 }
                 catch (OperationCanceledException)
                     when (stoppingToken.IsCancellationRequested)
                 {

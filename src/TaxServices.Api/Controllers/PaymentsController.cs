@@ -113,6 +113,17 @@ public class PaymentsController : ControllerBase
     }
 
 
+    [HttpGet("checkout/confirm")]
+    [Authorize(Roles = "Client")]
+    public async Task<ActionResult<PaymentResponse>> ConfirmCheckout(
+        [FromQuery(Name = "session_id")] string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        return Ok(await _paymentService.ConfirmClientCheckoutAsync(sessionId, userId, cancellationToken));
+    }
+
     [HttpGet("me")]
     [Authorize(Roles = "Client")]
     public async Task<ActionResult<IEnumerable<PaymentResponse>>> GetMine(CancellationToken cancellationToken)

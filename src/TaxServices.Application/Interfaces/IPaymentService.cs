@@ -14,6 +14,7 @@ public interface IPaymentService
     Task<PaymentResponse> ReconcileOnlinePaymentAsync(
         Guid paymentId,
         CancellationToken cancellationToken = default);
+    Task<PaymentResponse> ConfirmClientCheckoutAsync(string sessionId, string userId, CancellationToken cancellationToken = default);
     Task<PaymentResponse> ReconcilePendingPaymentAsync(
         Guid paymentId,
         CancellationToken cancellationToken = default);

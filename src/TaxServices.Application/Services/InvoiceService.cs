@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using TaxServices.Domain.Payments;
+using Microsoft.EntityFrameworkCore;
 using TaxServices.Application.DTOs.Invoices;
 using TaxServices.Application.Interfaces;
 using TaxServices.Domain.Invoices;
@@ -448,6 +449,16 @@ namespace TaxServices.Application.Services
                 throw new InvalidOperationException(
                     "Only draft or issued invoices can be cancelled.");
             }
+
+            // Never cancel an invoice while a Stripe checkout might still settle.
+            // The operator must resolve/reconcile the pending payment first.
+            var hasUnresolvedOrSucceededPayment = await _context.Payments.AnyAsync(
+                x => x.TenantId == tenantId && x.InvoiceId == invoice.Id &&
+                     (x.Status == PaymentStatus.Pending || x.Status == PaymentStatus.Succeeded),
+                cancellationToken);
+            if (hasUnresolvedOrSucceededPayment)
+                throw new InvalidOperationException(
+                    "Invoice cannot be cancelled while payments are pending or succeeded. Reconcile the payment first.");
 
             invoice.Status = InvoiceStatus.Cancelled;
 
