@@ -6,3 +6,31 @@ npm install
 npm install react-router-dom axios @tanstack/react-query
 npm install react-hook-form zod @hookform/resolvers
 npm install lucide-react
+
+
+
+dotnet ef database drop --project .\src\TaxServices.Infrastructure  --startup-project .\src\TaxServices.Api
+
+dotnet ef migrations add AddDocumentEncryptionVersion --project .\src\TaxServices.Infrastructure --startup-project .\src\TaxServices.Api
+
+dotnet ef database update --project .\src\TaxServices.Infrastructure --startup-project .\src\TaxServices.Api
+
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$bytes = New-Object byte[] 32
+$rng.GetBytes($bytes)
+$key = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
+
+dotnet user-secrets set "Jwt:SecretKey" $key --project .\src\TaxServices.Api
+
+dotnet user-secrets set "SensitiveData:HashKey" $key --project .\src\TaxServices.Api
+
+
+
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$bytes = New-Object byte[] 32
+$rng.GetBytes($bytes)
+$key = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
+
+dotnet user-secrets set "FileEncryption:Key" $key --project .\src\TaxServices.Api

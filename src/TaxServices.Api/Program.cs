@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
 using TaxServices.Api.Exceptions;
@@ -32,6 +34,37 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         }
+    });
+});
+
+// Apply separate per-IP limits to authentication and ordinary API requests.
+// Stripe webhook delivery is excluded to avoid dropping valid payment events.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.Headers.RetryAfter = "60";
+        return ValueTask.CompletedTask;
+    };
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var path = context.Request.Path;
+        if (path.StartsWithSegments("/api/payments/stripe/webhook", StringComparison.OrdinalIgnoreCase))
+        {
+            return RateLimitPartition.GetNoLimiter("stripe-webhook");
+        }
+
+        var isAuth = path.StartsWithSegments("/api/auth", StringComparison.OrdinalIgnoreCase);
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var bucket = isAuth ? "auth:" : "api:";
+        return RateLimitPartition.GetFixedWindowLimiter(bucket + ip, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = isAuth ? 15 : 180,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        });
     });
 });
 
@@ -190,6 +223,8 @@ app.Use(async (context, next) =>
 // ---------------------------------------------------------
 
 app.UseCors("Frontend");
+
+app.UseRateLimiter();
 
 // ---------------------------------------------------------
 // Authentication / Authorization
